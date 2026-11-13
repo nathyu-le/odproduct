@@ -1,11 +1,23 @@
-import React, { Suspense, lazy } from 'react';
-import { createRoot } from 'react-dom/client';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
-import '@fontsource-variable/inter';
-import './styles.css';
-import { StoreProvider } from './context';
-import { Layout, Home, Catalog, Product, CartPage, Checkout, Order, Lookup } from './store';
-const Admin = lazy(() => import('./admin').then((m) => ({ default: m.Admin })));
+import React, { Suspense, lazy } from "react";
+import { createRoot } from "react-dom/client";
+import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
+import "@fontsource-variable/inter";
+import "./styles.css";
+import "./storefront.css";
+import "./analytics.css";
+import { StoreProvider } from "./context";
+import {
+  Layout,
+  Home,
+  Catalog,
+  Product,
+  CartPage,
+  Checkout,
+  Order,
+  Lookup,
+  FlashSales,
+} from "./store";
+const Admin = lazy(() => import("./admin").then((m) => ({ default: m.Admin })));
 function Scroll() {
   const l = useLocation();
   React.useEffect(() => {
@@ -13,15 +25,18 @@ function Scroll() {
     const privatePage = /order\/|admin/.test(l.pathname);
     let m = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
     if (!m) {
-      m = document.createElement('meta');
-      m.name = 'robots';
+      m = document.createElement("meta");
+      m.name = "robots";
       document.head.appendChild(m);
     }
-    m.content = privatePage ? 'noindex,nofollow' : 'index,follow';
+    m.content = privatePage ? "noindex,nofollow" : "index,follow";
   }, [l.pathname]);
   return null;
 }
-class Boundary extends React.Component<{ children: React.ReactNode }, { error: boolean }> {
+class Boundary extends React.Component<
+  { children: React.ReactNode },
+  { error: boolean }
+> {
   state = { error: false };
   static getDerivedStateFromError() {
     return { error: true };
@@ -38,7 +53,7 @@ class Boundary extends React.Component<{ children: React.ReactNode }, { error: b
     );
   }
 }
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Boundary>
       <HashRouter>
@@ -48,7 +63,9 @@ createRoot(document.getElementById('root')!).render(
             <Route
               path="/admin/*"
               element={
-                <Suspense fallback={<div className="loading">Đang tải quản trị…</div>}>
+                <Suspense
+                  fallback={<div className="loading">Đang tải quản trị…</div>}
+                >
                   <Admin />
                 </Suspense>
               }
@@ -56,6 +73,7 @@ createRoot(document.getElementById('root')!).render(
             <Route element={<Layout />}>
               <Route index element={<Home />} />
               <Route path="products" element={<Catalog />} />
+              <Route path="flash-sale" element={<FlashSales />} />
               <Route path="product/:slug" element={<Product />} />
               <Route path="cart" element={<CartPage />} />
               <Route path="checkout" element={<Checkout />} />

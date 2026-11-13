@@ -1,3 +1,6 @@
+import { AddressSearch } from "./address-search";
+import { AdminDashboard } from "./admin-dashboard";
+import { AdminFlashSales } from "./admin-flash-sales";
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -6,6 +9,7 @@ import {
   Route,
   useNavigate,
   useParams,
+  useSearchParams,
 } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -35,6 +39,7 @@ import {
   ExternalLink,
   Check,
   ShieldCheck,
+  Zap,
 } from "lucide-react";
 import { api, asset, money, date, status, upload, type Obj } from "./api";
 import { useStore } from "./context";
@@ -78,6 +83,7 @@ export function Admin() {
     ...(u.role === "admin"
       ? [
           ["products", "Sản phẩm", Package],
+          ["flash-sales", "Flash sale", Zap],
           ["categories", "Danh mục", Tag],
           ["coupons", "Mã giảm giá", Tag],
           ["reports", "Báo cáo", ChartNoAxesCombined],
@@ -168,6 +174,7 @@ export function Admin() {
             {u.role === "admin" && (
               <>
                 <Route path="products" element={<Products />} />
+                <Route path="flash-sales" element={<AdminFlashSales />} />
                 <Route path="categories" element={<Categories />} />
                 <Route path="coupons" element={<Coupons />} />
                 <Route path="reports" element={<Reports />} />
@@ -283,6 +290,14 @@ const today = () =>
     new Date(),
   );
 function Dashboard() {
+  const { session } = useStore();
+  return session.user.role === "admin" ? (
+    <AdminDashboard />
+  ) : (
+    <StaffDashboard />
+  );
+}
+function StaffDashboard() {
   const { session } = useStore();
   const isAdmin = session.user.role === "admin";
   const { data: orders, error } = useLoad("admin/orders");
@@ -475,10 +490,11 @@ function OrderTable({ rows }: { rows: Obj[] }) {
   );
 }
 function Orders() {
+  const [queryParams] = useSearchParams();
   const [filters, setFilters] = useState<Obj>({
     q: "",
-    status: "",
-    payment_status: "",
+    status: queryParams.get("status") || "",
+    payment_status: queryParams.get("payment_status") || "",
     from: "",
     to: "",
     page: 1,
@@ -1970,6 +1986,49 @@ function SettingsForm({ tab, data, reload }: any) {
             )[tab]
           }
         </h2>
+        {tab === "shipping" && (
+          <div className="shipping-origin-editor">
+            <Field label="Địa chỉ xuất phát giao hàng">
+              <AddressSearch
+                value={f.origin_address || ""}
+                region=""
+                selected={Boolean(
+                  f.origin_address && f.origin_lat && f.origin_lng,
+                )}
+                onChange={(value) =>
+                  setF({
+                    ...f,
+                    origin_address: value,
+                    origin_lat: "",
+                    origin_lng: "",
+                  })
+                }
+                onSelect={(place) =>
+                  setF({
+                    ...f,
+                    origin_address: place.label,
+                    origin_lat: place.latitude,
+                    origin_lng: place.longitude,
+                  })
+                }
+              />
+            </Field>
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={Boolean(f.routing_enabled)}
+                onChange={(e) =>
+                  setF({ ...f, routing_enabled: e.target.checked })
+                }
+              />{" "}
+              Tự tính phí giao theo quãng đường xe chạy
+            </label>
+            <p className="report-note">
+              Chọn đúng địa chỉ cửa hàng trước khi bật. Khi dịch vụ đường đi
+              lỗi, đơn chờ xác nhận phí giao.
+            </p>
+          </div>
+        )}
         {tab !== "telegram" ? (
           <div className="form-grid">
             {fields[tab].map(([k, l, t]: any) =>

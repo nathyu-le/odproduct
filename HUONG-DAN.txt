@@ -1,4 +1,24 @@
-ODPRODUCT — BẢN UPLOAD CPANEL
+CẬP NHẬT WEBSITE ĐANG CHẠY:
+Dùng odproduct-update.zip, upload vào đúng thư mục website rồi Extract.
+Bản update không chứa config.php, storage, uploads, dữ liệu demo hoặc SQL;
+không ghi đè dữ liệu khách, đơn hàng, khóa bảo mật hay cấu hình PHP của cPanel.
+Không chạy lại install.php.
+
+Sau lần cập nhật này, website tự kiểm tra bản build trên GitHub mỗi phút khi có
+lượt truy cập API (PHP-FPM/LiteSpeed), hoặc qua cron bên dưới. Không cần GitHub
+Actions/Secrets. Chỉ triển khai ZIP đúng SHA256; có backup file trước khi thay.
+Source phải được build trước khi push; bản do trợ lý bàn giao đã build sẵn.
+
+THAY ĐỔI TRONG BẢN NÀY:
+- Trang chủ mới, nhãn sản phẩm/giảm giá và tương tác thêm giỏ.
+- Trang /#/flash-sale, cấu hình riêng tại /#/admin/flash-sales.
+- Dashboard có biểu đồ doanh thu/lợi nhuận, biểu đồ tròn trạng thái đơn, cảnh báo kho.
+- Gõ địa chỉ nhận hàng có gợi ý; chọn xong tự ghim và cập nhật phí giao.
+- Trong admin / Thiết lập / Vận chuyển: chọn địa chỉ xuất phát, bật tự tính
+  quãng đường và điền quy tắc phí. Dịch vụ lỗi vẫn cần xác nhận phí thủ công.
+- Bản đồ dùng dữ liệu OpenStreetMap; kết quả thiếu số nhà cần chỉnh ghim đúng cửa.
+
+CÀI MỚI (CHỈ KHI CHƯA CÓ WEBSITE)
 
 1. Upload odproduct-cpanel.zip vào public_html (hoặc thư mục con), bấm Extract.
    index.html, assets, api, images... phải nằm trực tiếp trong thư mục website.

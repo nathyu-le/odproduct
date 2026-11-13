@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import {
   cp,
   mkdir,
@@ -54,7 +55,7 @@ Header always set X-Content-Type-Options "nosniff"
 Header always set Referrer-Policy "no-referrer"
 Header always set X-Frame-Options "DENY"
 Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=()"
-Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data: https://img.vietqr.io https://*.tile.openstreetmap.org; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data: https://img.vietqr.io https://*.tile.openstreetmap.org https://basemaps.cartocdn.com; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 </IfModule>
 `,
 );
@@ -69,6 +70,33 @@ async function permissions(dir) {
   }
 }
 await permissions(root);
+const updateRoot = "build/update";
+await rm(updateRoot, { recursive: true, force: true });
+await mkdir(updateRoot, { recursive: true });
+for (const entry of ["index.html", "assets", "images", "fonts"])
+  await cp(root + "/" + entry, updateRoot + "/" + entry, { recursive: true });
+await mkdir(updateRoot + "/api/bin", { recursive: true });
+await cp(root + "/api/src", updateRoot + "/api/src", {
+  recursive: true,
+  filter: (p) => !p.endsWith(".htaccess"),
+});
+await cp(root + "/api/index.php", updateRoot + "/api/index.php");
+await cp(root + "/api/bin/cron.php", updateRoot + "/api/bin/cron.php");
+await zipDirectory(updateRoot, "odproduct-update.zip");
+const sha256 = createHash("sha256")
+  .update(await readFile("odproduct-update.zip"))
+  .digest("hex");
+const manifest = {
+  sha256,
+  built_at: new Date().toISOString(),
+  php_min: 80200,
+  archive: "odproduct-update.zip",
+};
+await writeFile("deploy.json", JSON.stringify(manifest, null, 2) + "\n");
+await writeFile(
+  root + "/api/release.json",
+  JSON.stringify(manifest, null, 2) + "\n",
+);
 await zipDirectory(root, "odproduct-cpanel.zip");
 console.log(
   "Upload odproduct-cpanel.zip to cPanel and Extract. No Node.js/Docker/Terminal required.",

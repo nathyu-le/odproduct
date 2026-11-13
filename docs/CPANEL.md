@@ -1,7 +1,7 @@
-# Upload lên cPanel
+# cPanel
 
-Dùng file [odproduct-cpanel.zip](https://github.com/nathyu-le/odproduct/raw/refs/heads/main/odproduct-cpanel.zip), không dùng ZIP source của GitHub.
+Website đang có dữ liệu: dùng [odproduct-update.zip](https://github.com/nathyu-le/odproduct/raw/refs/heads/main/odproduct-update.zip). Extract vào thư mục website. Không import database, không ghi đè config, không chạy install lại. PHP 8.2+.
 
-Các bước nằm trong [HUONG-DAN.txt](../HUONG-DAN.txt): upload và extract, điền thông tin database trong api/config.php, mở trang install.php một lần để tạo admin. Không cần tự build, import SQL, tạo key hay dùng Terminal trên hosting.
+Lần cài mới mới dùng odproduct-cpanel.zip. Các bước trong [HUONG-DAN.txt](../HUONG-DAN.txt).
 
-Telegram/routing chỉ cần cấu hình nếu sử dụng. Webhook có nút đăng ký trong admin; cron cần cho gửi/thử lại thông báo và hết hạn giữ hàng. Khi cập nhật bản cũ, giữ config.php, storage và uploads.
+Bản update giữ cấu hình PHP do cPanel tạo trong .htaccess. Website chỉ bổ sung domain ảnh bản đồ vào CSP nếu cần. Cron cũ api/bin/cron.php tiếp tục xử lý thông báo/giữ hàng và kiểm tra phiên bản. Bản sao file trước cập nhật nằm trong api/storage/updates/backups, cần được giữ riêng tư.

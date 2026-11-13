@@ -1,5 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink, Outlet, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from "react";
+import {
+  Link,
+  NavLink,
+  Outlet,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -33,13 +40,36 @@ import {
   Heart,
   ChevronDown,
   Tag,
-} from 'lucide-react';
-import { api, asset, money, date, status, type Obj } from './api';
-import { useStore } from './context';
-import { Button, Empty, Loading, Field, Modal, Badge, SectionTitle, ErrorBox } from './ui';
+  Zap,
+  Pin,
+  House,
+  Grid2X2,
+} from "lucide-react";
+import { api, asset, money, date, status, type Obj } from "./api";
+import {
+  useNow,
+  saleState,
+  displayProduct,
+  savings,
+  remaining,
+  timestamp,
+  currentTime,
+} from "./promotions";
+import { useStore } from "./context";
+import {
+  Button,
+  Empty,
+  Loading,
+  Field,
+  Modal,
+  Badge,
+  SectionTitle,
+  ErrorBox,
+} from "./ui";
 
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { AddressSearch } from "./address-search";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 const icons: Obj = {
   headphones: Headphones,
   keyboard: Keyboard,
@@ -50,14 +80,27 @@ const icons: Obj = {
 export function Layout() {
   const { data, error, count, setCartOpen, cartOpen } = useStore();
   const [menu, setMenu] = useState(false),
-    [q, setQ] = useState('');
+    [q, setQ] = useState("");
   const nav = useNavigate();
+  const now = useNow();
+  const active = (data?.products || []).filter(
+    (p: Obj) => saleState(p, now) === "active",
+  );
   return (
-    <>
+    <div className="storefront">
       <div className="announcement">
-        <span>{data?.store?.banner || 'CHỌN ĐỒ HAY. TẬN HƯỞNG MỖI NGÀY.'}</span>
-        <Link to="/products">
-          Khám phá bộ sưu tập <ArrowUpRight size={13} />
+        <span>
+          {data?.store?.banner || "Phụ kiện công nghệ cho góc riêng của bạn."}
+        </span>
+        <Link to="/flash-sale">
+          {active.length ? (
+            <>
+              <span className="live-dot" /> Flash sale đang mở
+            </>
+          ) : (
+            <>Xem lịch Flash sale</>
+          )}
+          <ArrowUpRight size={13} />
         </Link>
       </div>
       <header className="header">
@@ -65,16 +108,26 @@ export function Layout() {
           <Link to="/" className="logo" aria-label="OD Store trang chủ">
             od<span>.</span>
           </Link>
-          <nav className={menu ? 'main-nav open' : 'main-nav'}>
+          <nav
+            className={menu ? "main-nav open" : "main-nav"}
+            aria-label="Điều hướng cửa hàng"
+          >
             <NavLink to="/" end onClick={() => setMenu(false)}>
               Trang chủ
             </NavLink>
             <NavLink to="/products" onClick={() => setMenu(false)}>
               Sản phẩm
             </NavLink>
-            <Link to="/products?sale=1" onClick={() => setMenu(false)}>
-              Ưu đãi <span className="nav-dot" />
-            </Link>
+            <NavLink
+              to="/flash-sale"
+              className="sale-nav"
+              onClick={() => setMenu(false)}
+            >
+              <Zap size={14} /> Flash sale{" "}
+              {active.length > 0 && (
+                <span className="nav-sale-count">{active.length}</span>
+              )}
+            </NavLink>
             <NavLink to="/lookup" onClick={() => setMenu(false)}>
               Tra cứu đơn
             </NavLink>
@@ -83,13 +136,13 @@ export function Layout() {
             className="header-search"
             onSubmit={(e) => {
               e.preventDefault();
-              nav('/products?q=' + encodeURIComponent(q));
+              nav("/products?q=" + encodeURIComponent(q));
             }}
           >
             <Search size={17} />
             <input
               aria-label="Tìm sản phẩm"
-              placeholder="Bạn đang tìm gì?"
+              placeholder="Tìm món đồ của bạn"
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
@@ -105,7 +158,8 @@ export function Layout() {
           </button>
           <button
             className="icon-button mobile-menu"
-            aria-label="Mở menu"
+            aria-label={menu ? "Đóng menu" : "Mở menu"}
+            aria-expanded={menu}
             onClick={() => setMenu(!menu)}
           >
             {menu ? <X /> : <Menu />}
@@ -114,7 +168,7 @@ export function Layout() {
       </header>
       <main>
         {error && !data ? (
-          <div className="container">
+          <div className="container page">
             <ErrorBox>{error}</ErrorBox>
             <Button onClick={() => location.reload()}>Thử lại</Button>
           </div>
@@ -129,110 +183,205 @@ export function Layout() {
               <Link to="/" className="logo">
                 od<span>.</span>
               </Link>
-              <h3>Công nghệ, vừa vặn với bạn.</h3>
-              <p>Những lựa chọn nhỏ. Một trải nghiệm tốt hơn.</p>
+              <h3>
+                Đồ công nghệ.
+                <br />
+                Có chỗ trong ngày của bạn.
+              </h3>
+              <p>
+                Tai nghe, bàn phím, chuột và loa. Chọn món phù hợp, dùng mỗi
+                ngày.
+              </p>
             </div>
             <div>
-              <h4>Khám phá</h4>
+              <h4>Cửa hàng</h4>
               <Link to="/products">Tất cả sản phẩm</Link>
-              <Link to="/products?sale=1">Ưu đãi hôm nay</Link>
+              <Link to="/flash-sale">Flash sale & lịch ưu đãi</Link>
               <Link to="/lookup">Theo dõi đơn hàng</Link>
+              <Link to="/admin">Quản trị cửa hàng</Link>
             </div>
             <div>
-              <h4>Luôn sẵn sàng hỗ trợ</h4>
-              <a href={'tel:' + data?.store?.phone}>{data?.store?.phone || 'Liên hệ cửa hàng'}</a>
-              <a href={'mailto:' + data?.store?.email}>{data?.store?.email}</a>
+              <h4>Nói chuyện với OD.</h4>
+              <a href={"tel:" + data?.store?.phone}>
+                {data?.store?.phone || "Liên hệ cửa hàng"}
+              </a>
+              <a href={"mailto:" + data?.store?.email}>{data?.store?.email}</a>
               <p>{data?.store?.address}</p>
+              <span className="footer-payment">
+                <Lock size={12} /> COD · Chuyển khoản
+              </span>
             </div>
           </div>
           <div className="footer-bottom">
-            <span>© {new Date().getFullYear()} OD. Store. Chăm chút từng trải nghiệm.</span>
             <span>
-              Thiết kế cho cuộc sống mỗi ngày <span className="lime-dot" />
+              © {new Date().getFullYear()} {data?.store?.name || "OD. Store"}
             </span>
-            <Link to="/admin">Quản trị</Link>
+            <span>Giá và tình trạng hàng được cập nhật từ cửa hàng.</span>
+            <a
+              href="#top"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            >
+              Lên đầu trang ↑
+            </a>
           </div>
         </div>
       </footer>
+      <nav className="mobile-dock" aria-label="Điều hướng nhanh">
+        <NavLink to="/" end>
+          <House size={19} />
+          <span>Trang chủ</span>
+        </NavLink>
+        <NavLink to="/products">
+          <Grid2X2 size={19} />
+          <span>Sản phẩm</span>
+        </NavLink>
+        <NavLink to="/flash-sale">
+          <Zap size={19} />
+          <span>Flash sale</span>
+          {active.length > 0 && <i />}
+        </NavLink>
+        <NavLink to="/lookup">
+          <Package size={19} />
+          <span>Đơn hàng</span>
+        </NavLink>
+        <button onClick={() => setCartOpen(true)}>
+          <ShoppingBag size={19} />
+          <span>Giỏ hàng{count ? " · " + count : ""}</span>
+        </button>
+      </nav>
       {cartOpen && (
         <Modal title="Giỏ hàng của bạn" onClose={() => setCartOpen(false)}>
           <CartContent drawer />
         </Modal>
       )}
-    </>
+    </div>
   );
 }
-function ProductCard({ p }: { p: Obj }) {
+function ProductCard({ p: source, number }: { p: Obj; number?: number }) {
   const { add } = useStore();
+  const now = useNow();
+  const p = displayProduct(source, now);
+  const active = saleState(p, now) === "active";
+  const percent = savings(p);
+  const stock = p.variants.reduce(
+    (s: number, v: Obj) => s + Number(v.stock),
+    0,
+  );
+  const isNew =
+    now - timestamp(p.created_at) < 14 * 86400000 &&
+    now >= timestamp(p.created_at);
   const [liked, setLiked] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('od.favs') || '[]').includes(p.id);
-    } catch {
-      return false;
+      try {
+        return JSON.parse(localStorage.getItem("od.favs") || "[]").includes(
+          p.id,
+        );
+      } catch {
+        return false;
+      }
+    }),
+    [added, setAdded] = useState(false);
+  useEffect(() => {
+    if (added) {
+      const t = setTimeout(() => setAdded(false), 1700);
+      return () => clearTimeout(t);
     }
-  });
-  const sale =
-    p.flash_price &&
-    new Date(p.flash_start.replace(' ', 'T') + '+07:00') <= new Date() &&
-    new Date(p.flash_end.replace(' ', 'T') + '+07:00') > new Date() &&
-    new Date(p.flash_start.replace(' ', 'T') + '+07:00') <= new Date();
-  const stock = p.variants.reduce((s: number, v: Obj) => s + Number(v.stock), 0);
+  }, [added]);
   const toggle = () => {
-    let f = [];
     try {
-      f = JSON.parse(localStorage.getItem('od.favs') || '[]');
+      const f = JSON.parse(localStorage.getItem("od.favs") || "[]");
+      localStorage.setItem(
+        "od.favs",
+        JSON.stringify(
+          liked ? f.filter((id: any) => id !== p.id) : [...f, p.id],
+        ),
+      );
+      setLiked(!liked);
     } catch {}
-    localStorage.setItem(
-      'od.favs',
-      JSON.stringify(liked ? f.filter((id: any) => id !== p.id) : [...f, p.id]),
-    );
-    setLiked(!liked);
+  };
+  const quickAdd = () => {
+    if (p.variants.length > 1) {
+      location.hash = "/product/" + p.slug;
+      return;
+    }
+    add(Number(p.variants[0].id));
+    setAdded(true);
   };
   return (
-    <article className="product-card">
+    <article
+      className={`product-card ${active ? "on-sale" : ""} ${added ? "just-added" : ""}`}
+    >
       <div className="product-image">
-        <Link to={'/product/' + p.slug}>
+        <Link to={"/product/" + p.slug}>
           <img src={asset(p.images[0])} alt={p.name} loading="lazy" />
         </Link>
         <div className="product-badges">
           {!stock ? (
             <Badge>Hết hàng</Badge>
-          ) : sale ? (
-            <Badge tone="lime">Flash sale</Badge>
-          ) : p.pinned == 1 ? (
-            <Badge>OD. chọn lọc</Badge>
+          ) : active && percent > 0 ? (
+            <Badge tone="lime">
+              <Zap size={11} />
+              &nbsp;−{percent}%
+            </Badge>
+          ) : isNew ? (
+            <Badge>Mới về</Badge>
+          ) : Number(p.pinned) ? (
+            <Badge>
+              <Pin size={10} />
+              &nbsp;OD. chọn
+            </Badge>
           ) : null}
         </div>
         <button
-          className={`favorite ${liked ? 'selected' : ''}`}
+          className={`favorite ${liked ? "selected" : ""}`}
           onClick={toggle}
-          aria-label={liked ? 'Bỏ yêu thích' : 'Lưu yêu thích'}
+          aria-label={liked ? "Bỏ yêu thích" : "Lưu yêu thích"}
           aria-pressed={liked}
         >
-          <Heart size={17} fill={liked ? 'currentColor' : 'none'} />
+          <Heart size={16} fill={liked ? "currentColor" : "none"} />
+        </button>
+        {number != null && (
+          <span className="product-index">
+            {String(number).padStart(2, "0")}
+          </span>
+        )}
+        <button className="quick-add" disabled={!stock} onClick={quickAdd}>
+          {added ? (
+            <>
+              <Check size={15} /> Đã thêm vào giỏ
+            </>
+          ) : (
+            <>
+              {p.variants.length > 1 ? "Chọn phiên bản" : "Thêm vào giỏ"}
+              <Plus size={15} />
+            </>
+          )}
         </button>
       </div>
       <div className="product-info">
-        <span className="product-brand">{p.brand}</span>
-        <Link to={'/product/' + p.slug}>
+        <div className="product-meta">
+          <span className="product-brand">{p.brand}</span>
+          {stock > 0 && stock <= 5 && (
+            <span className="stock-chip">Còn {stock}</span>
+          )}
+        </div>
+        <Link to={"/product/" + p.slug}>
           <h3>{p.name}</h3>
         </Link>
         <p>{p.variants[0]?.name}</p>
         <div className="product-bottom">
           <div>
             <strong>{money(p.price)}</strong>
-            {sale && <del>{money(p.variants[0]?.compare_price)}</del>}
+            {active && percent > 0 && (
+              <del>{money(p.variants[0]?.compare_price)}</del>
+            )}
           </div>
           <button
             className="add-button"
             disabled={!stock}
-            aria-label={'Thêm ' + p.name}
-            onClick={() => {
-              if (p.variants.length > 1) location.hash = '/product/' + p.slug;
-              else add(Number(p.variants[0].id));
-            }}
+            onClick={quickAdd}
+            aria-label={"Thêm " + p.name}
           >
-            <Plus size={19} />
+            {added ? <Check size={17} /> : <Plus size={18} />}
           </button>
         </div>
       </div>
@@ -241,210 +390,477 @@ function ProductCard({ p }: { p: Obj }) {
 }
 export function Home() {
   const { data } = useStore();
+  const now = useNow();
+  const [heroIndex, setHeroIndex] = useState(0);
   if (!data) return <Loading />;
-  const products = data.products;
-  const hero = products.find((p: Obj) => p.slug === 'studio-h1') || products[0];
-  const sale = products.filter(
-    (p: Obj) =>
-      p.flash_price &&
-      new Date(p.flash_start.replace(' ', 'T') + '+07:00') <= new Date() &&
-      new Date(p.flash_end.replace(' ', 'T') + '+07:00') > new Date(),
+  const products = data.products.map((p: Obj) => displayProduct(p, now));
+  const categories = data.categories;
+  const candidates = [
+    ["tai-nghe", "Dành một khoảng\nriêng để nghe.", "Âm thanh"],
+    ["ban-phim", "Bắt đầu từ\nmột phím chạm.", "Góc làm việc"],
+    ["loa", "Mở playlist.\nĐổi không khí.", "Loa & âm nhạc"],
+  ]
+    .map(([slug, title, label]) => ({
+      product: products.find((p: Obj) => p.category_slug === slug),
+      title,
+      label,
+    }))
+    .filter((x) => x.product);
+  const picked = candidates[heroIndex % candidates.length] || {
+    product: products[0],
+    title: "Đồ công nghệ.\nChọn cho mỗi ngày.",
+    label: "OD. Store",
+  };
+  const hero = picked.product;
+  const active = products.filter((p: Obj) => saleState(p, now) === "active");
+  const scheduled = products
+    .filter((p: Obj) => saleState(p, now) === "scheduled")
+    .sort(
+      (a: Obj, b: Obj) => timestamp(a.flash_start) - timestamp(b.flash_start),
+    );
+  const selected = products.filter(
+    (p: Obj) => Number(p.pinned) || Number(p.featured),
   );
+  const work = products.find((p: Obj) => p.category_slug === "ban-phim");
   return (
-    <>
-      <div className="container">
-        <div className="home-kicker">
-          <span>
-            <span className="lime-dot" /> TINH GỌN CHO MỖI NGÀY
-          </span>
-          <span>Curated tech. Better everyday.</span>
-        </div>
-        <section className="hero">
-          <div className="hero-copy">
-            <span className="eyebrow">
-              <span className="tiny-square" /> ESSENTIALS COLLECTION / 2026
-            </span>
-            <h1>
-              {data.store.hero_title.split(/\\n|\n/).map((t: string, i: number) => (
-                <span key={i}>
-                  {t}
-                  <br />
-                </span>
-              ))}
-            </h1>
-            <p>{data.store.hero_subtitle}</p>
-            <Link className="button dark" to="/products">
-              Khám phá ngay <ArrowUpRight size={18} />
-            </Link>
-            <div className="hero-note">
-              <span className="line" /> Ít hơn, nhưng tốt hơn.
-            </div>
-          </div>
-          <div className="hero-visual">
-            <img
-              src={asset('images/headphones.jpg')}
-              alt="Tai nghe Studio H1 với thiết kế tối giản"
-            />
-            <span className="hero-label">ÂM THANH CHO KHOẢNG RIÊNG CỦA BẠN</span>
-            <Link className="floating-product" to={hero ? '/product/' + hero.slug : '/products'}>
-              <div>
-                <small>MEET YOUR NEW EVERYDAY</small>
-                <strong>{hero?.name || 'Khám phá bộ sưu tập'}</strong>
-                {hero && <span>{money(hero.price)}</span>}
-              </div>
-              <span className="floating-arrow">
-                <ArrowUpRight size={22} />
-              </span>
-            </Link>
-            <span className="slide-index">
-              01 <span>/ ESSENTIALS</span>
-            </span>
-          </div>
-        </section>
-        <div className="trust-strip">
-          <span>
-            <Truck /> Giao hàng theo khoảng cách
-          </span>
-          <span>
-            <ShieldCheck /> Sản phẩm được chọn lọc
-          </span>
-          <span>
-            <RotateCcw /> Hỗ trợ sau mua tận tâm
-          </span>
-        </div>
-        <section className="section categories-section">
-          <SectionTitle eyebrow="TÌM ĐIỀU BẠN CẦN" title="Một góc riêng. Đủ mọi thứ.">
-            <Link className="text-link" to="/products">
-              Tất cả danh mục <ArrowRight size={16} />
-            </Link>
-          </SectionTitle>
-          <div className="category-grid">
-            {data.categories.map((c: Obj) => {
-              const Icon = icons[c.icon] || Cable;
-              return (
-                <Link className="category-card" key={c.id} to={'/products?category=' + c.slug}>
-                  <div className="category-icon">
-                    <Icon strokeWidth={1.4} />
-                  </div>
-                  <span>{c.name}</span>
-                  <ArrowUpRight size={15} />
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-        <section className="section">
-          <SectionTitle eyebrow="OD. SELECTED" title="Những lựa chọn đáng có.">
-            <Link className="text-link" to="/products">
-              Xem tất cả <ArrowRight size={16} />
-            </Link>
-          </SectionTitle>
-          <div className="product-grid">
-            {products
-              .filter((p: Obj) => Number(p.featured) || Number(p.pinned))
-              .slice(0, 8)
-              .map((p: Obj) => (
-                <ProductCard key={p.id} p={p} />
-              ))}
-          </div>
-        </section>
-        <section className="editorial-banner">
-          <div>
-            <span className="eyebrow">YOUR SPACE. YOUR PACE.</span>
-            <h2>
-              Một chút thay đổi.
-              <br />
-              Nhiều cảm hứng hơn.
-            </h2>
-            <p>Tạo nên góc làm việc mang dấu ấn của riêng bạn.</p>
-            <Link to="/products?category=ban-phim" className="button light">
-              Nâng cấp góc làm việc <ArrowUpRight size={17} />
-            </Link>
-          </div>
-          <img
-            loading="lazy"
-            src={asset('images/desk.jpg')}
-            alt="Góc làm việc tối giản với ánh sáng tự nhiên"
-          />
-        </section>
-        {sale.length > 0 && (
-          <section className="section">
-            <SectionTitle eyebrow="GOOD THINGS, BETTER PRICES" title="Đúng món. Đúng thời điểm.">
-              <Countdown end={sale[0].flash_end} />
-            </SectionTitle>
-            <div className="product-grid">
-              {sale.map((p: Obj) => (
-                <ProductCard key={p.id} p={p} />
-              ))}
-            </div>
-          </section>
-        )}
-        <section className="brand-message">
-          <span className="tiny-square" />
-          <p>
-            Không cần quá nhiều.
-            <br />
-            Chỉ cần <span>đúng thứ bạn yêu.</span>
-          </p>
-          <Link to="/products" className="text-link">
-            Khám phá thế giới OD. <ArrowUpRight size={18} />
-          </Link>
-        </section>
+    <div className="container home-v2">
+      <div className="edition-line">
+        <span>ĐỒ DÙNG CHO NHỮNG GIỜ CỦA BẠN</span>
+        <span>OD. / CÔNG NGHỆ & CUỘC SỐNG</span>
       </div>
-    </>
-  );
-}
-function Countdown({ end }: { end: string }) {
-  const [left, setLeft] = useState(0);
-  useEffect(() => {
-    const tick = () =>
-      setLeft(Math.max(0, new Date(end.replace(' ', 'T') + '+07:00').getTime() - Date.now()));
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [end]);
-  return (
-    <div className="countdown">
-      <Clock size={15} />
-      <span>Kết thúc sau</span>
-      {[
-        Math.floor(left / 3600000),
-        Math.floor(left / 60000) % 60,
-        Math.floor(left / 1000) % 60,
-      ].map((n, i) => (
-        <b key={i}>{String(n).padStart(2, '0')}</b>
-      ))}
+      <section className="cover-story">
+        <div className="cover-copy">
+          <span className="story-label">
+            <span className="tiny-square" />
+            {picked.label}
+          </span>
+          <h1>
+            {picked.title.split("\n").map((t, i) => (
+              <span key={t} className={i === 1 ? "cover-last" : ""}>
+                {t}
+                <br />
+              </span>
+            ))}
+          </h1>
+          <p>
+            {hero
+              ? hero.description.split(". ").slice(0, 2).join(". ") + "."
+              : "Chọn phụ kiện cho việc bạn làm và những thứ bạn thích."}
+          </p>
+          <Link
+            className="button dark"
+            to={hero ? "/product/" + hero.slug : "/products"}
+          >
+            Xem sản phẩm <ArrowUpRight size={18} />
+          </Link>
+          <div className="story-controls" aria-label="Chọn bộ sưu tập">
+            {candidates.map((x, i) => (
+              <button
+                key={x.label}
+                onClick={() => setHeroIndex(i)}
+                className={heroIndex % candidates.length === i ? "active" : ""}
+                aria-pressed={heroIndex % candidates.length === i}
+              >
+                <span>0{i + 1}</span>
+                {x.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="cover-media" key={hero?.id || "empty"}>
+          {hero && (
+            <>
+              <img
+                className="cover-product"
+                src={asset(hero.images[0])}
+                alt={hero.name}
+              />
+              <span className="cover-stamp">
+                OD.
+                <br />
+                <small>SELECTED</small>
+              </span>
+              <div className="cover-caption">
+                <div>
+                  <span>{hero.brand}</span>
+                  <Link to={"/product/" + hero.slug}>{hero.name}</Link>
+                </div>
+                <strong>{money(hero.price)}</strong>
+                <Link
+                  className="cover-buy"
+                  to={"/product/" + hero.slug}
+                  aria-label={"Xem " + hero.name}
+                >
+                  <ArrowUpRight size={22} />
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
+      </section>
+      <div className="service-line">
+        <span>
+          <ShoppingBag size={14} /> Mua nhanh, không cần tài khoản
+        </span>
+        <span>
+          <Truck size={15} /> Phí giao theo quãng đường
+        </span>
+        <Link to="/lookup">
+          <Package size={14} /> Theo dõi đơn mọi lúc <ArrowUpRight size={13} />
+        </Link>
+      </div>
+      <FlashSaleBlock products={active} upcoming={scheduled[0]} />
+      <section className="discovery">
+        <div className="section-caption">
+          <span>01 / TÌM THEO NHU CẦU</span>
+          <p>Bạn muốn nâng cấp điều gì?</p>
+        </div>
+        <div className="category-rail">
+          {categories.map((c: Obj, i: number) => {
+            const Icon = icons[c.icon] || Cable;
+            return (
+              <Link to={"/products?category=" + c.slug} key={c.id}>
+                <span className="category-no">0{i + 1}</span>
+                <Icon size={28} strokeWidth={1.25} />
+                <div>
+                  <strong>{c.name}</strong>
+                  <small>
+                    {products.filter((p: Obj) => p.category_id === c.id).length}{" "}
+                    sản phẩm
+                  </small>
+                </div>
+                <ArrowUpRight size={17} />
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+      <section className="selected-section">
+        <div className="editorial-heading">
+          <div>
+            <p className="eyebrow">02 / TRÊN KỆ OD.</p>
+            <h2>
+              Một vài món.
+              <br />
+              <span>Dùng suốt ngày.</span>
+            </h2>
+          </div>
+          <Link className="text-link" to="/products">
+            Khám phá tất cả <ArrowUpRight size={17} />
+          </Link>
+        </div>
+        <div className="product-grid">
+          {selected.slice(0, 4).map((p: Obj, i: number) => (
+            <ProductCard p={p} key={p.id} number={i + 1} />
+          ))}
+        </div>
+      </section>
+      <section className="workspace-story">
+        <div className="workspace-photo">
+          <img
+            src={asset("images/desk.jpg")}
+            alt="Góc làm việc với ánh sáng ấm"
+            loading="lazy"
+          />
+          <span>GÓC RIÊNG / KHÔNG GIAN LÀM VIỆC</span>
+        </div>
+        <div className="workspace-copy">
+          <span className="story-label">Một bàn làm việc, nhiều cảm hứng.</span>
+          <h2>
+            Chạm phím.
+            <br />
+            <em>Vào guồng.</em>
+          </h2>
+          <p>
+            Dành chỗ cho chiếc bàn phím vừa tay, con chuột di chuyển mượt và
+            khoảng trống để tập trung.
+          </p>
+          <Link className="text-link" to="/products?category=ban-phim">
+            Xem bàn phím & phụ kiện <ArrowUpRight size={17} />
+          </Link>
+          {work && (
+            <Link className="workspace-pick" to={"/product/" + work.slug}>
+              <img src={asset(work.images[0])} alt={work.name} loading="lazy" />
+              <div>
+                <small>GỢI Ý CHO GÓC LÀM VIỆC</small>
+                <strong>{work.name}</strong>
+                <span>{money(work.price)}</span>
+              </div>
+              <ArrowUpRight size={18} />
+            </Link>
+          )}
+        </div>
+      </section>
+      {selected.length > 4 && (
+        <section className="more-essentials">
+          <div className="editorial-heading">
+            <div>
+              <p className="eyebrow">03 / THÊM MỘT VÀI LỰA CHỌN</p>
+              <h2>Có thể hợp với bạn.</h2>
+            </div>
+            <Link className="text-link" to="/products">
+              Xem cửa hàng <ArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="product-grid">
+            {selected.slice(4, 8).map((p: Obj) => (
+              <ProductCard p={p} key={p.id} />
+            ))}
+          </div>
+        </section>
+      )}
+      <div className="store-note">
+        <span className="note-number">od.</span>
+        <p>
+          Tìm món đồ hợp cách bạn làm việc,
+          <br />
+          nghe nhạc và dành thời gian cho mình.
+        </p>
+        <Link to="/products">
+          Vào cửa hàng <ArrowUpRight size={19} />
+        </Link>
+      </div>
     </div>
   );
 }
+function Countdown({
+  end,
+  label = "Kết thúc sau",
+}: {
+  end: string;
+  label?: string;
+}) {
+  const now = useNow();
+  const time = remaining(end, now);
+  return (
+    <div className="sale-countdown" aria-label={label}>
+      <span>{label}</span>
+      <div>
+        {time.days > 0 && (
+          <>
+            <b>
+              {String(time.days).padStart(2, "0")}
+              <small>ngày</small>
+            </b>
+            <i>:</i>
+          </>
+        )}
+        {[
+          ["giờ", time.hours],
+          ["phút", time.minutes],
+          ["giây", time.seconds],
+        ].map(([label, n], i) => (
+          <span className="time-part" key={label}>
+            {i > 0 && <i>:</i>}
+            <b>
+              {String(n).padStart(2, "0")}
+              <small>{label}</small>
+            </b>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+function FlashSaleBlock({
+  products,
+  upcoming,
+}: {
+  products: Obj[];
+  upcoming?: Obj;
+}) {
+  return (
+    <section className="flash-section">
+      <div className="flash-heading">
+        <span className="flash-kicker">
+          <Zap size={15} />
+          {products.length ? "ĐANG DIỄN RA" : "LỊCH ƯU ĐÃI"}
+        </span>
+        <h2>
+          Flash <span>sale.</span>
+        </h2>
+        <p>
+          {products.length
+            ? "Giá đã giảm. Đặt trong thời gian ưu đãi."
+            : upcoming
+              ? "Phiên tiếp theo đã lên lịch. Xem trước sản phẩm và thời gian mở."
+              : "Các phiên ưu đãi có thời gian mở và kết thúc rõ ràng."}
+        </p>
+        <Link className="button dark" to="/flash-sale">
+          {products.length ? "Xem tất cả ưu đãi" : "Xem lịch Flash sale"}{" "}
+          <ArrowUpRight size={16} />
+        </Link>
+        {(products[0] || upcoming) && (
+          <Countdown
+            end={products[0]?.flash_end || upcoming!.flash_start}
+            label={
+              products.length
+                ? "Phiên gần nhất kết thúc sau"
+                : "Phiên tiếp theo mở sau"
+            }
+          />
+        )}
+      </div>
+      <div className="flash-products">
+        {products.length ? (
+          products.slice(0, 3).map((p: Obj) => <ProductCard p={p} key={p.id} />)
+        ) : upcoming ? (
+          <div className="next-sale">
+            <img src={asset(upcoming.images[0])} alt={upcoming.name} />
+            <div>
+              <Badge>Sắp mở</Badge>
+              <h3>{upcoming.name}</h3>
+              <p>{date(upcoming.flash_start)}</p>
+              <Link className="text-link" to="/flash-sale">
+                Xem phiên sắp mở <ArrowRight size={15} />
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="no-sale">
+            <Zap size={35} strokeWidth={1} />
+            <h3>Chưa có phiên đang mở</h3>
+            <p>
+              Sản phẩm và giá ưu đãi sẽ xuất hiện tại đây khi cửa hàng mở phiên.
+            </p>
+            <Link className="text-link" to="/products">
+              Xem sản phẩm hiện có <ArrowRight size={15} />
+            </Link>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+export function FlashSales() {
+  const { data } = useStore();
+  const now = useNow();
+  const [tab, setTab] = useState("active");
+  if (!data) return <Loading />;
+  const all = data.products.map((p: Obj) => displayProduct(p, now));
+  const active = all.filter((p: Obj) => saleState(p, now) === "active"),
+    upcoming = all
+      .filter((p: Obj) => saleState(p, now) === "scheduled")
+      .sort(
+        (a: Obj, b: Obj) => timestamp(a.flash_start) - timestamp(b.flash_start),
+      );
+  const shown = tab === "active" ? active : upcoming;
+  return (
+    <div className="container page flash-page">
+      <div className="breadcrumbs">
+        <Link to="/">Trang chủ</Link>
+        <ChevronRight size={13} />
+        <span>Flash sale</span>
+      </div>
+      <div className="flash-page-heading">
+        <div>
+          <span className="flash-kicker">
+            <Zap size={16} /> ƯU ĐÃI CÓ THỜI GIAN
+          </span>
+          <h1>
+            Đúng lúc.
+            <br />
+            <span>Đúng giá.</span>
+          </h1>
+          <p>Giá ưu đãi tự áp dụng trong thời gian đã lên lịch.</p>
+        </div>
+        {(active[0] || upcoming[0]) && (
+          <Countdown
+            end={active[0]?.flash_end || upcoming[0].flash_start}
+            label={
+              active.length
+                ? "Phiên gần nhất kết thúc sau"
+                : "Phiên tiếp theo mở sau"
+            }
+          />
+        )}
+      </div>
+      <div className="sale-tabs">
+        <button
+          className={tab === "active" ? "active" : ""}
+          onClick={() => setTab("active")}
+        >
+          <span className="live-dot" /> Đang mở <Badge>{active.length}</Badge>
+        </button>
+        <button
+          className={tab === "scheduled" ? "active" : ""}
+          onClick={() => setTab("scheduled")}
+        >
+          <Clock size={15} /> Sắp diễn ra <Badge>{upcoming.length}</Badge>
+        </button>
+      </div>
+      {shown.length ? (
+        <div className="sale-page-grid">
+          {shown.map((p: Obj) => (
+            <div className="sale-item" key={p.id}>
+              {tab === "scheduled" && (
+                <div className="sale-opening">Mở lúc {date(p.flash_start)}</div>
+              )}
+              <ProductCard p={p} />
+              <div className="sale-card-footer">
+                {tab === "active" ? (
+                  <Countdown end={p.flash_end} />
+                ) : (
+                  <p>
+                    Giá khi mở: <strong>{money(p.flash_price)}</strong>
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <Empty
+          title={
+            tab === "active"
+              ? "Chưa có phiên Flash sale đang mở"
+              : "Chưa có phiên sắp diễn ra"
+          }
+          icon={<Zap />}
+        >
+          {tab === "active" && upcoming.length
+            ? "Chuyển sang “Sắp diễn ra” để xem lịch ưu đãi."
+            : "Bạn vẫn có thể xem giá và sản phẩm đang bán trong cửa hàng."}
+        </Empty>
+      )}
+    </div>
+  );
+}
+
 export function Catalog() {
   const { data } = useStore();
   const [params, setParams] = useSearchParams();
-  const [q, setQ] = useState(params.get('q') || ''),
-    [sort, setSort] = useState('selected'),
+  const [q, setQ] = useState(params.get("q") || ""),
+    [sort, setSort] = useState("selected"),
     [inStock, setInStock] = useState(false),
     [max, setMax] = useState(3000000),
     [filter, setFilter] = useState(false);
-  useEffect(() => setQ(params.get('q') || ''), [params]);
+  useEffect(() => setQ(params.get("q") || ""), [params]);
   if (!data) return <Loading />;
-  const cat = params.get('category') || '';
-  let products = data.products.filter(
-    (p: Obj) =>
-      (!cat || p.category_slug === cat) &&
-      (!params.get('sale') ||
-        (p.flash_price &&
-          new Date(p.flash_start.replace(' ', 'T') + '+07:00') <= new Date() &&
-          new Date(p.flash_end.replace(' ', 'T') + '+07:00') > new Date())) &&
-      (!q ||
-        `${p.name} ${p.brand} ${p.description}`
-          .toLocaleLowerCase('vi')
-          .includes(q.toLocaleLowerCase('vi'))) &&
-      p.price <= max &&
-      (!inStock || p.variants.some((v: Obj) => v.stock > 0)),
-  );
-  if (sort === 'price-asc') products = [...products].sort((a: Obj, b: Obj) => a.price - b.price);
-  if (sort === 'price-desc') products = [...products].sort((a: Obj, b: Obj) => b.price - a.price);
-  if (sort === 'newest') products = [...products].sort((a: Obj, b: Obj) => b.id - a.id);
+  const cat = params.get("category") || "";
+  let products = data.products
+    .map((p: Obj) => displayProduct(p, currentTime()))
+    .filter(
+      (p: Obj) =>
+        (!cat || p.category_slug === cat) &&
+        (!params.get("sale") ||
+          (p.flash_price &&
+            new Date(p.flash_start.replace(" ", "T") + "+07:00") <=
+              new Date() &&
+            new Date(p.flash_end.replace(" ", "T") + "+07:00") > new Date())) &&
+        (!q ||
+          `${p.name} ${p.brand} ${p.description}`
+            .toLocaleLowerCase("vi")
+            .includes(q.toLocaleLowerCase("vi"))) &&
+        p.price <= max &&
+        (!inStock || p.variants.some((v: Obj) => v.stock > 0)),
+    );
+  if (sort === "price-asc")
+    products = [...products].sort((a: Obj, b: Obj) => a.price - b.price);
+  if (sort === "price-desc")
+    products = [...products].sort((a: Obj, b: Obj) => b.price - a.price);
+  if (sort === "newest")
+    products = [...products].sort((a: Obj, b: Obj) => b.id - a.id);
   return (
     <div className="container page">
       <div className="breadcrumbs">
@@ -454,9 +870,9 @@ export function Catalog() {
       </div>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">FIND YOUR EVERYDAY</p>
-          <h1>{params.get('sale') ? 'Ưu đãi hôm nay' : 'Những món đồ đáng có.'}</h1>
-          <p>Chọn lọc kỹ lưỡng, dành cho cách bạn sống và làm việc.</p>
+          <p className="eyebrow">SẢN PHẨM / OD. STORE</p>
+          <h1>{params.get("sale") ? "Ưu đãi hôm nay" : "Chọn món bạn cần."}</h1>
+          <p>Tai nghe, bàn phím, chuột, loa — theo cách bạn dùng mỗi ngày.</p>
         </div>
         <span className="muted">{products.length} sản phẩm</span>
       </div>
@@ -470,7 +886,7 @@ export function Catalog() {
             onChange={(e) => {
               setQ(e.target.value);
               const p = new URLSearchParams(params);
-              p.set('q', e.target.value);
+              p.set("q", e.target.value);
               setParams(p, { replace: true });
             }}
           />
@@ -491,10 +907,10 @@ export function Catalog() {
       </div>
       <div className="category-tabs">
         <button
-          className={!cat ? 'active' : ''}
+          className={!cat ? "active" : ""}
           onClick={() => {
             const p = new URLSearchParams(params);
-            p.delete('category');
+            p.delete("category");
             setParams(p);
           }}
         >
@@ -503,10 +919,10 @@ export function Catalog() {
         {data.categories.map((c: Obj) => (
           <button
             key={c.id}
-            className={cat === c.slug ? 'active' : ''}
+            className={cat === c.slug ? "active" : ""}
             onClick={() => {
               const p = new URLSearchParams(params);
-              p.set('category', c.slug);
+              p.set("category", c.slug);
               setParams(p);
             }}
           >
@@ -516,7 +932,7 @@ export function Catalog() {
       </div>
       {filter && (
         <div className="filter-panel">
-          <Field label={'Giá tối đa: ' + money(max)}>
+          <Field label={"Giá tối đa: " + money(max)}>
             <input
               type="range"
               min="100000"
@@ -531,7 +947,7 @@ export function Catalog() {
               type="checkbox"
               checked={inStock}
               onChange={(e) => setInStock(e.target.checked)}
-            />{' '}
+            />{" "}
             Chỉ hiện sản phẩm còn hàng
           </label>
           <Button
@@ -540,7 +956,7 @@ export function Catalog() {
               setMax(3000000);
               setInStock(false);
               setParams({});
-              setQ('');
+              setQ("");
             }}
           >
             Xoá bộ lọc
@@ -554,12 +970,15 @@ export function Catalog() {
           ))}
         </div>
       ) : (
-        <Empty title="Chưa tìm thấy sản phẩm">Thử đổi từ khoá hoặc điều chỉnh bộ lọc nhé.</Empty>
+        <Empty title="Chưa tìm thấy sản phẩm">
+          Thử đổi từ khoá hoặc điều chỉnh bộ lọc nhé.
+        </Empty>
       )}
     </div>
   );
 }
 export function Product() {
+  const now = useNow();
   const { slug } = useParams();
   const { data, add, setCartOpen } = useStore();
   const [variant, setVariant] = useState(0),
@@ -571,7 +990,8 @@ export function Product() {
     setQty(1);
   }, [slug]);
   if (!data) return <Loading />;
-  const p = data.products.find((x: Obj) => x.slug === slug);
+  const source = data.products.find((x: Obj) => x.slug === slug);
+  const p = source ? displayProduct(source, now) : null;
   if (!p)
     return (
       <Empty title="Sản phẩm không còn được bán">
@@ -597,9 +1017,9 @@ export function Product() {
             {p.images.map((url: string, i: number) => (
               <button
                 key={url}
-                className={i === image ? 'active' : ''}
+                className={i === image ? "active" : ""}
                 onClick={() => setImage(i)}
-                aria-label={'Xem ảnh ' + (i + 1)}
+                aria-label={"Xem ảnh " + (i + 1)}
               >
                 <img src={asset(url)} alt="" />
               </button>
@@ -617,7 +1037,7 @@ export function Product() {
             <div className="variant-options">
               {p.variants.map((x: Obj, i: number) => (
                 <button
-                  className={variant === i ? 'active' : ''}
+                  className={variant === i ? "active" : ""}
                   key={x.id}
                   onClick={() => {
                     setVariant(i);
@@ -631,8 +1051,10 @@ export function Product() {
             </div>
           </Field>
           <p className="stock-status">
-            <span className={Number(v?.stock) > 0 ? 'lime-dot' : 'grey-dot'} />
-            {Number(v?.stock) > 0 ? `Sẵn hàng · ${v.stock} sản phẩm` : 'Tạm hết hàng'}
+            <span className={Number(v?.stock) > 0 ? "lime-dot" : "grey-dot"} />
+            {Number(v?.stock) > 0
+              ? `Sẵn hàng · ${v.stock} sản phẩm`
+              : "Tạm hết hàng"}
             <span className="muted">SKU: {v?.sku}</span>
           </p>
           <div className="buy-row">
@@ -649,7 +1071,8 @@ export function Product() {
                 setCartOpen(true);
               }}
             >
-              <ShoppingBag size={18} /> Thêm vào giỏ hàng <ArrowUpRight size={18} />
+              <ShoppingBag size={18} /> Thêm vào giỏ hàng{" "}
+              <ArrowUpRight size={18} />
             </Button>
           </div>
           <div className="detail-promises">
@@ -657,7 +1080,8 @@ export function Product() {
               <Truck size={18} /> Phí giao tính theo quãng đường thực tế
             </p>
             <p>
-              <ShieldCheck size={18} /> Kiểm tra đơn và tổng tiền trước khi xác nhận
+              <ShieldCheck size={18} /> Kiểm tra đơn và tổng tiền trước khi xác
+              nhận
             </p>
             <p>
               <Lock size={18} /> Mua nhanh, không cần tài khoản
@@ -708,16 +1132,16 @@ function CartContent({ drawer = false }: { drawer?: boolean }) {
   const { cart, data, update, setCartOpen, coupon, setCoupon } = useStore();
   const [draft, setDraft] = useState(coupon),
     [quote, setQuote] = useState<Obj | null>(null),
-    [error, setError] = useState(''),
+    [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
     if (cart.length) {
       setBusy(true);
-      api('quote', { items: cart, coupon })
+      api("quote", { items: cart, coupon })
         .then((q) => {
           setQuote(q);
-          setError('');
+          setError("");
         })
         .catch((e) => {
           setError(e.message);
@@ -730,26 +1154,32 @@ function CartContent({ drawer = false }: { drawer?: boolean }) {
     return (
       <Empty title="Giỏ hàng đang chờ bạn" icon={<ShoppingBag />}>
         <span>Thêm một món đồ bạn thích để bắt đầu.</span>
-        <Link className="button dark" to="/products" onClick={() => setCartOpen(false)}>
+        <Link
+          className="button dark"
+          to="/products"
+          onClick={() => setCartOpen(false)}
+        >
           Khám phá sản phẩm <ArrowRight size={16} />
         </Link>
       </Empty>
     );
   return (
-    <div className={drawer ? 'cart-content drawer' : 'cart-content'}>
+    <div className={drawer ? "cart-content drawer" : "cart-content"}>
       <div className="cart-items">
         {cart.map((item: Obj) => {
           const p = data?.products.find((x: Obj) =>
             x.variants.some((v: Obj) => Number(v.id) === item.variant_id),
           );
-          const v = p?.variants.find((x: Obj) => Number(x.id) === item.variant_id);
+          const v = p?.variants.find(
+            (x: Obj) => Number(x.id) === item.variant_id,
+          );
           return (
             <div className="cart-line" key={item.variant_id}>
               {p && <img src={asset(p.images[0])} alt={p.name} />}
               <div className="cart-line-info">
-                <h3>{p?.name || 'Sản phẩm đã ngừng bán'}</h3>
+                <h3>{p?.name || "Sản phẩm đã ngừng bán"}</h3>
                 <p>{v?.name}</p>
-                <strong>{v ? money(v.price) : 'Không khả dụng'}</strong>
+                <strong>{v ? money(v.price) : "Không khả dụng"}</strong>
                 <Quantity
                   quantity={item.quantity}
                   max={Number(v?.stock || 99)}
@@ -789,8 +1219,8 @@ function CartContent({ drawer = false }: { drawer?: boolean }) {
           <button
             className="text-link"
             onClick={() => {
-              setCoupon('');
-              setDraft('');
+              setCoupon("");
+              setDraft("");
             }}
           >
             Bỏ mã {coupon} <X size={14} />
@@ -812,7 +1242,9 @@ function CartContent({ drawer = false }: { drawer?: boolean }) {
           </p>
           <p className="grand-total">
             <span>Tiền hàng</span>
-            <strong>{quote ? money(quote.subtotal - quote.discount) : '—'}</strong>
+            <strong>
+              {quote ? money(quote.subtotal - quote.discount) : "—"}
+            </strong>
           </p>
         </div>
         <Button
@@ -821,7 +1253,7 @@ function CartContent({ drawer = false }: { drawer?: boolean }) {
           variant="dark full"
           onClick={() => {
             setCartOpen(false);
-            navigate('/checkout');
+            navigate("/checkout");
           }}
         >
           Tiến hành đặt hàng <ArrowRight size={17} />
@@ -852,85 +1284,146 @@ export function CartPage() {
 function LocationPicker({
   lat,
   lng,
+  origin,
   onChange,
 }: {
   lat: any;
   lng: any;
+  origin?: Obj;
   onChange: (lat: number, lng: number) => void;
 }) {
   const node = useRef<HTMLDivElement>(null),
     map = useRef<L.Map | null>(null),
-    marker = useRef<L.CircleMarker | null>(null);
-  const cb = useRef(onChange);
+    marker = useRef<L.CircleMarker | null>(null),
+    cb = useRef(onChange);
   cb.current = onChange;
+  const [tileError, setTileError] = useState(false);
   useEffect(() => {
     if (!node.current) return;
-    const m = L.map(node.current).setView([10.7798, 106.699], 13);
+    const m = L.map(node.current, { scrollWheelZoom: false }).setView(
+      [
+        Number(origin?.origin_lat || 16.0544),
+        Number(origin?.origin_lng || 108.2022),
+      ],
+      13,
+    );
     map.current = m;
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19,
-    }).addTo(m);
-    m.on('click', (e: L.LeafletMouseEvent) => cb.current(e.latlng.lat, e.latlng.lng));
-    setTimeout(() => m.invalidateSize(), 100);
+    let errors = 0,
+      fallback = false;
+    const tiles = L.tileLayer(
+      "https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+      {
+        attribution: "© OpenStreetMap contributors © CARTO",
+        maxZoom: 19,
+        referrerPolicy: "strict-origin-when-cross-origin",
+      },
+    ).addTo(m);
+    tiles.on("tileerror", () => {
+      errors++;
+      if (errors >= 3 && !fallback) {
+        fallback = true;
+        tiles.setUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+      } else if (errors >= 7) setTileError(true);
+    });
+    tiles.on("tileload", () => setTileError(false));
+    m.on("click", (e: L.LeafletMouseEvent) =>
+      cb.current(e.latlng.lat, e.latlng.lng),
+    );
+    const resize = new ResizeObserver(() => m.invalidateSize());
+    resize.observe(node.current);
     return () => {
+      resize.disconnect();
       m.remove();
       map.current = null;
     };
   }, []);
   useEffect(() => {
-    if (map.current && lat && lng) {
+    if (map.current && lat !== "" && lng !== "") {
       marker.current?.remove();
       marker.current = L.circleMarker([Number(lat), Number(lng)], {
         radius: 9,
-        color: '#252a24',
-        fillColor: '#c5f36a',
+        color: "#242a24",
+        fillColor: "#c5f36a",
         fillOpacity: 1,
         weight: 3,
       }).addTo(map.current);
-      map.current.panTo([Number(lat), Number(lng)]);
+      map.current.setView([Number(lat), Number(lng)], 16, {
+        animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      });
+    } else {
+      marker.current?.remove();
+      marker.current = null;
     }
   }, [lat, lng]);
   return (
-    <div className="map" ref={node} aria-label="Bản đồ chọn điểm nhận hàng, chạm để ghim vị trí" />
+    <div className="map-wrapper">
+      <div
+        className="map"
+        ref={node}
+        aria-label="Bản đồ nhận hàng, chạm để đổi điểm giao"
+      />
+      {tileError && (
+        <div className="map-unavailable">
+          Chưa tải được nền bản đồ. Bạn vẫn có thể chọn địa chỉ từ gợi ý phía
+          trên.
+        </div>
+      )}
+    </div>
   );
 }
 export function Checkout() {
   const { cart, coupon, setCart, setCoupon, setToast } = useStore();
   const navigate = useNavigate();
   const [form, setForm] = useState<Obj>({
-      name: '',
-      phone: '',
-      address: '',
-      region: '',
-      note: '',
-      latitude: '',
-      longitude: '',
-      payment_method: 'cod',
+      name: "",
+      phone: "",
+      address: "",
+      region: "",
+      note: "",
+      latitude: "",
+      longitude: "",
+      payment_method: "cod",
+      address_extra: "",
     }),
     [quote, setQuote] = useState<Obj | null>(null),
-    [error, setError] = useState(''),
+    [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [locating, setLocating] = useState(false);
   const { data } = useStore();
-  const key = useRef(sessionStorage.getItem('od.checkout-key') || crypto.randomUUID());
+  const key = useRef(
+    sessionStorage.getItem("od.checkout-key") || crypto.randomUUID(),
+  );
   useEffect(() => {
-    sessionStorage.setItem('od.checkout-key', key.current);
+    sessionStorage.setItem("od.checkout-key", key.current);
   }, []);
   useEffect(() => {
     if (data?.payment && !data.payment[form.payment_method])
-      setForm((f) => ({ ...f, payment_method: data.payment.cod ? 'cod' : 'bank' }));
+      setForm((f) => ({
+        ...f,
+        payment_method: data.payment.cod ? "cod" : "bank",
+      }));
   }, [data?.payment, form.payment_method]);
   const change = (k: string, v: any) => {
-    setForm((f) => ({ ...f, [k]: v }));
-    if (k === 'latitude' || k === 'longitude') setQuote(null);
+    setForm((f) => ({
+      ...f,
+      [k]: v,
+      ...(["address", "region"].includes(k)
+        ? { latitude: "", longitude: "" }
+        : {}),
+    }));
+    if (k === "latitude" || k === "longitude") setQuote(null);
   };
   useEffect(() => {
     let active = true;
     setQuote(null);
-    setError('');
+    setError("");
     if (cart.length)
-      api('quote', { items: cart, coupon, latitude: form.latitude, longitude: form.longitude })
+      api("quote", {
+        items: cart,
+        coupon,
+        latitude: form.latitude,
+        longitude: form.longitude,
+      })
         .then((q) => {
           if (active) setQuote(q);
         })
@@ -952,21 +1445,34 @@ export function Checkout() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    setError('');
+    setError("");
     try {
       const r = await api(
-        'orders',
-        { ...form, items: cart, coupon, quote_hash: quote?.quote_hash },
-        { 'Idempotency-Key': key.current },
+        "orders",
+        {
+          ...form,
+          address: [form.address, form.address_extra]
+            .filter(Boolean)
+            .join(", "),
+          items: cart,
+          coupon,
+          quote_hash: quote?.quote_hash,
+        },
+        { "Idempotency-Key": key.current },
       );
       setCart([]);
-      setCoupon('');
-      sessionStorage.removeItem('od.checkout-key');
-      navigate('/order/' + r.token);
-      setToast('Đã nhận đơn hàng của bạn');
+      setCoupon("");
+      sessionStorage.removeItem("od.checkout-key");
+      navigate("/order/" + r.token);
+      setToast("Đã nhận đơn hàng của bạn");
     } catch (e: any) {
       setError(e.message);
-      api('quote', { items: cart, coupon, latitude: form.latitude, longitude: form.longitude })
+      api("quote", {
+        items: cart,
+        coupon,
+        latitude: form.latitude,
+        longitude: form.longitude,
+      })
         .then(setQuote)
         .catch(() => setQuote(null));
     } finally {
@@ -982,8 +1488,8 @@ export function Checkout() {
       </div>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">ALMOST YOURS</p>
-          <h1>Thêm một bước. Đến tay bạn.</h1>
+          <p className="eyebrow">ĐẶT HÀNG</p>
+          <h1>Giao đến đúng chỗ.</h1>
           <p>Đặt hàng nhanh, không cần tài khoản.</p>
         </div>
         <Lock size={24} strokeWidth={1.3} />
@@ -1000,7 +1506,7 @@ export function Checkout() {
                   required
                   autoComplete="name"
                   value={form.name}
-                  onChange={(e) => change('name', e.target.value)}
+                  onChange={(e) => change("name", e.target.value)}
                   placeholder="Nguyễn Minh Anh"
                   maxLength={120}
                 />
@@ -1011,36 +1517,139 @@ export function Checkout() {
                   required
                   autoComplete="tel"
                   value={form.phone}
-                  onChange={(e) => change('phone', e.target.value)}
+                  onChange={(e) => change("phone", e.target.value)}
                   placeholder="09xx xxx xxx"
                 />
               </Field>
-              <Field label="Tỉnh/thành phố · Phường/xã *">
+            </div>
+            <Field label="Địa chỉ nhận hàng *">
+              <AddressSearch
+                value={form.address}
+                region={form.region}
+                selected={form.latitude !== "" && form.longitude !== ""}
+                onChange={(v) => change("address", v)}
+                onSelect={(place) => {
+                  setQuote(null);
+                  setForm((f) => ({
+                    ...f,
+                    address: place.address,
+                    region: place.region || f.region,
+                    latitude: place.latitude.toFixed(7),
+                    longitude: place.longitude.toFixed(7),
+                  }));
+                }}
+              />
+            </Field>
+            <div className="form-grid">
+              <Field label="Phường/xã · Tỉnh/thành phố *">
                 <input
                   required
                   autoComplete="address-level1"
                   value={form.region}
-                  onChange={(e) => change('region', e.target.value)}
-                  placeholder="TP. Hồ Chí Minh, Phường Sài Gòn"
+                  onChange={(e) => change("region", e.target.value)}
+                  placeholder="Tự điền khi chọn địa chỉ — có thể chỉnh lại"
                   maxLength={180}
                 />
               </Field>
-              <Field label="Số nhà, đường, toà nhà *">
+              <Field label="Căn hộ, tầng, toà nhà (nếu có)">
                 <input
-                  required
-                  autoComplete="street-address"
-                  value={form.address}
-                  onChange={(e) => change('address', e.target.value)}
-                  placeholder="Địa chỉ nhận hàng chi tiết"
-                  maxLength={500}
+                  autoComplete="address-line2"
+                  value={form.address_extra}
+                  onChange={(e) => change("address_extra", e.target.value)}
+                  placeholder="Ví dụ: tầng 2, căn 203"
+                  maxLength={150}
                 />
               </Field>
+            </div>
+            <div className="checkout-map-label">
+              <span>
+                <MapPin size={15} /> Vị trí nhận hàng
+              </span>
+              <Button
+                type="button"
+                variant="ghost"
+                loading={locating}
+                onClick={() => {
+                  if (!navigator.geolocation) {
+                    setError(
+                      "Trình duyệt không hỗ trợ vị trí. Tìm địa chỉ hoặc chạm bản đồ.",
+                    );
+                    return;
+                  }
+                  setLocating(true);
+                  navigator.geolocation.getCurrentPosition(
+                    (p) => {
+                      setForm((f) => ({
+                        ...f,
+                        latitude: p.coords.latitude.toFixed(7),
+                        longitude: p.coords.longitude.toFixed(7),
+                      }));
+                      setLocating(false);
+                    },
+                    () => {
+                      setError(
+                        "Chưa lấy được vị trí. Tìm địa chỉ hoặc chạm bản đồ để chọn.",
+                      );
+                      setLocating(false);
+                    },
+                    { timeout: 10000 },
+                  );
+                }}
+              >
+                <Navigation size={14} /> Dùng vị trí hiện tại
+              </Button>
+            </div>
+            <LocationPicker
+              lat={form.latitude}
+              lng={form.longitude}
+              origin={data?.shipping}
+              onChange={(lat, lng) =>
+                setForm((f) => ({
+                  ...f,
+                  latitude: lat.toFixed(7),
+                  longitude: lng.toFixed(7),
+                }))
+              }
+            />
+            <small className="muted">
+              Chọn gợi ý địa chỉ để bản đồ tự ghim. Có thể chạm bản đồ để chỉnh
+              đúng cửa nhà.
+            </small>
+            <div className="shipping-result" aria-live="polite">
+              {quote?.distance_km != null ? (
+                <>
+                  <Truck size={19} />
+                  <div>
+                    <strong>
+                      {quote.distance_km} km <span>quãng đường giao</span>
+                    </strong>
+                    <small>Phí tính theo quy tắc cửa hàng.</small>
+                  </div>
+                  <b>{money(quote.shipping_fee)}</b>
+                </>
+              ) : (
+                <>
+                  <MapPin size={19} />
+                  <div>
+                    <strong>
+                      {form.latitude !== ""
+                        ? "Cửa hàng cần xác nhận phí giao"
+                        : "Chọn địa chỉ trên bản đồ"}
+                    </strong>
+                    <small>
+                      {form.latitude !== ""
+                        ? "Chưa lấy được quãng đường. Cửa hàng sẽ báo phí để bạn đồng ý tổng tiền."
+                        : "Chọn gợi ý địa chỉ để tự tính quãng đường và phí giao."}
+                    </small>
+                  </div>
+                </>
+              )}
             </div>
             <Field label="Ghi chú cho cửa hàng">
               <textarea
                 rows={2}
                 value={form.note}
-                onChange={(e) => change('note', e.target.value)}
+                onChange={(e) => change("note", e.target.value)}
                 placeholder="Thời gian nhận hàng, hướng dẫn tìm địa chỉ…"
                 maxLength={1000}
               />
@@ -1048,108 +1657,24 @@ export function Checkout() {
           </section>
           <section className="panel">
             <h2>
-              <span className="step-number">02</span> Vị trí & phí giao hàng
-            </h2>
-            <p className="muted">
-              Chạm bản đồ để chọn điểm nhận, nhập tọa độ hoặc dùng vị trí hiện tại. Phí được tính
-              theo quãng đường xe chạy.
-            </p>
-            <LocationPicker
-              lat={form.latitude}
-              lng={form.longitude}
-              onChange={(lat, lng) =>
-                setForm((f) => ({ ...f, latitude: lat.toFixed(7), longitude: lng.toFixed(7) }))
-              }
-            />
-            <div className="form-grid">
-              <Field label="Vĩ độ">
-                <input
-                  type="number"
-                  step="any"
-                  min="-90"
-                  max="90"
-                  value={form.latitude}
-                  onChange={(e) => change('latitude', e.target.value)}
-                />
-              </Field>
-              <Field label="Kinh độ">
-                <input
-                  type="number"
-                  step="any"
-                  min="-180"
-                  max="180"
-                  value={form.longitude}
-                  onChange={(e) => change('longitude', e.target.value)}
-                />
-              </Field>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              loading={locating}
-              onClick={() => {
-                setLocating(true);
-                navigator.geolocation.getCurrentPosition(
-                  (p) => {
-                    setForm((f) => ({
-                      ...f,
-                      latitude: p.coords.latitude.toFixed(7),
-                      longitude: p.coords.longitude.toFixed(7),
-                    }));
-                    setLocating(false);
-                  },
-                  () => {
-                    setError('Không lấy được vị trí. Chọn trên bản đồ hoặc nhập tọa độ.');
-                    setLocating(false);
-                  },
-                  { timeout: 10000 },
-                );
-              }}
-            >
-              <Navigation size={16} /> Dùng vị trí hiện tại
-            </Button>
-            <div className="notice">
-              <MapPin size={18} />
-              <div>
-                {quote?.distance_km != null ? (
-                  <>
-                    <strong>
-                      {quote.distance_km} km · {money(quote.shipping_fee)}
-                    </strong>
-                    <p>
-                      Làm tròn phần km vượt mức:{' '}
-                      {data?.shipping.round_mode === 'ceil'
-                        ? 'lên'
-                        : data?.shipping.round_mode === 'exact'
-                          ? 'chính xác'
-                          : 'gần nhất'}
-                      , bước {data?.shipping.round_step} km.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <strong>Cần xác nhận phí giao hàng</strong>
-                    <p>
-                      Cửa hàng sẽ báo phí. Bạn cần xác nhận tổng tiền trên trang đơn trước khi thanh
-                      toán và xử lý.
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-          </section>
-          <section className="panel">
-            <h2>
-              <span className="step-number">03</span> Phương thức thanh toán
+              <span className="step-number">02</span> Phương thức thanh toán
             </h2>
             {[
-              ['cod', 'Tiền mặt khi nhận hàng', 'Thanh toán cho người giao hàng.'],
-              ['bank', 'Chuyển khoản ngân hàng', 'Cửa hàng kiểm tra và xác nhận nhận tiền.'],
+              [
+                "cod",
+                "Tiền mặt khi nhận hàng",
+                "Thanh toán cho người giao hàng.",
+              ],
+              [
+                "bank",
+                "Chuyển khoản ngân hàng",
+                "Cửa hàng kiểm tra và xác nhận nhận tiền.",
+              ],
             ]
               .filter(([key]) => data?.payment[key])
               .map(([key, title, desc]) => (
                 <label
-                  className={`payment-choice ${form.payment_method === key ? 'active' : ''}`}
+                  className={`payment-choice ${form.payment_method === key ? "active" : ""}`}
                   key={key}
                 >
                   <input
@@ -1157,7 +1682,7 @@ export function Checkout() {
                     name="payment"
                     value={key}
                     checked={form.payment_method === key}
-                    onChange={() => change('payment_method', key)}
+                    onChange={() => change("payment_method", key)}
                   />
                   <span>
                     <strong>{title}</strong>
@@ -1203,8 +1728,8 @@ export function Checkout() {
           </div>
           {quote?.total === null && (
             <p className="muted small">
-              Tiền hàng {money(quote.subtotal - quote.discount)} + phí giao đang chờ báo. Đơn chỉ
-              được xử lý sau khi bạn xác nhận tổng.
+              Tiền hàng {money(quote.subtotal - quote.discount)} + phí giao đang
+              chờ báo. Đơn chỉ được xử lý sau khi bạn xác nhận tổng.
             </p>
           )}
           <ErrorBox>{error}</ErrorBox>
@@ -1220,16 +1745,16 @@ export function Checkout() {
   );
 }
 export function Lookup() {
-  const [code, setCode] = useState(''),
-    [phone, setPhone] = useState(''),
-    [error, setError] = useState(''),
+  const [code, setCode] = useState(""),
+    [phone, setPhone] = useState(""),
+    [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   const navigate = useNavigate();
   return (
     <div className="container page narrow">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">WE'RE ON THE WAY</p>
+          <p className="eyebrow">TRA CỨU ĐƠN HÀNG</p>
           <h1>Đơn hàng của bạn ở đâu?</h1>
           <p>Dùng mã tra cứu riêng và số điện thoại đã đặt hàng.</p>
         </div>
@@ -1239,10 +1764,10 @@ export function Lookup() {
         onSubmit={async (e) => {
           e.preventDefault();
           setBusy(true);
-          setError('');
+          setError("");
           try {
-            const r = await api('lookup', { code, phone });
-            navigate('/order/' + r.token);
+            const r = await api("lookup", { code, phone });
+            navigate("/order/" + r.token);
           } catch (e: any) {
             setError(e.message);
           } finally {
@@ -1274,7 +1799,8 @@ export function Lookup() {
           <Search size={17} /> Tra cứu đơn hàng
         </Button>
         <p className="muted small">
-          Mã tra cứu khác với mã đơn OD. Nếu làm mất link theo dõi, vui lòng liên hệ cửa hàng.
+          Mã tra cứu khác với mã đơn OD. Nếu làm mất link theo dõi, vui lòng
+          liên hệ cửa hàng.
         </p>
       </form>
     </div>
@@ -1283,11 +1809,11 @@ export function Lookup() {
 export function Order() {
   const { token } = useParams();
   const [o, setO] = useState<Obj | null>(null),
-    [error, setError] = useState(''),
+    [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   const { setToast } = useStore();
   const load = () =>
-    api('order/' + token)
+    api("order/" + token)
       .then(setO)
       .catch((e) => setError(e.message));
   useEffect(() => {
@@ -1298,8 +1824,8 @@ export function Order() {
   const action = async (a: string) => {
     setBusy(true);
     try {
-      setO(await api('order/' + token + '/' + a, {}));
-      setToast('Đã gửi xác nhận');
+      setO(await api("order/" + token + "/" + a, {}));
+      setToast("Đã gửi xác nhận");
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -1308,16 +1834,24 @@ export function Order() {
   };
   if (!o)
     return (
-      <div className="container page">{error ? <ErrorBox>{error}</ErrorBox> : <Loading />}</div>
+      <div className="container page">
+        {error ? <ErrorBox>{error}</ErrorBox> : <Loading />}
+      </div>
     );
-  const milestones = ['received', 'confirmed', 'preparing', 'shipping', 'delivered'];
+  const milestones = [
+    "received",
+    "confirmed",
+    "preparing",
+    "shipping",
+    "delivered",
+  ];
   const step = milestones.indexOf(o.status);
   const pay = o.payment_snapshot;
-  const content = pay.transfer_template.replace('{code}', o.code);
+  const content = pay.transfer_template.replace("{code}", o.code);
   const qr =
     o.total != null
       ? `https://img.vietqr.io/image/${encodeURIComponent(pay.bank_bin)}-${encodeURIComponent(pay.bank_account)}-compact2.png?amount=${o.total}&addInfo=${encodeURIComponent(content)}&accountName=${encodeURIComponent(pay.bank_owner)}`
-      : '';
+      : "";
   return (
     <div className="container page order-page">
       <div className="order-heading">
@@ -1325,22 +1859,26 @@ export function Order() {
           <CheckCircle2 size={30} strokeWidth={1.4} />
         </span>
         <p className="eyebrow">CẢM ƠN BẠN ĐÃ CHỌN OD.</p>
-        <h1>{o.status === 'cancelled' ? 'Đơn hàng đã huỷ.' : 'Đã nhận đơn của bạn.'}</h1>
+        <h1>
+          {o.status === "cancelled"
+            ? "Đơn hàng đã huỷ."
+            : "Đã nhận đơn của bạn."}
+        </h1>
         <p>
           Mã đơn <strong>{o.code}</strong> · {date(o.created_at)}
         </p>
         <p className="muted small">
-          Mã tra cứu riêng: <strong>{o.lookup_code}</strong>. Giữ link này để theo dõi; không chia
-          sẻ công khai.
+          Mã tra cứu riêng: <strong>{o.lookup_code}</strong>. Giữ link này để
+          theo dõi; không chia sẻ công khai.
         </p>
         <Button
           variant="outline"
           onClick={async () => {
             try {
               await navigator.clipboard.writeText(location.href);
-              setToast('Đã sao chép link theo dõi');
+              setToast("Đã sao chép link theo dõi");
             } catch {
-              setToast('Hãy sao chép địa chỉ trang từ trình duyệt');
+              setToast("Hãy sao chép địa chỉ trang từ trình duyệt");
             }
           }}
         >
@@ -1353,16 +1891,18 @@ export function Order() {
           <section className="panel">
             <div className="panel-title">
               <h2>Tiến trình đơn hàng</h2>
-              <Badge tone={o.status === 'cancelled' ? 'red' : 'lime'}>{status[o.status]}</Badge>
+              <Badge tone={o.status === "cancelled" ? "red" : "lime"}>
+                {status[o.status]}
+              </Badge>
             </div>
-            {o.status === 'cancelled' ? (
+            {o.status === "cancelled" ? (
               <p className="error">
                 Lý do: {o.cancel_reason}. Thanh toán/hoàn tiền được xử lý riêng.
               </p>
             ) : (
               <div className="timeline">
                 {milestones.map((s, i) => (
-                  <div key={s} className={i <= step ? 'done' : ''}>
+                  <div key={s} className={i <= step ? "done" : ""}>
                     <span>{i <= step ? <Check size={14} /> : i + 1}</span>
                     <div>
                       <strong>{status[s]}</strong>
@@ -1372,11 +1912,11 @@ export function Order() {
                             h.action ===
                             (
                               {
-                                received: 'received',
-                                confirmed: 'confirm',
-                                preparing: 'prepare',
-                                shipping: 'ship',
-                                delivered: 'deliver',
+                                received: "received",
+                                confirmed: "confirm",
+                                preparing: "prepare",
+                                shipping: "ship",
+                                delivered: "deliver",
                               } as Obj
                             )[s],
                         )?.created_at &&
@@ -1386,11 +1926,11 @@ export function Order() {
                                 h.action ===
                                 (
                                   {
-                                    received: 'received',
-                                    confirmed: 'confirm',
-                                    preparing: 'prepare',
-                                    shipping: 'ship',
-                                    delivered: 'deliver',
+                                    received: "received",
+                                    confirmed: "confirm",
+                                    preparing: "prepare",
+                                    shipping: "ship",
+                                    delivered: "deliver",
                                   } as Obj
                                 )[s],
                             ).created_at,
@@ -1402,14 +1942,18 @@ export function Order() {
               </div>
             )}
           </section>
-          {o.shipping_status === 'awaiting_customer' && (
+          {o.shipping_status === "awaiting_customer" && (
             <section className="panel">
               <h2>Xác nhận phí giao hàng</h2>
               <p>
-                Phí cửa hàng báo: <strong>{money(o.shipping_fee)}</strong>. Tổng đơn:{' '}
-                <strong>{money(o.total)}</strong>.
+                Phí cửa hàng báo: <strong>{money(o.shipping_fee)}</strong>. Tổng
+                đơn: <strong>{money(o.total)}</strong>.
               </p>
-              <Button loading={busy} variant="lime" onClick={() => action('accept-shipping')}>
+              <Button
+                loading={busy}
+                variant="lime"
+                onClick={() => action("accept-shipping")}
+              >
                 Tôi đồng ý với tổng tiền này
               </Button>
             </section>
@@ -1424,36 +1968,45 @@ export function Order() {
             </p>
             {o.note && <p className="muted">Ghi chú: {o.note}</p>}
             <p className="muted">
-              {o.distance_km ? `Quãng đường ${o.distance_km} km` : 'Quãng đường chưa được xác định'}{' '}
-              ·{' '}
-              {o.shipping_status === 'pending'
-                ? 'Cửa hàng đang xác nhận phí giao'
-                : 'Phí giao ' + money(o.shipping_fee)}
+              {o.distance_km
+                ? `Quãng đường ${o.distance_km} km`
+                : "Quãng đường chưa được xác định"}{" "}
+              ·{" "}
+              {o.shipping_status === "pending"
+                ? "Cửa hàng đang xác nhận phí giao"
+                : "Phí giao " + money(o.shipping_fee)}
             </p>
           </section>
           <section className="panel">
             <div className="panel-title">
               <h2>Thanh toán</h2>
-              <Badge tone={o.payment_status === 'paid' ? 'lime' : ''}>
+              <Badge tone={o.payment_status === "paid" ? "lime" : ""}>
                 {status[o.payment_status]}
               </Badge>
             </div>
             <p>
-              {o.payment_method === 'cod' ? 'Tiền mặt khi nhận hàng' : 'Chuyển khoản ngân hàng'}
+              {o.payment_method === "cod"
+                ? "Tiền mặt khi nhận hàng"
+                : "Chuyển khoản ngân hàng"}
             </p>
-            {o.payment_method === 'bank' &&
-              o.shipping_status === 'confirmed' &&
-              o.status !== 'cancelled' && (
+            {o.payment_method === "bank" &&
+              o.shipping_status === "confirmed" &&
+              o.status !== "cancelled" && (
                 <>
                   {pay.demo && (
                     <ErrorBox>
-                      DỮ LIỆU DEMO · QR minh hoạ. Không chuyển tiền. Chưa kết nối ngân hàng.
+                      DỮ LIỆU DEMO · QR minh hoạ. Không chuyển tiền. Chưa kết
+                      nối ngân hàng.
                     </ErrorBox>
                   )}
                   <div className="bank-details">
                     <img
                       src={qr}
-                      alt={pay.demo ? 'QR minh hoạ, không chuyển tiền' : 'Mã QR chuyển khoản'}
+                      alt={
+                        pay.demo
+                          ? "QR minh hoạ, không chuyển tiền"
+                          : "Mã QR chuyển khoản"
+                      }
                     />
                     <div>
                       <p>Ngân hàng (BIN): {pay.bank_bin}</p>
@@ -1470,13 +2023,18 @@ export function Order() {
                     </div>
                   </div>
                   <p className="muted small">{pay.instructions}</p>
-                  {o.payment_status === 'pending' && (
-                    <Button loading={busy} variant="dark" onClick={() => action('review')}>
+                  {o.payment_status === "pending" && (
+                    <Button
+                      loading={busy}
+                      variant="dark"
+                      onClick={() => action("review")}
+                    >
                       Tôi đã chuyển khoản
                     </Button>
                   )}
                   <p className="muted small">
-                    Nút này chỉ gửi yêu cầu kiểm tra. Cửa hàng xác nhận sau khi thực nhận tiền.
+                    Nút này chỉ gửi yêu cầu kiểm tra. Cửa hàng xác nhận sau khi
+                    thực nhận tiền.
                   </p>
                 </>
               )}
@@ -1491,19 +2049,19 @@ export function Order() {
                 <span>
                   {(
                     {
-                      received: 'Đã nhận đơn',
-                      confirm: 'Xác nhận đơn',
-                      prepare: 'Chuẩn bị hàng',
-                      ship: 'Bàn giao vận chuyển',
-                      deliver: 'Giao thành công',
-                      paid: 'Xác nhận nhận tiền',
-                      cancel: 'Huỷ đơn',
-                      refund: 'Xử lý hoàn/trả',
-                      shipping_quote: 'Cửa hàng báo phí giao',
-                      shipping_accepted: 'Đã chấp nhận phí giao',
-                      payment_review: 'Yêu cầu kiểm tra chuyển khoản',
+                      received: "Đã nhận đơn",
+                      confirm: "Xác nhận đơn",
+                      prepare: "Chuẩn bị hàng",
+                      ship: "Bàn giao vận chuyển",
+                      deliver: "Giao thành công",
+                      paid: "Xác nhận nhận tiền",
+                      cancel: "Huỷ đơn",
+                      refund: "Xử lý hoàn/trả",
+                      shipping_quote: "Cửa hàng báo phí giao",
+                      shipping_accepted: "Đã chấp nhận phí giao",
+                      payment_review: "Yêu cầu kiểm tra chuyển khoản",
                     } as Obj
-                  )[h.action] || 'Cập nhật đơn'}
+                  )[h.action] || "Cập nhật đơn"}
                 </span>
                 <small>{date(h.created_at)}</small>
               </div>
@@ -1516,7 +2074,7 @@ export function Order() {
 }
 export function Receipt({ o }: { o: Obj }) {
   const [busy, setBusy] = useState(false),
-    [error, setError] = useState('');
+    [error, setError] = useState("");
   return (
     <section className="panel receipt">
       <div className="panel-title">
@@ -1589,9 +2147,11 @@ export function Receipt({ o }: { o: Obj }) {
           onClick={async () => {
             setBusy(true);
             try {
-              await (await import('./pdf')).receiptPDF(o);
+              await (await import("./pdf")).receiptPDF(o);
             } catch {
-              setError('Không tạo được PDF. Bạn có thể dùng In phiếu → Lưu PDF.');
+              setError(
+                "Không tạo được PDF. Bạn có thể dùng In phiếu → Lưu PDF.",
+              );
             } finally {
               setBusy(false);
             }
