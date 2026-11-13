@@ -21,6 +21,23 @@ function config(): array
       fail(503, 'Chưa cấu hình máy chủ. Xem hướng dẫn cài đặt.');
     }
     $c = require $path;
+    // Generate the encryption key on the hosting account, never inside the downloadable ZIP.
+    if (($c['app_key'] ?? '') === '') {
+      $keyPath=dirname(__DIR__).'/storage/app-key.php';
+      $handle=fopen($keyPath,'c+b');
+      if(!$handle||!flock($handle,LOCK_EX))fail(503,'Cần quyền ghi cho api/storage.');
+      $content=stream_get_contents($handle);
+      if($content==='') {
+        $key=bin2hex(random_bytes(32));
+        $content="<?php return '".$key."';\n";
+        if(fwrite($handle,$content)!==strlen($content)||!fflush($handle)) {
+          flock($handle,LOCK_UN);fclose($handle);fail(503,'Không lưu được khóa bảo mật.');
+        }
+        chmod($keyPath,0600);
+      }
+      $c['app_key']=require $keyPath;
+      flock($handle,LOCK_UN);fclose($handle);
+    }
     if (!preg_match('/^[a-f0-9]{64}$/i', $c['app_key'] ?? '')) {
       fail(503, 'Cần cấu hình app_key ngẫu nhiên 64 ký tự hex.');
     }

@@ -272,6 +272,11 @@ if ($path === 'session' && $method === 'GET') {
   } elseif ($path === 'admin/telegram/config' && $method === 'POST') {
     user(true);
     $result = telegram_config_save($body, $actor);
+  } elseif ($path === 'admin/telegram/webhook' && $method === 'POST') {
+    user(true);
+    $t=telegram_config();
+    if(empty($t['token'])||strlen($t['secret'])<32)fail(422,'Lưu bot token và secret ít nhất 32 ký tự trước.');
+    $result=telegram_request('setWebhook',['url'=>config()['url'].'/api/index.php?route=telegram/webhook','secret_token'=>$t['secret'],'allowed_updates'=>['message','callback_query']]);
   } elseif ($path === 'admin/telegram/retry' && $method === 'POST') {
     user(true);
     query("UPDATE outbox SET state='pending',attempts=0,next_attempt=? WHERE state='failed'", [

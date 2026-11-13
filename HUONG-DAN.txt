@@ -1,0 +1,43 @@
+ODPRODUCT — BẢN UPLOAD CPANEL
+
+1. Upload odproduct-cpanel.zip vào public_html (hoặc thư mục con), bấm Extract.
+   index.html, assets, api, images... phải nằm trực tiếp trong thư mục website.
+   Hosting: PHP 8.2+, MySQL/MariaDB, HTTPS. Bật pdo_mysql, curl, mbstring,
+   openssl, fileinfo. Không cần Node.js, Docker hay Terminal.
+
+2. Tạo database + user trong cPanel/MySQL Database Wizard, cấp quyền vào DB.
+   Mở api/config.php bằng File Manager, sửa:
+     url       = https://tenmien.com (hoặc https://tenmien.com/shop)
+     db.name   = tên database đầy đủ có prefix cPanel
+     db.user   = user database đầy đủ
+     db.password = mật khẩu database
+   db.host thường để localhost. Không thêm dấu / cuối url.
+   app_key để trống; website tự sinh và lưu riêng trên hosting.
+
+3. Mở https://tenmien.com/api/install.php
+   (cài thư mục con: https://tenmien.com/shop/api/install.php).
+   Nhập lại mật khẩu database để xác minh, rồi tạo email/mật khẩu quản trị.
+   Trang này tự tạo bảng và sản phẩm mẫu, sau đó tự khoá.
+   Không cần import SQL hoặc chạy lệnh.
+
+4. Vào https://tenmien.com/#/admin để quản trị.
+   Thư mục con: https://tenmien.com/shop/#/admin.
+   Thông tin ngân hàng hiện là DEMO: thay bằng tài khoản thật trong Thiết lập.
+
+TELEGRAM (khi cần dùng):
+- Trong admin / Thiết lập / Telegram: lưu bot token, secret, chat/user ID;
+  bấm Đăng ký webhook. Không cần chạy lệnh đăng ký.
+- Để gửi tin và thử lại khi lỗi, thêm Cron Job mỗi phút trong cPanel.
+  Lệnh mẫu (đổi CPUSER và đúng bản PHP/path của hosting):
+  /opt/cpanel/ea-php82/root/usr/bin/php /home/CPUSER/public_html/api/bin/cron.php
+  Nếu website ở /shop thì thêm /shop vào đường dẫn.
+
+VẬN CHUYỂN:
+- Routing chưa bật: shop báo phí thủ công, khách xác nhận tổng trên trang đơn.
+- Muốn tính km tự động: điền routing.base_url của dịch vụ OSRM tương thích
+  trong api/config.php, bật routing.enabled và cấu hình tọa độ kho trong admin.
+
+LƯU Ý KHI UPLOAD LẠI:
+Giữ api/config.php, api/storage/ và uploads/ của bản đang chạy.
+Không xoá storage/app-key.php vì đây là khoá riêng của website.
+Giữ các file .htaccess trong ZIP. Không upload nguyên source/node_modules.

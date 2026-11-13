@@ -2,13 +2,13 @@
 return [
   'env' => 'production',
   'url' => 'https://example.com/shop', // No trailing slash; supports a subdirectory.
-  'app_key' => 'REPLACE_WITH_64_RANDOM_HEX_CHARACTERS',
+  'app_key' => '', // Tự sinh khóa riêng trên hosting, không cần điền.
   'db' => [
     'host' => 'localhost',
     'port' => 3306,
-    'name' => 'cpanel_odproduct',
-    'user' => 'cpanel_store',
-    'password' => 'REPLACE',
+    'name' => 'TEN_DATABASE',
+    'user' => 'USER_DATABASE',
+    'password' => '',
   ],
   'routing' => [
     'enabled' => false,

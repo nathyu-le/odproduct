@@ -4,12 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && node scripts/check-php.mjs && vite build && node scripts/package.mjs",
     "check": "tsc -b",
-    "format": "prettier --write src scripts backend *.ts *.json docs README.md",
     "check:php": "node scripts/check-php.mjs",
-    "setup:local": "node scripts/setup-local.mjs",
     "demo:sql": "node scripts/demo-sql.mjs"
   },
   "dependencies": {
@@ -24,13 +21,11 @@
     "react-router-dom": "^7.6.2"
   },
   "devDependencies": {
-    "@prettier/plugin-php": "^0.26.0",
     "@tailwindcss/vite": "^4.1.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^4.5.0",
     "php-parser": "^3.7.0",
-    "prettier": "^3.10.1",
     "tailwindcss": "^4.1.0",
     "typescript": "~5.8.3",
     "vite": "^6.3.5"

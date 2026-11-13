@@ -1,6 +1,6 @@
 # Tài nguyên và ghi chú thiết kế
 
-Không có ảnh giao diện tham chiếu truy cập được trong hội thoại. Thiết kế dựa mô tả: nền trắng/xám nhẹ, than, trắng ngà, lime tiết chế; Inter, viền nhẹ, control 8px/card 12–16px; responsive CSS từ 360px. Chưa đối chiếu bằng browser/thiết bị.
+Không có ảnh giao diện tham chiếu truy cập được trong hội thoại. Thiết kế dựa mô tả: nền trắng/xám nhẹ, than, trắng ngà, lime tiết chế; Inter, viền nhẹ, control 8px/card 12–16px; responsive CSS từ 360px.
 
 Ảnh minh hoạ từ Unsplash được tải vào `public/images/`, frontend không phụ thuộc hotlink ảnh sản phẩm:
 
