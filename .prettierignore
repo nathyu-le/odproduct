@@ -1,0 +1,6 @@
+node_modules
+dist
+build
+work
+package-lock.json
+backend/config.php

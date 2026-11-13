@@ -1,0 +1,27 @@
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_DATABASE: odproduct
+      MARIADB_USER: odproduct
+      MARIADB_PASSWORD: local-development-only
+      MARIADB_ROOT_PASSWORD: local-root-development-only
+    volumes:
+      - od-db:/var/lib/mysql
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 5s
+      retries: 20
+  api:
+    image: odproduct-php:latest
+    build: .
+    ports: ['127.0.0.1:8081:8081']
+    working_dir: /app
+    volumes: ['.:/app']
+    environment:
+      OD_CONFIG: /app/work/config.local.php
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  od-db:

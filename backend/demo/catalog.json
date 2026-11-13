@@ -1,0 +1,147 @@
+{
+  "settings": {
+    "store": {
+      "name": "OD. Store",
+      "address": "12 Nguyễn Thị Minh Khai, Quận 1, TP. Hồ Chí Minh",
+      "phone": "028 7300 6868",
+      "email": "hello@example.com",
+      "hero_title": "Góc nhỏ.\nTrải nghiệm lớn.",
+      "hero_subtitle": "Những món đồ công nghệ được chọn lọc, để mỗi ngày làm việc và tận hưởng đều tốt hơn.",
+      "banner": "Chọn đồ hay. Tận hưởng mỗi ngày."
+    },
+    "shipping": {
+      "origin_lat": 10.7798,
+      "origin_lng": 106.699,
+      "base_fee": 15000,
+      "included_km": 3,
+      "per_km": 5000,
+      "max_km": 30,
+      "free_above": 3000000,
+      "round_mode": "ceil",
+      "round_step": 1
+    },
+    "payment": {
+      "cod": true,
+      "bank": true,
+      "demo": true,
+      "bank_bin": "970436",
+      "bank_account": "0000000000",
+      "bank_owner": "TAI KHOAN MINH HOA",
+      "instructions": "Thông tin ngân hàng DEMO. Không chuyển tiền vào tài khoản này. Cửa hàng cần cấu hình tài khoản thật trước khi nhận thanh toán.",
+      "transfer_template": "OD {code}"
+    }
+  },
+  "categories": [
+    ["Tai nghe", "tai-nghe", "headphones"],
+    ["Bàn phím", "ban-phim", "keyboard"],
+    ["Chuột", "chuot", "mouse"],
+    ["Loa", "loa", "speaker"],
+    ["Phụ kiện", "phu-kien", "cable"]
+  ],
+  "products": [
+    [
+      1,
+      "Tai nghe không dây Studio H1",
+      "studio-h1",
+      "OD. Audio",
+      "headphones",
+      1290000,
+      850000,
+      24,
+      1,
+      "Đen than",
+      "Âm thanh cân bằng, chống ồn chủ động và cảm giác đeo nhẹ nhàng. Pin lên đến 40 giờ, kết nối Bluetooth 5.3 và sạc nhanh USB-C. Đi cùng bạn từ góc làm việc đến chuyến đi cuối tuần."
+    ],
+    [
+      2,
+      "Bàn phím cơ K68 Essential",
+      "k68-essential",
+      "OD. Keys",
+      "keyboard",
+      890000,
+      550000,
+      18,
+      1,
+      "Trắng ngà · Red switch",
+      "Bố cục 68 phím gọn gàng, switch cơ êm ái và keycap PBT bền bỉ. Kết nối USB-C, tương thích Windows và macOS. Một khởi đầu vừa vặn cho góc làm việc của bạn."
+    ],
+    [
+      3,
+      "Chuột không dây Pebble M1",
+      "pebble-m1",
+      "OD. Essentials",
+      "mouse",
+      490000,
+      280000,
+      35,
+      0,
+      "Bạc",
+      "Thiết kế công thái học nhỏ gọn, nút bấm silent và cảm biến 2400 DPI. Kết nối Bluetooth hoặc đầu thu USB. Pin lâu, di chuyển mượt và luôn sẵn sàng."
+    ],
+    [
+      4,
+      "Loa Bluetooth Sound Mini",
+      "sound-mini",
+      "OD. Audio",
+      "speaker",
+      790000,
+      450000,
+      16,
+      0,
+      "Đen",
+      "Âm thanh tròn đầy trong một thiết kế nhỏ. Kết nối Bluetooth 5.3, chống nước IPX5 và pin 12 giờ. Đồng hành cùng playlist yêu thích của bạn."
+    ],
+    [
+      1,
+      "Tai nghe True Wireless Air S",
+      "air-s",
+      "OD. Audio",
+      "earbuds",
+      690000,
+      390000,
+      28,
+      0,
+      "Trắng",
+      "Hộp sạc nhỏ nhẹ, cuộc gọi rõ ràng và kết nối tức thì. Tổng thời lượng pin 24 giờ. Cảm ứng thông minh và chuẩn kháng nước IPX4."
+    ],
+    [
+      2,
+      "Bàn phím cơ K84 Wireless",
+      "k84-wireless",
+      "OD. Keys",
+      "keyboard2",
+      1490000,
+      960000,
+      12,
+      0,
+      "Xám · Brown switch",
+      "Ba chế độ kết nối, núm xoay đa năng và cấu trúc gasket êm ái. Keycap PBT, pin 4000mAh và bố cục 84 phím cho mọi tác vụ."
+    ],
+    [
+      1,
+      "Tai nghe Over-ear Focus Pro",
+      "focus-pro",
+      "OD. Audio",
+      "headphones2",
+      1890000,
+      1200000,
+      8,
+      0,
+      "Bạc",
+      "Chống ồn thích ứng, âm trường rộng và đệm tai memory foam. Chuyển đổi mượt giữa hai thiết bị với multipoint. Pin 50 giờ cho ngày dài."
+    ],
+    [
+      3,
+      "Chuột Precision Wireless",
+      "precision-wireless",
+      "OD. Essentials",
+      "mouse",
+      790000,
+      460000,
+      0,
+      0,
+      "Graphite",
+      "Cảm biến chính xác và 6 nút tuỳ chỉnh. Thiết kế cho công việc sáng tạo, cuộn nhanh và kết nối không dây ổn định."
+    ]
+  ]
+}
