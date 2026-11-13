@@ -1,17 +1,19 @@
-# OD. Store
+# MUAPLUS / OD. Store
 
-**Website đang chạy:** [Tải bản cập nhật](https://github.com/nathyu-le/odproduct/raw/refs/heads/main/odproduct-update.zip). Upload và Extract vào đúng thư mục website. Không chứa config, dữ liệu đơn, uploads hay SQL; không chạy lại cài đặt.
+[**Tải muaplus-cpanel-v3.zip — bản đầy đủ đã build để upload cPanel**](https://github.com/nathyu-le/odproduct/raw/refs/heads/main/muaplus-cpanel-v3.zip)
 
-**Cài mới:** [Tải bản đầy đủ](https://github.com/nathyu-le/odproduct/raw/refs/heads/main/odproduct-cpanel.zip). Upload → điền MySQL → mở api/install.php một lần.
+Upload ZIP vào đúng thư mục tên miền, cạnh `index.html`, rồi Extract và ghi đè. Website đang có dữ liệu tiếp tục dùng cấu hình và tài khoản cũ; không chạy cài lại. Gói không chứa cấu hình thật, dữ liệu đơn, ảnh upload hoặc `.htaccess` của hosting.
 
-Hướng dẫn ngắn: [HUONG-DAN.txt](HUONG-DAN.txt).
+Cài mới: chọn PHP 8.2+, tạo MySQL database/user trong cPanel, upload ZIP rồi mở `/api/install.php`. Form tự tạo cấu hình, bảng, dữ liệu mẫu và quản trị viên. Không cần import SQL, Node.js, Docker hay Terminal trên hosting. Hỗ trợ domain chính và thư mục con.
 
-Bản này có giao diện mới; Flash sale riêng cho khách và admin; biểu đồ doanh thu/lợi nhuận, biểu đồ tròn, cảnh báo kho; địa chỉ có gợi ý bản đồ và tự cập nhật quãng đường/phí khi chọn.
+- [Hướng dẫn A–Z](HUONG-DAN.txt)
+- [Kết quả kiểm tra thực tế](KIEM-TRA.txt)
+- [Nguồn ảnh và font](docs/ASSETS.md)
 
-Sau lần upload bản update, PHP tự kiểm tra bản build GitHub qua cron hoặc sau lượt truy cập trên PHP-FPM/LiteSpeed. Gói phải khớp SHA256; sao lưu file trước cập nhật, giữ nguyên cấu hình và dữ liệu. Không cần tài khoản GitHub trên hosting. Cấu hình trạng thái cập nhật nằm ở api/storage/updates (không công khai). Git là nơi lưu source và bản build.
+Giao diện cửa hàng, trang flash sale `/#/flash-sale`, quản lý flash sale `/#/admin/flash-sales`, dashboard với biểu đồ từ database, địa chỉ nhận hàng có gợi ý và tự lấy vị trí. Backend kiểm tra phí/tổng tiền, tồn kho, thanh toán, hoàn trả, quyền và báo cáo.
 
-Source React/TypeScript + PHP/MySQL. Khi chỉnh source, trợ lý/máy phát triển chạy `npm ci` và `npm run build`; lệnh build tạo cả ZIP đầy đủ, ZIP cập nhật và deploy.json. Hosting không chạy Node hay Docker. Không push code chưa được build rồi kỳ vọng ZIP tự thay đổi.
+Telegram, tài khoản ngân hàng và vị trí kho cần cấu hình thật trong admin. Routing mặc định tắt; lỗi lấy quãng đường sẽ yêu cầu xác nhận phí thủ công. QR mẫu ghi rõ demo; không có kết nối xác nhận ngân hàng tự động.
 
-PHP 8.2+ 64-bit. Routing dùng OSRM-compatible HTTPS, gợi ý địa chỉ qua Photon, bản đồ OSM/CARTO. Các dịch vụ công khai phù hợp đánh giá/lưu lượng nhỏ; có thể đổi endpoint cấu hình khi dùng nhà cung cấp riêng. Phí/tổng tiền và tồn kho được kiểm tra ở backend. QR ngân hàng demo ghi rõ và chuyển khoản xác nhận thủ công.
+Sau upload, PHP-FPM/LiteSpeed hoặc cron có thể tải bản build từ GitHub, kiểm tra SHA256, backup và bảo toàn dữ liệu/cấu hình. Hosting phải kết nối được GitHub. Git lưu cả source và build; sửa source phải build trước khi push.
 
-Nguồn ảnh/font: [docs/ASSETS.md](docs/ASSETS.md).
+Source React/TypeScript + PHP/MySQL. Máy phát triển chạy `npm ci` và `npm run build`, tạo `muaplus-cpanel-v3.zip`, `odproduct-cpanel.zip`, `odproduct-update.zip`, `deploy.json`. Không chạy các lệnh này trên hosting.

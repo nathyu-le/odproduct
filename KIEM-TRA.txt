@@ -1,0 +1,34 @@
+MUAPLUS CPANEL V3 — KẾT QUẢ KIỂM TRA
+
+Ngày 13/11/2026, môi trường riêng: PHP 8.4, MariaDB 11.8, HTTP API và DB thật.
+Không dùng dữ liệu/đơn thật trên hosting.
+
+ĐÃ CHẠY VÀ ĐẠT:
+- Form cài mới tạo schema, dữ liệu demo, admin, config riêng.
+- Cài với config mẫu trống; giữ PHP handler hiện có.
+- Giá/tổng tiền backend; không lộ giá vốn cho khách và nhân viên.
+- Gửi trùng request: một đơn, trừ kho một lần.
+- COD: báo phí -> khách xác nhận -> xử lý/giao -> thu tiền.
+- Tai nghe + bàn phím: hàng 2.180.000đ, ship thu 25.000đ,
+  tổng 2.205.000đ, giá vốn 1.400.000đ, lãi gộp 780.000đ;
+  ship thực 30.000đ + chi phí khác 10.000đ -> lãi 765.000đ.
+- Đổi giá vốn không đổi báo cáo lịch sử; chặn sửa kho bằng dữ liệu cũ.
+- Lịch flash sale thay giá; tắt sale trở về giá thường.
+- Yêu cầu kiểm tra chuyển khoản không tự xác nhận nhận tiền.
+- Huỷ và hoàn tiền độc lập; hoàn lặp không cộng tiền hoàn hai lần.
+- Trả một phần điều chỉnh tồn, doanh thu, giá vốn lịch sử đúng.
+- Tra cứu có xác minh, phân quyền staff, chặn sản phẩm không còn bán.
+- Dashboard lấy số liệu và trạng thái từ DB.
+- Photon trả gợi ý địa chỉ và toạ độ sử dụng được.
+- Quy tắc 15.000đ/3km + 5.000đ/km: 5km = 25.000đ.
+- Thiếu routing: chờ xác nhận phí, không tự coi ship bằng 0.
+- Telegram chưa cấu hình/lỗi: giữ đơn và ghi hàng đợi thử lại.
+- Update: giải nén, chặn đường dẫn cấu hình/dữ liệu, giữ PHP handler.
+- Build TypeScript và kiểm tra cú pháp PHP.
+
+GIỚI HẠN THỰC TẾ:
+- Chưa kiểm tra trực quan mọi kích thước bằng trình duyệt tự động.
+- Chưa xác nhận bot Telegram thật hoặc ngân hàng thật của cửa hàng.
+- Chưa xác nhận toàn bộ quy trình trên cPanel bằng phiên đăng nhập.
+- PHP/cron hosting, vị trí kho và nhà cung cấp dịch vụ cần cấu hình phù hợp.
+- Chưa đối soát bản in/PDF và tin nhắn bot thật xuyên suốt trên hosting.

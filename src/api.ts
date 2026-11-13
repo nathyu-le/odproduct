@@ -22,6 +22,13 @@ export async function api(
   const data = await res
     .json()
     .catch(() => ({ error: "Máy chủ trả dữ liệu không hợp lệ." }));
+  if (data?.installation_required) {
+    location.replace(
+      new URL(`${import.meta.env.BASE_URL}api/install.php`, document.baseURI)
+        .href,
+    );
+    throw new Error("Mở trang cài đặt cửa hàng…");
+  }
   if (!res.ok) throw new Error(data.error || "Không kết nối được máy chủ.");
   if (data?.csrf) csrf = data.csrf;
   if (data?.server_time) syncServerClock(data.server_time);

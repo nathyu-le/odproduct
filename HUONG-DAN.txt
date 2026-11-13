@@ -1,63 +1,94 @@
-CẬP NHẬT WEBSITE ĐANG CHẠY:
-Dùng odproduct-update.zip, upload vào đúng thư mục website rồi Extract.
-Bản update không chứa config.php, storage, uploads, dữ liệu demo hoặc SQL;
-không ghi đè dữ liệu khách, đơn hàng, khóa bảo mật hay cấu hình PHP của cPanel.
-Không chạy lại install.php.
+MUAPLUS / CPANEL V3 — BẢN ĐÃ BUILD SẴN
 
-Sau lần cập nhật này, website tự kiểm tra bản build trên GitHub mỗi phút khi có
-lượt truy cập API (PHP-FPM/LiteSpeed), hoặc qua cron bên dưới. Không cần GitHub
-Actions/Secrets. Chỉ triển khai ZIP đúng SHA256; có backup file trước khi thay.
-Source phải được build trước khi push; bản do trợ lý bàn giao đã build sẵn.
+FILE UPLOAD: muaplus-cpanel-v3.zip
+Một gói dùng cho cả cập nhật và cài mới. Không cần Node.js, Docker, Terminal,
+chạy build hoặc import SQL trên hosting.
 
-THAY ĐỔI TRONG BẢN NÀY:
-- Trang chủ mới, nhãn sản phẩm/giảm giá và tương tác thêm giỏ.
-- Trang /#/flash-sale, cấu hình riêng tại /#/admin/flash-sales.
-- Dashboard có biểu đồ doanh thu/lợi nhuận, biểu đồ tròn trạng thái đơn, cảnh báo kho.
-- Gõ địa chỉ nhận hàng có gợi ý; chọn xong tự ghim và cập nhật phí giao.
-- Trong admin / Thiết lập / Vận chuyển: chọn địa chỉ xuất phát, bật tự tính
-  quãng đường và điền quy tắc phí. Dịch vụ lỗi vẫn cần xác nhận phí thủ công.
-- Bản đồ dùng dữ liệu OpenStreetMap; kết quả thiếu số nhà cần chỉnh ghim đúng cửa.
+A. WEBSITE ĐÃ CÓ DỮ LIỆU
 
-CÀI MỚI (CHỈ KHI CHƯA CÓ WEBSITE)
+1. File Manager: mở đúng thư mục tên miền muaplus.com, đang có index.html,
+   assets/ và api/ (thường là public_html).
+2. Upload muaplus-cpanel-v3.zip ngay tại đó, Extract và cho ghi đè file.
+   Sau giải nén phải thấy VERSION.txt ghi CPANEL V3 cạnh index.html.
+   Không để website lồng trong một thư mục muaplus-cpanel-v3 khác.
+3. Mở https://muaplus.com/ và https://muaplus.com/#/admin.
+   KHÔNG cài lại database. Tài khoản quản trị cũ tiếp tục dùng được.
 
-1. Upload odproduct-cpanel.zip vào public_html (hoặc thư mục con), bấm Extract.
-   index.html, assets, api, images... phải nằm trực tiếp trong thư mục website.
-   Hosting: PHP 8.2+, MySQL/MariaDB, HTTPS. Bật pdo_mysql, curl, mbstring,
-   openssl, fileinfo. Không cần Node.js, Docker hay Terminal.
+Gói không có api/config.php, dữ liệu storage/, ảnh uploads/ hoặc .htaccess.
+Cấu hình database, đơn hàng, khách hàng và PHP handler cPanel được giữ lại.
+PHP tự bổ sung quy tắc bảo vệ thư mục và chống cache HTML vào .htaccess.
+ZIP dùng thời gian build thật, không còn timestamp năm 1980.
+Nếu CDN/hosting có cache HTML riêng, purge cache tên miền một lần.
 
-2. Tạo database + user trong cPanel/MySQL Database Wizard, cấp quyền vào DB.
-   Mở api/config.php bằng File Manager, sửa:
-     url       = https://tenmien.com (hoặc https://tenmien.com/shop)
-     db.name   = tên database đầy đủ có prefix cPanel
-     db.user   = user database đầy đủ
-     db.password = mật khẩu database
-   db.host thường để localhost. Không thêm dấu / cuối url.
-   app_key để trống; website tự sinh và lưu riêng trên hosting.
+B. CÀI MỚI TỪ ĐẦU
 
-3. Mở https://tenmien.com/api/install.php
-   (cài thư mục con: https://tenmien.com/shop/api/install.php).
-   Nhập lại mật khẩu database để xác minh, rồi tạo email/mật khẩu quản trị.
-   Trang này tự tạo bảng và sản phẩm mẫu, sau đó tự khoá.
-   Không cần import SQL hoặc chạy lệnh.
+1. cPanel / MultiPHP Manager: chọn PHP 8.2 hoặc 8.3 cho đúng tên miền.
+   Cần PHP 64-bit; pdo_mysql, curl, mbstring, openssl, fileinfo, session, zlib.
+   PHP 7.4 không chạy được ứng dụng; trang cài sẽ hướng dẫn đổi phiên bản.
+   Bật SSL/HTTPS cho tên miền.
+2. Upload ZIP và Extract vào thư mục website. Hỗ trợ thư mục con /shop.
+3. cPanel / MySQL Database Wizard: tạo database, user và mật khẩu;
+   gán user vào database với ALL PRIVILEGES. Ghi tên đầy đủ có prefix.
+4. Mở https://tenmien.com/api/install.php.
+   Thư mục con: https://tenmien.com/shop/api/install.php.
+   Điền URL website, tên DB, user DB, mật khẩu DB và tài khoản quản trị.
+   URL không có dấu / cuối. Database ở localhost của cPanel.
+   Form tự tạo config.php riêng, bảng, sản phẩm mẫu và admin rồi tự khoá.
+   Không phải sửa config bằng tay hoặc import SQL.
+5. Đăng nhập /#/admin; thư mục con dùng /shop/#/admin.
 
-4. Vào https://tenmien.com/#/admin để quản trị.
-   Thư mục con: https://tenmien.com/shop/#/admin.
-   Thông tin ngân hàng hiện là DEMO: thay bằng tài khoản thật trong Thiết lập.
+C. CẤU HÌNH TRONG ADMIN
 
-TELEGRAM (khi cần dùng):
-- Trong admin / Thiết lập / Telegram: lưu bot token, secret, chat/user ID;
-  bấm Đăng ký webhook. Không cần chạy lệnh đăng ký.
-- Để gửi tin và thử lại khi lỗi, thêm Cron Job mỗi phút trong cPanel.
-  Lệnh mẫu (đổi CPUSER và đúng bản PHP/path của hosting):
-  /opt/cpanel/ea-php82/root/usr/bin/php /home/CPUSER/public_html/api/bin/cron.php
-  Nếu website ở /shop thì thêm /shop vào đường dẫn.
+- Thiết lập / Cửa hàng: thay tên, liên hệ, địa chỉ, nội dung cửa hàng.
+- Sản phẩm: cập nhật ảnh, SKU, giá bán/vốn, tồn kho, biến thể, nhãn và ghim.
+- Flash sale: menu riêng /#/admin/flash-sales; chọn sản phẩm, giá sale,
+  thời gian bắt đầu/kết thúc theo giờ Việt Nam. Khách xem /#/flash-sale.
+  Có lịch sắp diễn ra, countdown, hết giờ tự về giá thường.
+- Dashboard: biểu đồ doanh thu/lợi nhuận và vòng tròn trạng thái lấy từ DB.
+  Chưa có đơn hiển thị trạng thái trống, không dựng số liệu giả.
+- Thiết lập / Vận chuyển: tìm địa chỉ xuất phát thật, chọn gợi ý trên bản đồ,
+  cấu hình phí cơ bản, km bao gồm, giá/km, giới hạn, làm tròn; bật routing.
+  Mặc định chưa bật tính đường. Khách gõ địa chỉ trong form nhận hàng,
+  chọn gợi ý để lấy vị trí và cập nhật phí; không phải nhập kinh/vĩ độ.
+  Nếu dịch vụ lỗi: shop báo phí trong chi tiết đơn, khách xác nhận tổng
+  trên link đơn. Không tự coi phí ship bằng 0.
+- Thiết lập / Thanh toán: bật COD/chuyển khoản, đổi ngân hàng/chủ tài khoản,
+  nội dung chuyển khoản. Thông tin và QR mẫu có nhãn DEMO.
+  Tôi đã chuyển khoản chỉ yêu cầu kiểm tra; shop xác nhận nhận tiền thủ công.
+- Đơn hàng: xử lý, thanh toán, báo phí, huỷ/hoàn, chi phí, phiếu bán hàng/PDF.
+  Báo cáo có bộ lọc, CSV mở bằng Excel và PDF.
 
-VẬN CHUYỂN:
-- Routing chưa bật: shop báo phí thủ công, khách xác nhận tổng trên trang đơn.
-- Muốn tính km tự động: điền routing.base_url của dịch vụ OSRM tương thích
-  trong api/config.php, bật routing.enabled và cấu hình tọa độ kho trong admin.
+D. TELEGRAM VÀ CRON
 
-LƯU Ý KHI UPLOAD LẠI:
-Giữ api/config.php, api/storage/ và uploads/ của bản đang chạy.
-Không xoá storage/app-key.php vì đây là khoá riêng của website.
-Giữ các file .htaccess trong ZIP. Không upload nguyên source/node_modules.
+1. Thiết lập / Telegram: điền bot token, secret, chat ID, user ID được phép
+   xử lý. Lưu rồi bấm Đăng ký webhook. Website phải có HTTPS.
+2. cPanel / Cron Jobs: thêm cron mỗi phút để gửi/thử lại thông báo,
+   hết hạn giữ hàng và kiểm tra GitHub. Lệnh mẫu:
+   /opt/cpanel/ea-php82/root/usr/bin/php /home/CPUSER/public_html/api/bin/cron.php
+   Thay CPUSER, phiên bản PHP và đường dẫn đúng hosting. Cài /shop thì thêm
+   /shop trước /api. Cron phải dùng PHP 8.2+ giống website.
+3. Token/mật khẩu chỉ lưu trên hosting, không đưa vào frontend hoặc Git.
+   Telegram lỗi vẫn lưu đơn và chờ thử lại. Chưa cấu hình bot thật thì
+   chưa có thông báo gửi vào Telegram.
+
+E. CẬP NHẬT TỪ GITHUB
+
+Sau upload bản này, PHP-FPM/LiteSpeed kiểm tra bản build khi có lượt truy cập
+API; cron cũng kiểm tra mỗi phút. Không cần GitHub Actions/Secrets hoặc
+đăng nhập GitHub trên hosting. Máy sửa source phải build rồi commit cả
+odproduct-update.zip và deploy.json; commit riêng source không tự build.
+Bản bàn giao đã build sẵn.
+
+Trình cập nhật kiểm tra SHA256, chặn đường dẫn nhạy cảm, backup trước thay
+và phục hồi nếu lỗi. Cấu hình/dữ liệu không nằm trong gói update.
+Trạng thái riêng: api/storage/updates/status.json. Hosting phải kết nối được
+GitHub. Không có PHP-FPM/LiteSpeed thì dùng cron hoặc upload ZIP thủ công.
+Không xoá api/storage/, api/config.php, uploads/ hay .htaccess khi cập nhật.
+
+F. KIỂM TRA VÀ DỊCH VỤ
+
+Xem KIEM-TRA.txt để biết kết quả thực tế trên PHP/MySQL riêng.
+Gợi ý địa chỉ dùng Photon; đường đi OSRM tương thích HTTPS; bản đồ OSM/CARTO.
+Dịch vụ công khai không cam kết SLA. Có thể đổi endpoint trong config khi
+có nhà cung cấp riêng. Chưa kết nối xác nhận ngân hàng tự động.
+Thay dữ liệu minh hoạ và cấu hình dịch vụ thật trước khi bán hàng.

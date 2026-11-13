@@ -16,7 +16,12 @@ set_exception_handler(function (Throwable $e) {
     if ($status === 500) {
         error_log("OD error: " . get_class($e) . " " . $e->getMessage());
     }
+    $needsInstall =
+        $status === 503 &&
+        !is_file(__DIR__ . "/config.php") &&
+        !getenv("OD_CONFIG");
     echo json_value([
+        "installation_required" => $needsInstall,
         "error" =>
             $e instanceof HttpError
                 ? $e->getMessage()

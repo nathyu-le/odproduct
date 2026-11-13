@@ -70,6 +70,7 @@ function deployment_allowed(string $name): bool
             $name,
             [
                 "index.html",
+                "index.php",
                 ".htaccess",
                 "api/index.php",
                 "api/.htaccess",
@@ -238,9 +239,31 @@ function deployment_check(bool $force = false): array
         }
         $release = $manifest["sha256"];
         $local = dirname(__DIR__) . "/release.json";
-        if (empty($state["release"]) && is_file($local)) {
-            $state["release"] =
-                json_decode(file_get_contents($local), true)["sha256"] ?? null;
+        if (is_file($local)) {
+            $localManifest = json_decode(file_get_contents($local), true);
+            if (empty($state["release"])) {
+                $state["release"] = $localManifest["sha256"] ?? null;
+            }
+            if (
+                empty($state["built_at"]) &&
+                ($state["release"] ?? null) ===
+                    ($localManifest["sha256"] ?? null)
+            ) {
+                $state["built_at"] = $localManifest["built_at"] ?? null;
+            }
+        }
+        if (
+            !empty($state["built_at"]) &&
+            strtotime($manifest["built_at"] ?? "") <=
+                strtotime($state["built_at"]) &&
+            $state["release"] !== $release
+        ) {
+            file_put_contents(
+                $stateFile,
+                json_encode($state, JSON_UNESCAPED_UNICODE),
+                LOCK_EX,
+            );
+            return $state;
         }
         if ($state["release"] === $release) {
             file_put_contents(
@@ -323,6 +346,7 @@ function deployment_check(bool $force = false): array
             }
         }
         $state["release"] = $release;
+        $state["built_at"] = $manifest["built_at"] ?? date(DATE_ATOM);
         $state["deployed_at"] = date(DATE_ATOM);
         $state["files"] = count($files);
         $state["error"] = null;
@@ -357,28 +381,91 @@ function deployment_check(bool $force = false): array
     );
     return $state;
 }
+function deployment_append_guard(
+    string $file,
+    string $marker,
+    string $rules,
+): void {
+    $old = is_file($file) ? file_get_contents($file) : "";
+    if (str_contains($old, $marker)) {
+        return;
+    }
+    if (
+        (is_file($file) && !is_writable($file)) ||
+        (!is_file($file) && !is_writable(dirname($file)))
+    ) {
+        return;
+    }
+    $new = $old . "\n# " . $marker . "\n" . $rules . "\n";
+    $tmp = dirname($file) . "/.od-guard-" . bin2hex(random_bytes(8));
+    if (file_put_contents($tmp, $new, LOCK_EX) === strlen($new)) {
+        chmod($tmp, 0644);
+        if (!rename($tmp, $file)) {
+            unlink($tmp);
+        }
+    } elseif (is_file($tmp)) {
+        unlink($tmp);
+    }
+}
 function deployment_prepare_access(): void
 {
     $root = deployment_paths()["root"];
+    $deny =
+        "<IfModule mod_authz_core.c>\nRequire all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\nDeny from all\n</IfModule>";
+    foreach (["src", "storage", "migrations", "demo", "bin"] as $private) {
+        $directory = $root . "/api/" . $private;
+        if (is_dir($directory)) {
+            deployment_append_guard(
+                $directory . "/.htaccess",
+                "OD PRIVATE DIRECTORY",
+                $deny,
+            );
+        }
+    }
+    deployment_append_guard(
+        $root . "/api/.htaccess",
+        "OD API CONFIG GUARD",
+        '<FilesMatch "^(config(?:\\.example)?\\.php|install\\.key|release\\.json)$">' .
+            "\n" .
+            $deny .
+            "\n</FilesMatch>",
+    );
+    if (is_dir($root . "/uploads")) {
+        deployment_append_guard(
+            $root . "/uploads/.htaccess",
+            "OD UPLOAD GUARD",
+            '<FilesMatch "\\.(php[0-9]?|phtml|phar|cgi|pl|py|sh|html?|svg)$">' .
+                "\n" .
+                $deny .
+                "\n</FilesMatch>",
+        );
+    }
+    deployment_append_guard(
+        $root . "/.htaccess",
+        "OD DIRECTORY INDEX",
+        "DirectoryIndex index.php index.html",
+    );
     $file = $root . "/.htaccess";
-    if (!is_file($file) || !is_writable($file)) {
+    if (is_file($file) && !is_writable($file)) {
         return;
     }
-    $text = file_get_contents($file);
-    if (str_contains($text, "https://basemaps.cartocdn.com")) {
-        return;
-    }
-    $patched = preg_replace_callback(
-        '/^Header always set Content-Security-Policy .*$/m',
-        function ($m) {
-            return str_replace(
+    $text = is_file($file) ? file_get_contents($file) : "";
+    $patched = $text;
+    if (!str_contains($patched, "https://basemaps.cartocdn.com")) {
+        $patched = preg_replace_callback(
+            '/^Header always set Content-Security-Policy .*$/m',
+            fn($m) => str_replace(
                 "; style-src",
                 " https://basemaps.cartocdn.com; style-src",
                 $m[0],
-            );
-        },
-        $text,
-    );
+            ),
+            $patched,
+        );
+    }
+    if (!str_contains($patched, "# OD HTML CACHE")) {
+        $patched .=
+            "\n# OD HTML CACHE\n<IfModule mod_headers.c>\n<FilesMatch \"^index\\.(html|php)$\">\nHeader always set Cache-Control \"no-store, no-cache, must-revalidate\"\n</FilesMatch>\nHeader always set X-Frame-Options \"DENY\"\nHeader always set X-Content-Type-Options \"nosniff\"\nHeader always set Referrer-Policy \"strict-origin-when-cross-origin\"\n</IfModule>\n";
+    }
     if ($patched === $text) {
         return;
     }
