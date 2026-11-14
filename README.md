@@ -10,6 +10,7 @@ Cài mới: chọn PHP 8.2+, tạo MySQL database/user trong cPanel, upload ZIP 
 - [Kết quả kiểm tra thực tế](KIEM-TRA.txt)
 - [Cấu trúc source: Header/Nav/Footer, CSS và cache](docs/CODE-MAP.md)
 - [Cách dùng blog, DOCX, 3 banner, logo và đa ngôn ngữ](docs/CONTENT.md)
+- [Đổi logo, favicon, ảnh loading và bảng màu HEX/RGB trong admin](docs/BRANDING.md)
 - [Nguồn ảnh và font](docs/ASSETS.md)
 - [Thiết kế lại: concept, tự critique, changelog và ảnh giao diện](DESIGN-CHANGELOG.md)
 

@@ -2,8 +2,12 @@ import { Mail, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useStore } from "../../context";
 import { tx } from "../../i18n";
+import { BrandLogo } from "../BrandLogo";
+import { brandText, defaultBranding } from "../../branding";
+import { runtime } from "../../runtime";
 export function Footer() {
   const { data } = useStore();
+  const branding = data?.branding || runtime.branding || defaultBranding;
   return (
     <footer className="cx-footer">
       <div className="container">
@@ -12,20 +16,24 @@ export function Footer() {
             <Link
               to="/"
               className="cx-logo"
-              aria-label={tx("OD Store — trang chủ")}
+              aria-label={
+                (data?.store?.name || runtime.storeName || "OD. Store") +
+                " — " +
+                tx("Trang chủ")
+              }
             >
-              od<span>.</span>
+              <BrandLogo place="footer" />
             </Link>
-            <h2>
-              {tx("Phụ kiện cho công việc.")}
-              <br />
-              {tx("Và giờ giải trí.")}
-            </h2>
-            <p>
-              {tx("Tai nghe, bàn phím, chuột và loa.")}
-              <br />
-              {tx("Tìm lựa chọn phù hợp với cách bạn sử dụng.")}
-            </p>
+            {brandText(branding, "footer_title") && (
+              <h2 className="brand-footer-copy">
+                {brandText(branding, "footer_title")}
+              </h2>
+            )}
+            {brandText(branding, "footer_description") && (
+              <p className="brand-footer-copy">
+                {brandText(branding, "footer_description")}
+              </p>
+            )}
           </div>
           <div>
             <h3>{tx("Khám phá")}</h3>

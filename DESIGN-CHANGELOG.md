@@ -76,3 +76,15 @@ Source và gói build được lưu cùng commit. `odproduct-update.zip` phục 
 - Khóa thao tác nền khi loading; khôi phục tương tác/cuộn sau khi fade. Có retry sau 15 giây nếu bundle không tải được; lỗi API vẫn hiển thị giao diện lỗi bình thường. Ứng dụng vẫn mở được nếu script splash riêng bị chặn.
 - Giữ metadata/schema/canonical và nội dung `noscript`; người tắt JavaScript không bị splash che nội dung SEO.
 - Kiểm tra Chromium 360/390/1440px: logo xuất hiện trước React, vệt sáng thực sự chuyển động, vị trí giữa màn hình, F5, chuyển trang nội bộ, EN/VI/KO/ZH, cài trong thư mục con, blog/admin lazy load, giảm chuyển động, tắt JS, API lỗi, script splash lỗi và bundle ứng dụng lỗi. Kiểm tra với CSP tương đương cPanel không có vi phạm. Build, PHP routing/sanitizer, checksum và dữ liệu được bảo vệ trong ZIP đạt.
+
+## Cập nhật 15/11/2026 — Thiết kế cửa hàng trong admin
+
+- Thêm **Thiết lập → Thiết kế cửa hàng** với bốn mục: Logo & favicon, Loading, Màu sắc, Nội dung. Có xem trước, chỉ áp dụng sau khi lưu; lưu vào key `branding` trong database, kiểm tra quyền admin và phiên bản để tránh ghi đè giữa các phiên.
+- Upload logo header/admin, logo footer riêng, favicon và ảnh loading riêng; chỉnh kích thước desktop/mobile, ALT và tên hiển thị dự phòng. Footer/loading/favicon có thể dùng logo chính khi chưa chọn ảnh riêng. Ảnh upload tiếp tục được bảo toàn qua cập nhật cPanel.
+- Thêm bảng chọn màu native, HEX sáu ký tự và RGB 0–255 đồng bộ. Chỉnh màu chính, màu nhấn, nền/chữ, header/footer và các màu riêng của flash sale: tiêu đề, chữ, điểm nhấn, khung sản phẩm, viền, nhãn/giá sale. Chữ trên nút chính tự chọn sáng/tối; có khôi phục bảng màu mặc định.
+- Logo/loading/màu được PHP đưa vào HTML trước khi React chạy; có bật/tắt loading, bật/tắt hiệu ứng sáng quét, màu nền và xem trước. Có fallback bằng chữ khi không dùng ảnh logo, hỗ trợ giảm chuyển động và HTML SEO khi tắt JS.
+- Thêm chỉnh thông báo đầu trang, tiêu đề/giới thiệu footer và bản dịch EN/VI/KO/ZH. Banners và dải thương hiệu tiếp tục quản lý ở tab riêng.
+- Sửa hàng nút lưu/xem trước xuống dòng trên mobile, thu gọn logo trong sidebar, đảm bảo nút đóng modal xem trước không gửi form. Header chuyển sang menu gọn ở màn hình hẹp hơn để đủ chỗ cho logo rộng.
+- Đã kiểm tra với database cục bộ: upload và lưu/mở lại, đồng bộ HEX/RGB, xem trước không tự lưu, reset không xoá ảnh, footer đa ngôn ngữ, loading từ HTML đầu tiên, bật/tắt loading, API validation/CSRF/quyền admin-nhân viên/xung đột phiên bản và ảnh giả MIME. Chromium kiểm tra cửa hàng 360/390/1440px; 12 tổ hợp pane admin tại 360/768/1440px không tràn ngang, axe WCAG A/AA không báo lỗi trong vùng thiết kế. Kiểm tra bốn ngôn ngữ admin, cài thư mục con và fallback tên thương hiệu. Build, PHP routing/sanitizer và bảo toàn dữ liệu trong ZIP đạt.
+
+Cách dùng: [Thiết kế cửa hàng](docs/BRANDING.md).

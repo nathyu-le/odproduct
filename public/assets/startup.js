@@ -32,6 +32,14 @@
     "Try again",
   ];
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const image = splash.querySelector("img");
+  image?.addEventListener(
+    "error",
+    () => {
+      image.src = new URL("images/od-logo.svg", document.baseURI).href;
+    },
+    { once: true },
+  );
   const started = performance.now();
   let signalled = false;
   let leaving = false;
@@ -42,7 +50,13 @@
   root.inert = true;
   document.documentElement.classList.add("od-booting");
   root.setAttribute("aria-busy", "true");
-  splash.setAttribute("aria-label", copy[0]);
+  let storeName = "OD Store";
+  try {
+    storeName =
+      JSON.parse(document.getElementById("od-runtime")?.textContent || "{}")
+        .storeName || storeName;
+  } catch {}
+  splash.setAttribute("aria-label", copy[0].replace("OD Store", storeName));
 
   function finish() {
     if (leaving) return;

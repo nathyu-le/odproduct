@@ -46,6 +46,8 @@ import { useStore } from "./context";
 import { csv } from "./csv";
 import { BlogManager } from "./features/blog/BlogManager";
 import { ContentSettings } from "./features/settings/ContentSettings";
+import { BrandLogo } from "./components/BrandLogo";
+import { BrandingSettings } from "./features/settings/BrandingSettings";
 import { ContentTranslations } from "./features/settings/ContentTranslations";
 import { SeoSettings } from "./features/settings/SeoSettings";
 import { tx, useI18n } from "./i18n";
@@ -114,7 +116,7 @@ export function Admin() {
         </button>
         <div className="admin-brand">
           <a className="logo" href={appBase}>
-            od<span>.</span>
+            <BrandLogo place="admin" />
           </a>
           <span>
             {tx("WORKSPACE")}
@@ -222,7 +224,7 @@ function Login() {
     <div className="admin-login">
       <div>
         <a className="logo" href={appBase}>
-          od<span>.</span>
+          <BrandLogo place="admin" />
         </a>
         <LanguageSelector />
         <div className="panel">
@@ -1995,6 +1997,7 @@ function StoreSettings() {
       <div className="settings-tabs">
         {[
           ["store", tx("Cửa hàng")],
+          ["branding", tx("Thiết kế cửa hàng")],
           ["appearance", tx("Banner & thương hiệu")],
           ["seo", "SEO website"],
           ["shipping", tx("Vận chuyển")],
@@ -2012,7 +2015,9 @@ function StoreSettings() {
         ))}
       </div>
       <ErrorBox>{error}</ErrorBox>
-      {tab === "appearance" ? (
+      {tab === "branding" ? (
+        <BrandingSettings />
+      ) : tab === "appearance" ? (
         <ContentSettings />
       ) : tab === "seo" ? (
         <SeoSettings />

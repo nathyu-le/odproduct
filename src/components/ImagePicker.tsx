@@ -29,6 +29,7 @@ export function ImagePicker({
         <label className={"button outline " + (busy ? "disabled" : "")}>
           <input
             type="file"
+            aria-label={label}
             accept="image/jpeg,image/png,image/webp"
             disabled={busy}
             className="sr-only"

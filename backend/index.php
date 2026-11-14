@@ -5,6 +5,7 @@ require __DIR__ . "/src/admin.php";
 require __DIR__ . "/src/telegram.php";
 require __DIR__ . "/src/geocoding.php";
 require __DIR__ . "/src/updater.php";
+require __DIR__ . "/src/branding.php";
 header("Content-Type: application/json; charset=utf-8");
 header("Cache-Control: no-store");
 header("X-Content-Type-Options: nosniff");
@@ -93,6 +94,7 @@ if ($path === "session" && $method === "GET") {
         "categories" => content_categories(),
         "store" => setting("store"),
         "appearance" => content_defaults(),
+        "branding" => branding_defaults(),
         "seo" => setting("seo"),
         "payment" => setting("payment"),
         "shipping" => setting("shipping"),
@@ -242,6 +244,10 @@ if ($path === "session" && $method === "GET") {
             audit(null, $actor, "admin", "blog_archived", ["id" => $id]);
             $result = ["ok" => true];
         }
+    } elseif ($path === "admin/branding") {
+        $u = user(true);
+        $result =
+            $method === "GET" ? branding_defaults() : branding_save($body, $u);
     } elseif ($path === "admin/appearance") {
         $result =
             $method === "GET"

@@ -8,6 +8,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import { Seo } from "./components/Seo";
+import { SiteBranding } from "./components/SiteBranding";
 import { StoreProvider } from "./context";
 import { I18nProvider, tx } from "./i18n";
 import { runtime } from "./runtime";
@@ -68,6 +69,7 @@ createRoot(document.getElementById("root")!).render(
           <StoreProvider>
             <Scroll />
             <Seo />
+            <SiteBranding />
             <Routes>
               <Route
                 path="/admin/*"

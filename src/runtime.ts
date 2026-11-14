@@ -3,6 +3,8 @@ type Runtime = {
   locale: string;
   routerBase: string;
   alternates: Record<string, string>;
+  branding?: Record<string, any>;
+  storeName?: string;
 };
 const node = document.getElementById("od-runtime");
 const initial: Partial<Runtime> = node

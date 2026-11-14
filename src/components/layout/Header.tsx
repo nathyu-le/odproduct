@@ -15,8 +15,12 @@ import { tx } from "../../i18n";
 import { saleState, useNow } from "../../promotions";
 import { LanguageSelector } from "./LanguageSelector";
 import { Navigation } from "./Navigation";
+import { BrandLogo } from "../BrandLogo";
+import { brandText, defaultBranding } from "../../branding";
+import { runtime } from "../../runtime";
 export function Header() {
   const { data, count, setCartOpen } = useStore();
+  const branding = data?.branding || runtime.branding || defaultBranding;
   const [menu, setMenu] = useState(false);
   const button = useRef<HTMLButtonElement>(null),
     nav = useRef<HTMLElement>(null);
@@ -27,7 +31,7 @@ export function Header() {
   ).length;
   useEffect(() => {
     if (!menu) return;
-    if (matchMedia("(max-width: 1200px)").matches)
+    if (matchMedia("(max-width: 1300px)").matches)
       nav.current?.querySelector("a")?.focus();
     const escape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -40,19 +44,22 @@ export function Header() {
   }, [menu]);
   return (
     <>
-      <div className="cx-announcement">
-        <div className="container">
-          <span>
-            {(data?.store?.banner ? tx(data.store.banner) : "") ||
-              tx("Phụ kiện công nghệ, chọn vừa nhu cầu.")}
-          </span>
-          <Link to="/flash-sale">
-            <Zap size={13} />
-            {active ? tx("Flash sale đang mở") : tx("Lịch flash sale")}
-            <ArrowUpRight size={13} />
-          </Link>
+      {branding.announcement_enabled !== false && (
+        <div className="cx-announcement">
+          <div className="container">
+            <span>
+              {tx(brandText(branding, "announcement")) ||
+                (data?.store?.banner ? tx(data.store.banner) : "") ||
+                tx("Phụ kiện công nghệ, chọn vừa nhu cầu.")}
+            </span>
+            <Link to="/flash-sale">
+              <Zap size={13} />
+              {active ? tx("Flash sale đang mở") : tx("Lịch flash sale")}
+              <ArrowUpRight size={13} />
+            </Link>
+          </div>
         </div>
-      </div>
+      )}
       <header
         className="cx-header"
         onBlur={(e) => {
@@ -68,9 +75,13 @@ export function Header() {
           <Link
             to="/"
             className="cx-logo"
-            aria-label={tx("OD Store — trang chủ")}
+            aria-label={
+              (data?.store?.name || runtime.storeName || "OD. Store") +
+              " — " +
+              tx("Trang chủ")
+            }
           >
-            od<span>.</span>
+            <BrandLogo />
           </Link>
           <Navigation
             menu={menu}

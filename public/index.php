@@ -20,6 +20,7 @@ if (
     exit();
 }
 require_once __DIR__ . "/api/src/seo.php";
+require_once __DIR__ . "/api/src/branding.php";
 try {
     $base = rtrim(
         str_replace(
@@ -93,6 +94,13 @@ try {
         header("Location: " . $base . "/", true, 301);
         exit();
     }
+    $branding = branding_defaults();
+    $storeName = setting("store")["name"] ?? "OD. Store";
+    $brandAsset = fn($p) => $base .
+        "/" .
+        ltrim($p, "/") .
+        "?brand=" .
+        rawurlencode($branding["revision"]);
     $page = seo_page($path, $lang);
     http_response_code($page["status"]);
     if ($page["private"]) {
@@ -177,6 +185,8 @@ try {
         "locale" => $lang,
         "routerBase" => $base . $prefix,
         "alternates" => $page["alternates"],
+        "branding" => $branding,
+        "storeName" => $storeName,
     ];
     $head .=
         '<script type="application/json" id="od-runtime">' .
@@ -185,7 +195,61 @@ try {
             JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT,
         ) .
         "</script>";
+    $declarations = "";
+    foreach (branding_variables($branding) as $key => $value) {
+        $declarations .= $key . ":" . $value . ";";
+    }
+    $head .= '<style id="od-branding">:root{' . $declarations . "}</style>";
+    $icon = $branding["favicon"] ?: ($branding["logo"] ?: "images/od-logo.svg");
+    $head .= '<link rel="icon" href="' . seo_escape($brandAsset($icon)) . '">';
+    if ($branding["favicon"] || $branding["logo"]) {
+        $head .=
+            '<link rel="apple-touch-icon" href="' .
+            seo_escape($brandAsset($icon)) .
+            '">';
+    }
     $html = file_get_contents(__DIR__ . "/index.html");
+    $loading = $branding["loading"];
+    $splash = "";
+    if ($loading["enabled"]) {
+        $image =
+            $loading["image"] ?: ($branding["logo"] ?: "images/od-logo.svg");
+        $wordmark =
+            !$loading["image"] &&
+            !$branding["logo"] &&
+            $branding["wordmark"] !== "od.";
+        $mark = $wordmark
+            ? '<span class="od-splash-wordmark">' .
+                seo_escape($branding["wordmark"]) .
+                "</span>"
+            : '<img src="' .
+                seo_escape($brandAsset($image)) .
+                '" alt="' .
+                seo_escape($branding["logo_alt"] ?: $storeName) .
+                '" fetchpriority="high">';
+        $splash =
+            '<div id="od-splash" role="status" aria-label="' .
+            seo_escape($storeName) .
+            '" data-shine="' .
+            ($loading["shine"] ? "true" : "false") .
+            '"><div class="od-splash-mark' .
+            ($wordmark ? " is-wordmark" : "") .
+            '">' .
+            $mark .
+            "</div></div>";
+    }
+    $html = preg_replace_callback(
+        '~<div id="od-splash"[^>]*>.*?(?=<div id="root"></div>)~s',
+        fn() => $splash,
+        $html,
+    );
+    $html = preg_replace(
+        '~<meta name="theme-color"[^>]*>~',
+        '<meta name="theme-color" content="' .
+            $branding["theme"]["primary"] .
+            '">',
+        $html,
+    );
     $html = preg_replace(
         '/<html lang="[^"]*"/',
         '<html lang="' . $lang . '"',

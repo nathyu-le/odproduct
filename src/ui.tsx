@@ -152,6 +152,7 @@ export function Modal({ title, children, onClose, wide = false }: any) {
         <div className="modal-head">
           <h2>{title}</h2>
           <button
+            type="button"
             className="icon-button"
             onClick={onClose}
             aria-label={tx("Đóng")}

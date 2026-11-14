@@ -8,6 +8,7 @@ import "./styles/blog.css";
 import "./styles/content-settings.css";
 import "./styles/home-content.css";
 import "./styles/layout.css";
+import "./styles/branding.css";
 // Load only the selected language before UI modules evaluate their labels.
 import { loadTranslations } from "./i18n";
 import { signalContentReady } from "./startup";

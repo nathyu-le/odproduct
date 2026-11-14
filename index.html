@@ -25,8 +25,8 @@
         gap: 28px;
         padding: 24px;
         box-sizing: border-box;
-        background: #fff;
-        color: #2b2b2b;
+        background: var(--od-loading-bg, #fff);
+        color: var(--od-loading-ink, #2b2b2b);
         opacity: 1;
         transition: opacity 220ms ease;
         touch-action: none;
@@ -37,8 +37,8 @@
       }
       .od-splash-mark {
         position: relative;
-        width: 112px;
-        max-width: 40vw;
+        width: var(--od-loading-mobile-width, 112px);
+        max-width: 70vw;
         overflow: hidden;
         flex: 0 0 auto;
       }
@@ -46,6 +46,22 @@
         display: block;
         width: 100%;
         height: auto;
+        max-height: min(220px, 30vh);
+        object-fit: contain;
+      }
+      .od-splash-mark.is-wordmark {
+        width: max-content;
+        max-width: min(80vw, 360px);
+        max-height: 180px;
+      }
+      .od-splash-wordmark {
+        display: block;
+        font:
+          600 36px/1.2 system-ui,
+          sans-serif;
+        letter-spacing: -1px;
+        text-align: center;
+        overflow-wrap: anywhere;
       }
       .od-splash-mark::after {
         content: "";
@@ -84,24 +100,27 @@
       .od-splash-error button {
         min-height: 44px;
         padding: 10px 20px;
-        border: 1px solid #2b2b2b;
+        border: 1px solid var(--od-loading-ink, #2b2b2b);
         border-radius: 8px;
-        background: #2b2b2b;
-        color: #fff;
+        background: var(--od-loading-ink, #2b2b2b);
+        color: var(--od-loading-bg, #fff);
         font: inherit;
         cursor: pointer;
       }
       .od-splash-error button:focus-visible {
-        outline: 2px solid #2b2b2b;
+        outline: 2px solid var(--od-loading-ink, #2b2b2b);
         outline-offset: 4px;
       }
       #od-splash.is-failed .od-splash-mark::after {
         animation: none;
         opacity: 0;
       }
+      #od-splash[data-shine="false"] .od-splash-mark::after {
+        display: none;
+      }
       @media (min-width: 760px) {
         .od-splash-mark {
-          width: 128px;
+          width: var(--od-loading-width, 128px);
         }
       }
       @media (prefers-reduced-motion: reduce) {

@@ -20,6 +20,18 @@
 
 `src/catalogue-layout.tsx` chỉ giữ export tương thích; không còn chứa cả Header/Nav/Footer trong một file lớn.
 
+## Nhận diện và bảng màu
+
+- `src/features/settings/BrandingSettings.tsx`: form Logo / Loading / Màu sắc / Nội dung và xem trước.
+- `src/components/ColorPicker.tsx`: chọn màu native, HEX và RGB đồng bộ.
+- `src/components/BrandLogo.tsx`: logo chung của header/footer/admin, kích thước và fallback.
+- `src/components/SiteBranding.tsx`, `src/branding.ts`, `src/styles/branding.css`: áp dụng theme, favicon và các biến màu public.
+- `backend/src/branding.php`: mặc định, validation, kiểm tra phiên bản khi lưu và các biến CSS phía server.
+- `public/index.php`: đưa logo/loading/màu đã lưu vào HTML từ khung hình đầu tiên.
+- `public/assets/startup.js`: điều khiển loading độc lập với bundle React.
+
+Cách dùng: [Thiết kế cửa hàng](BRANDING.md).
+
 ## Chức năng
 
 - `src/features/home/`: carousel ảnh/caption từ Settings và marquee logo.

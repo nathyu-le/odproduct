@@ -549,7 +549,7 @@
   padding: 24px;
   font: 16px/1.7 sans-serif;
 }
-@media (max-width: 1200px) {
+@media (max-width: 1300px) {
   .cx-header-inner {
     grid-template-columns: auto 1fr auto;
   }
