@@ -320,6 +320,9 @@ function PostEditor() {
         <Loading />
       </>
     );
+  const selectedTranslationLocale = translateTo === form.locale
+    ? (languages.find((language) => language.code !== form.locale)?.code || "en")
+    : translateTo;
   const publicUrl =
     appBase.replace(/\/$/, "") +
     (form.locale === "en" ? "" : "/" + form.locale) +
@@ -623,7 +626,7 @@ function PostEditor() {
               ))}
             <Field label={tx("Tạo bản dịch")}>
               <select
-                value={translateTo}
+                value={selectedTranslationLocale}
                 onChange={(e) => setTranslateTo(e.target.value as Locale)}
               >
                 {languages
@@ -642,14 +645,14 @@ function PostEditor() {
                 !form.id ||
                 dirty ||
                 (form.translations || []).some(
-                  (tr: Obj) => tr.locale === translateTo,
+                  (tr: Obj) => tr.locale === selectedTranslationLocale,
                 )
               }
               onClick={() => {
                 const next = {
                   ...emptyPost(),
                   translation_group: form.translation_group,
-                  locale: translateTo,
+                  locale: selectedTranslationLocale,
                   cover_image: form.cover_image,
                   cover_alt: form.cover_alt,
                 };
