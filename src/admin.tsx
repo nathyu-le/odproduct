@@ -1,3 +1,4 @@
+import { appBase } from "./runtime";
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -112,9 +113,9 @@ export function Admin() {
           <X size={16} />
         </button>
         <div className="admin-brand">
-          <Link className="logo" to="/">
+          <a className="logo" href={appBase}>
             od<span>.</span>
-          </Link>
+          </a>
           <span>
             {tx("WORKSPACE")}
             <br />
@@ -139,10 +140,10 @@ export function Admin() {
           {tx("KÊNH BÁN HÀNG")}
         </div>
         <nav>
-          <Link to="/">
+          <a href={appBase}>
             <ExternalLink size={16} />
             {tx(" Xem cửa hàng")}
-          </Link>
+          </a>
         </nav>
         <div className="admin-sidebar-bottom">
           <p>{u.name}</p>
@@ -220,9 +221,9 @@ function Login() {
   return (
     <div className="admin-login">
       <div>
-        <Link className="logo" to="/">
+        <a className="logo" href={appBase}>
           od<span>.</span>
-        </Link>
+        </a>
         <LanguageSelector />
         <div className="panel">
           <p className="eyebrow">{tx("STORE WORKSPACE")}</p>
@@ -272,10 +273,10 @@ function Login() {
             )}
           </p>
         </div>
-        <Link className="text-link" to="/">
+        <a className="text-link" href={appBase}>
           <ArrowLeft size={14} />
           {tx(" Về cửa hàng")}
-        </Link>
+        </a>
       </div>
     </div>
   );
@@ -330,10 +331,10 @@ function StaffDashboard() {
         title={tx("Một ngày tốt lành 👋")}
         description={tx("Mọi hoạt động của cửa hàng, gọn trong một nơi.")}
       >
-        <Link className="button outline" to="/">
+        <a className="button outline" href={appBase}>
           {tx("Xem cửa hàng ")}
           <ArrowUpRight size={15} />
-        </Link>
+        </a>
       </Heading>
       <ErrorBox>{error}</ErrorBox>
       {isAdmin && (

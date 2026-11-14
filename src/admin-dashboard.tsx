@@ -1,3 +1,4 @@
+import { appBase } from "./runtime";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -109,10 +110,10 @@ export function AdminDashboard() {
           </h1>
           <p>{tx("Theo dõi đơn, dòng tiền và những việc cần xử lý.")}</p>
         </div>
-        <Link to="/" className="button outline">
+        <a href={appBase} className="button outline">
           {tx("Mở cửa hàng ")}
           <ArrowUpRight size={15} />
-        </Link>
+        </a>
       </div>
       <div className="dash-datebar">
         <div className="range-switch">
