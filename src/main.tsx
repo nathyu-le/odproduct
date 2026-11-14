@@ -5,6 +5,7 @@ import "@fontsource-variable/inter";
 import "./styles.css";
 import "./storefront.css";
 import "./analytics.css";
+import "./market.css";
 import { StoreProvider } from "./context";
 import {
   Layout,
@@ -22,7 +23,7 @@ function Scroll() {
   const l = useLocation();
   React.useEffect(() => {
     window.scrollTo(0, 0);
-    const privatePage = /order\/|admin/.test(l.pathname);
+    const privatePage = /order\/|admin|lookup/.test(l.pathname);
     let m = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
     if (!m) {
       m = document.createElement("meta");

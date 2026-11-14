@@ -32,3 +32,14 @@ GIỚI HẠN THỰC TẾ:
 - Chưa xác nhận toàn bộ quy trình trên cPanel bằng phiên đăng nhập.
 - PHP/cron hosting, vị trí kho và nhà cung cấp dịch vụ cần cấu hình phù hợp.
 - Chưa đối soát bản in/PDF và tin nhắn bot thật xuyên suốt trên hosting.
+
+BỔ SUNG NGÀY 14/11/2026:
+- Chạy HTTP API với database riêng: tìm lịch sử theo điện thoại, số +84,
+  đơn từ năm 2001, số sai/không có, không lộ địa chỉ/token/giá vốn.
+- Tìm và reverse địa chỉ thật; tuyến thật 3,024km với 3km bao gồm,
+  bước làm tròn 1km, phí 15.000đ + 5.000đ/km => 20.000đ.
+- Đối chiếu ngay trên hosting: cách gọi cũ nhận HTTP403, cách gọi mới
+  nhận HTTP200 và khoảng cách đường xe chạy 3.023,8m.
+- Kiểm tra Chromium thật 360px và 1440px: flash sale 4 sản phẩm kéo ngang,
+  3 ô checkout, GPS/reverse, ảnh tile đường phố, lịch sử đơn cũ theo điện thoại,
+  đăng nhập admin/dashboard/quy trình đơn; không tràn ngang các màn đã kiểm tra.

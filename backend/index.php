@@ -95,9 +95,14 @@ if ($path === "session" && $method === "GET") {
         "payment" => setting("payment"),
         "shipping" => setting("shipping"),
         "server_time" => date(DATE_ATOM),
+        "maps" => ["provider" => "openstreetmap"],
     ];
 } elseif ($path === "geocoding/search" && $method === "POST") {
     $result = geocode_search($body);
+} elseif ($path === "geocoding/reverse" && $method === "POST") {
+    $result = geocode_reverse($body);
+} elseif ($path === "lookup/phone" && $method === "POST") {
+    $result = phone_order_history($body);
 } elseif ($path === "quote" && $method === "POST") {
     rate_limit("quote", 60, 60);
     $result = public_quote(cart_quote($body));
@@ -206,7 +211,32 @@ if ($path === "session" && $method === "GET") {
     if (!str_starts_with($path, "admin/orders")) {
         user(true);
     }
-    if ($path === "admin/deployment") {
+    if ($path === "admin/maps") {
+        $result = [
+            "provider" => "OpenStreetMap / Photon",
+            "routing" => "OSRM",
+            "requires_key" => false,
+        ];
+    } elseif ($path === "admin/maps/test" && $method === "POST") {
+        $rules = setting("shipping");
+        $diagnostic = null;
+        $reason = null;
+        $km = free_route_distance(
+            (float) $rules["origin_lat"] + 0.003,
+            (float) $rules["origin_lng"] + 0.003,
+            $rules,
+            $reason,
+            $diagnostic,
+        );
+        $result = [
+            "distance_km" => $km,
+            "diagnostic" => $diagnostic,
+            "message" =>
+                $km !== null
+                    ? "Dịch vụ đường đi đã phản hồi."
+                    : "Chưa kết nối được dịch vụ đường đi.",
+        ];
+    } elseif ($path === "admin/deployment") {
         $result =
             $method === "POST" ? deployment_check(true) : deployment_status();
     } elseif ($path === "admin/flash-sales" && $method === "POST") {

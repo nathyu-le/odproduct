@@ -65,13 +65,15 @@ function shipping_fee(float $km, array $r, int $subtotal): int
         (int) $r["base_fee"] + $rounded * $step * (int) $r["per_km"],
     );
 }
-function distance(array $b, array $rules): ?float
+function distance(array $b, array $rules, ?string &$reason = null): ?float
 {
+    $reason = null;
     if (
         !isset($b["latitude"], $b["longitude"]) ||
         $b["latitude"] === "" ||
         $b["longitude"] === ""
     ) {
+        $reason = "Chọn địa chỉ hoặc dùng vị trí hiện tại để tính phí.";
         return null;
     }
     $lat = filter_var($b["latitude"], FILTER_VALIDATE_FLOAT);
@@ -79,44 +81,23 @@ function distance(array $b, array $rules): ?float
     if ($lat === false || $lng === false || abs($lat) > 90 || abs($lng) > 180) {
         fail(422, "Tọa độ không hợp lệ.");
     }
-    $r = config()["routing"];
-    $r["enabled"] = (bool) ($rules["routing_enabled"] ?? $r["enabled"]);
-    if (!$r["enabled"]) {
+    if (
+        empty(
+            $rules["routing_enabled"] ??
+                (config()["routing"]["enabled"] ?? false)
+        )
+    ) {
+        $reason = "Cửa hàng chưa bật tự tính phí giao.";
         return null;
     }
-    $base = rtrim($r["base_url"], "/");
-    if (!str_starts_with($base, "https://")) {
-        fail(503, "Routing yêu cầu HTTPS.");
-    }
-    $url =
-        $base .
-        "/route/v1/driving/" .
-        (float) $rules["origin_lng"] .
-        "," .
-        (float) $rules["origin_lat"] .
-        ";" .
-        $lng .
-        "," .
-        $lat .
-        "?overview=false";
-    $ch = curl_init($url);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => min(10, (int) $r["timeout"]),
-        CURLOPT_FOLLOWLOCATION => false,
-        CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
-    ]);
-    $response = curl_exec($ch);
-    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    if ($code !== 200 || !$response) {
+    require_once __DIR__ . "/maps.php";
+    try {
+        $km = free_route_distance($lat, $lng, $rules, $reason);
+        return $km;
+    } catch (HttpError $e) {
+        $reason = $e->getMessage();
         return null;
     }
-    $data = json_decode($response, true);
-    $meters = $data["routes"][0]["distance"] ?? null;
-    return is_numeric($meters) && $meters >= 0
-        ? round($meters / 1000, 3)
-        : null;
 }
 function cart_quote(array $b, bool $lock = false): array
 {
@@ -208,7 +189,8 @@ function cart_quote(array $b, bool $lock = false): array
     }
     unset($i);
     $rules = setting("shipping");
-    $km = distance($b, $rules);
+    $reason = null;
+    $km = distance($b, $rules, $reason);
     $shipping =
         $km === null ? null : shipping_fee($km, $rules, $subtotal - $discount);
     return [
@@ -217,6 +199,7 @@ function cart_quote(array $b, bool $lock = false): array
         "discount" => $discount,
         "coupon" => $code ?: null,
         "shipping_fee" => $shipping,
+        "shipping_reason" => $reason,
         "distance_km" => $km,
         "shipping_status" => $shipping === null ? "pending" : "confirmed",
         "shipping_snapshot" => $rules,
@@ -818,5 +801,46 @@ function report(string $from, string $to, string $status = ""): array
             "Đơn theo ngày đặt; doanh thu chỉ ghi nhận khi giao thành công. Hoàn/trả điều chỉnh nhóm ngày đặt gốc.",
         "rows" => $out,
         "totals" => $totals,
+    ];
+}
+
+function phone_order_history(array $b): array
+{
+    rate_limit("phone_history", 15, 300);
+    $phone = phone(required($b, "phone", 25));
+    $page = integer($b["page"] ?? 1, 1, 5000);
+    $limit = 12;
+    $offset = ($page - 1) * $limit;
+    $filter = $b["filter"] ?? "all";
+    $where = match ($filter) {
+        "active" => " AND status NOT IN ('delivered','cancelled')",
+        "completed" => " AND status='delivered'",
+        "cancelled" => " AND status='cancelled'",
+        default => "",
+    };
+    $total = (int) one("SELECT COUNT(*) n FROM orders WHERE phone=?" . $where, [
+        $phone,
+    ])["n"];
+    $rows = all(
+        "SELECT id,code,created_at,status,payment_status,payment_method,total,subtotal,discount,shipping_fee FROM orders WHERE phone=?" .
+            $where .
+            " ORDER BY created_at DESC,id DESC LIMIT " .
+            $limit .
+            " OFFSET " .
+            $offset,
+        [$phone],
+    );
+    foreach ($rows as &$o) {
+        $o["items"] = all(
+            "SELECT product_name,variant_name,image,quantity,unit_price FROM order_items WHERE order_id=? ORDER BY id",
+            [$o["id"]],
+        );
+        unset($o["id"]);
+    }
+    return [
+        "orders" => $rows,
+        "total" => $total,
+        "page" => $page,
+        "pages" => (int) ceil($total / $limit),
     ];
 }

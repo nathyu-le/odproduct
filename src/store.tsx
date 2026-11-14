@@ -26,6 +26,7 @@ import {
   Minus,
   Trash2,
   ChevronRight,
+  ChevronLeft,
   SlidersHorizontal,
   MapPin,
   Check,
@@ -68,8 +69,8 @@ import {
 } from "./ui";
 
 import { AddressSearch } from "./address-search";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { FreeMapPicker } from "./free-map";
+import { rememberOrder, PhoneLookup } from "./phone-lookup";
 const icons: Obj = {
   headphones: Headphones,
   keyboard: Keyboard,
@@ -669,6 +670,7 @@ function FlashSaleBlock({
   products: Obj[];
   upcoming?: Obj;
 }) {
+  const rail = useRef<HTMLDivElement>(null);
   return (
     <section className="flash-section">
       <div className="flash-heading">
@@ -701,33 +703,64 @@ function FlashSaleBlock({
           />
         )}
       </div>
-      <div className="flash-products">
-        {products.length ? (
-          products.slice(0, 3).map((p: Obj) => <ProductCard p={p} key={p.id} />)
-        ) : upcoming ? (
-          <div className="next-sale">
-            <img src={asset(upcoming.images[0])} alt={upcoming.name} />
-            <div>
-              <Badge>Sắp mở</Badge>
-              <h3>{upcoming.name}</h3>
-              <p>{date(upcoming.flash_start)}</p>
-              <Link className="text-link" to="/flash-sale">
-                Xem phiên sắp mở <ArrowRight size={15} />
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <div className="no-sale">
-            <Zap size={35} strokeWidth={1} />
-            <h3>Chưa có phiên đang mở</h3>
-            <p>
-              Sản phẩm và giá ưu đãi sẽ xuất hiện tại đây khi cửa hàng mở phiên.
-            </p>
-            <Link className="text-link" to="/products">
-              Xem sản phẩm hiện có <ArrowRight size={15} />
-            </Link>
+      <div className="flash-rail-wrap">
+        {products.length > 1 && (
+          <div className="flash-rail-controls">
+            <span>{products.length} sản phẩm · kéo để xem thêm</span>
+            <button
+              type="button"
+              aria-label="Sản phẩm Flash sale trước"
+              onClick={() =>
+                rail.current?.scrollBy({ left: -320, behavior: "smooth" })
+              }
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              type="button"
+              aria-label="Sản phẩm Flash sale tiếp"
+              onClick={() =>
+                rail.current?.scrollBy({ left: 320, behavior: "smooth" })
+              }
+            >
+              <ChevronRight size={18} />
+            </button>
           </div>
         )}
+        <div
+          className="flash-products"
+          ref={rail}
+          tabIndex={0}
+          aria-label="Sản phẩm flash sale, cuộn ngang để xem tất cả"
+        >
+          {products.length ? (
+            products.map((p: Obj) => <ProductCard p={p} key={p.id} />)
+          ) : upcoming ? (
+            <div className="next-sale">
+              <img src={asset(upcoming.images[0])} alt={upcoming.name} />
+              <div>
+                <Badge>Sắp mở</Badge>
+                <h3>{upcoming.name}</h3>
+                <p>{date(upcoming.flash_start)}</p>
+                <Link className="text-link" to="/flash-sale">
+                  Xem phiên sắp mở <ArrowRight size={15} />
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="no-sale">
+              <Zap size={35} strokeWidth={1} />
+              <h3>Chưa có phiên đang mở</h3>
+              <p>
+                Sản phẩm và giá ưu đãi sẽ xuất hiện tại đây khi cửa hàng mở
+                phiên.
+              </p>
+              <Link className="text-link" to="/products">
+                Xem sản phẩm hiện có <ArrowRight size={15} />
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
@@ -1281,96 +1314,6 @@ export function CartPage() {
     </div>
   );
 }
-function LocationPicker({
-  lat,
-  lng,
-  origin,
-  onChange,
-}: {
-  lat: any;
-  lng: any;
-  origin?: Obj;
-  onChange: (lat: number, lng: number) => void;
-}) {
-  const node = useRef<HTMLDivElement>(null),
-    map = useRef<L.Map | null>(null),
-    marker = useRef<L.CircleMarker | null>(null),
-    cb = useRef(onChange);
-  cb.current = onChange;
-  const [tileError, setTileError] = useState(false);
-  useEffect(() => {
-    if (!node.current) return;
-    const m = L.map(node.current, { scrollWheelZoom: false }).setView(
-      [
-        Number(origin?.origin_lat || 16.0544),
-        Number(origin?.origin_lng || 108.2022),
-      ],
-      13,
-    );
-    map.current = m;
-    let errors = 0,
-      fallback = false;
-    const tiles = L.tileLayer(
-      "https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-      {
-        attribution: "© OpenStreetMap contributors © CARTO",
-        maxZoom: 19,
-        referrerPolicy: "strict-origin-when-cross-origin",
-      },
-    ).addTo(m);
-    tiles.on("tileerror", () => {
-      errors++;
-      if (errors >= 3 && !fallback) {
-        fallback = true;
-        tiles.setUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
-      } else if (errors >= 7) setTileError(true);
-    });
-    tiles.on("tileload", () => setTileError(false));
-    m.on("click", (e: L.LeafletMouseEvent) =>
-      cb.current(e.latlng.lat, e.latlng.lng),
-    );
-    const resize = new ResizeObserver(() => m.invalidateSize());
-    resize.observe(node.current);
-    return () => {
-      resize.disconnect();
-      m.remove();
-      map.current = null;
-    };
-  }, []);
-  useEffect(() => {
-    if (map.current && lat !== "" && lng !== "") {
-      marker.current?.remove();
-      marker.current = L.circleMarker([Number(lat), Number(lng)], {
-        radius: 9,
-        color: "#242a24",
-        fillColor: "#c5f36a",
-        fillOpacity: 1,
-        weight: 3,
-      }).addTo(map.current);
-      map.current.setView([Number(lat), Number(lng)], 16, {
-        animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-      });
-    } else {
-      marker.current?.remove();
-      marker.current = null;
-    }
-  }, [lat, lng]);
-  return (
-    <div className="map-wrapper">
-      <div
-        className="map"
-        ref={node}
-        aria-label="Bản đồ nhận hàng, chạm để đổi điểm giao"
-      />
-      {tileError && (
-        <div className="map-unavailable">
-          Chưa tải được nền bản đồ. Bạn vẫn có thể chọn địa chỉ từ gợi ý phía
-          trên.
-        </div>
-      )}
-    </div>
-  );
-}
 export function Checkout() {
   const { cart, coupon, setCart, setCoupon, setToast } = useStore();
   const navigate = useNavigate();
@@ -1390,6 +1333,50 @@ export function Checkout() {
     [busy, setBusy] = useState(false),
     [locating, setLocating] = useState(false);
   const { data } = useStore();
+  const locationRequest = useRef(0);
+  const selectLocation = async (lat: number, lng: number) => {
+    const request = ++locationRequest.current;
+    setForm((f) => ({
+      ...f,
+      latitude: lat.toFixed(7),
+      longitude: lng.toFixed(7),
+    }));
+    setLocating(true);
+    try {
+      const place = await api("geocoding/reverse", {
+        latitude: lat,
+        longitude: lng,
+      });
+      if (request === locationRequest.current)
+        setForm((f) => ({
+          ...f,
+          address: place.address,
+          region: place.region,
+        }));
+    } catch (e: any) {
+      if (request === locationRequest.current) setError(e.message);
+    } finally {
+      if (request === locationRequest.current) setLocating(false);
+    }
+  };
+  const useLocation = () => {
+    if (!navigator.geolocation) {
+      setError("Trình duyệt không hỗ trợ vị trí. Hãy nhập địa chỉ.");
+      return;
+    }
+    setLocating(true);
+    setError("");
+    navigator.geolocation.getCurrentPosition(
+      (p) => selectLocation(p.coords.latitude, p.coords.longitude),
+      () => {
+        setError(
+          "Chưa được phép lấy vị trí. Bạn có thể bật quyền vị trí hoặc nhập địa chỉ.",
+        );
+        setLocating(false);
+      },
+      { timeout: 12000, enableHighAccuracy: true },
+    );
+  };
   const key = useRef(
     sessionStorage.getItem("od.checkout-key") || crypto.randomUUID(),
   );
@@ -1404,11 +1391,12 @@ export function Checkout() {
       }));
   }, [data?.payment, form.payment_method]);
   const change = (k: string, v: any) => {
+    if (k === "address") locationRequest.current++;
     setForm((f) => ({
       ...f,
       [k]: v,
       ...(["address", "region"].includes(k)
-        ? { latitude: "", longitude: "" }
+        ? { latitude: "", longitude: "", region: "" }
         : {}),
     }));
     if (k === "latitude" || k === "longitude") setQuote(null);
@@ -1451,15 +1439,15 @@ export function Checkout() {
         "orders",
         {
           ...form,
-          address: [form.address, form.address_extra]
-            .filter(Boolean)
-            .join(", "),
+          address: form.address,
+          region: form.region || "Việt Nam",
           items: cart,
           coupon,
           quote_hash: quote?.quote_hash,
         },
         { "Idempotency-Key": key.current },
       );
+      rememberOrder(r.order.code, r.token);
       setCart([]);
       setCoupon("");
       sessionStorage.removeItem("od.checkout-key");
@@ -1529,10 +1517,11 @@ export function Checkout() {
                 selected={form.latitude !== "" && form.longitude !== ""}
                 onChange={(v) => change("address", v)}
                 onSelect={(place) => {
+                  locationRequest.current++;
                   setQuote(null);
                   setForm((f) => ({
                     ...f,
-                    address: place.address,
+                    address: place.label || place.address,
                     region: place.region || f.region,
                     latitude: place.latitude.toFixed(7),
                     longitude: place.longitude.toFixed(7),
@@ -1540,81 +1529,33 @@ export function Checkout() {
                 }}
               />
             </Field>
-            <div className="form-grid">
-              <Field label="Phường/xã · Tỉnh/thành phố *">
-                <input
-                  required
-                  autoComplete="address-level1"
-                  value={form.region}
-                  onChange={(e) => change("region", e.target.value)}
-                  placeholder="Tự điền khi chọn địa chỉ — có thể chỉnh lại"
-                  maxLength={180}
-                />
-              </Field>
-              <Field label="Căn hộ, tầng, toà nhà (nếu có)">
-                <input
-                  autoComplete="address-line2"
-                  value={form.address_extra}
-                  onChange={(e) => change("address_extra", e.target.value)}
-                  placeholder="Ví dụ: tầng 2, căn 203"
-                  maxLength={150}
-                />
-              </Field>
-            </div>
-            <div className="checkout-map-label">
-              <span>
-                <MapPin size={15} /> Vị trí nhận hàng
-              </span>
+            <div className="location-under-address">
               <Button
                 type="button"
                 variant="ghost"
                 loading={locating}
-                onClick={() => {
-                  if (!navigator.geolocation) {
-                    setError(
-                      "Trình duyệt không hỗ trợ vị trí. Tìm địa chỉ hoặc chạm bản đồ.",
-                    );
-                    return;
-                  }
-                  setLocating(true);
-                  navigator.geolocation.getCurrentPosition(
-                    (p) => {
-                      setForm((f) => ({
-                        ...f,
-                        latitude: p.coords.latitude.toFixed(7),
-                        longitude: p.coords.longitude.toFixed(7),
-                      }));
-                      setLocating(false);
-                    },
-                    () => {
-                      setError(
-                        "Chưa lấy được vị trí. Tìm địa chỉ hoặc chạm bản đồ để chọn.",
-                      );
-                      setLocating(false);
-                    },
-                    { timeout: 10000 },
-                  );
-                }}
+                onClick={useLocation}
               >
-                <Navigation size={14} /> Dùng vị trí hiện tại
+                <Navigation size={17} /> Sử dụng vị trí hiện tại
               </Button>
+              <small>
+                Địa chỉ chưa đúng? Chạm bản đồ hoặc kéo ghim tới cửa nhà.
+              </small>
             </div>
-            <LocationPicker
-              lat={form.latitude}
-              lng={form.longitude}
-              origin={data?.shipping}
-              onChange={(lat, lng) =>
-                setForm((f) => ({
-                  ...f,
-                  latitude: lat.toFixed(7),
-                  longitude: lng.toFixed(7),
-                }))
-              }
-            />
-            <small className="muted">
-              Chọn gợi ý địa chỉ để bản đồ tự ghim. Có thể chạm bản đồ để chỉnh
-              đúng cửa nhà.
-            </small>
+            <details
+              className="checkout-map-details"
+              open={form.latitude !== "" || undefined}
+            >
+              <summary>
+                <MapPin size={16} /> Xem và chỉnh điểm nhận trên bản đồ
+              </summary>
+              <FreeMapPicker
+                lat={form.latitude}
+                lng={form.longitude}
+                origin={data?.shipping}
+                onChange={selectLocation}
+              />
+            </details>
             <div className="shipping-result" aria-live="polite">
               {quote?.distance_km != null ? (
                 <>
@@ -1638,22 +1579,26 @@ export function Checkout() {
                     </strong>
                     <small>
                       {form.latitude !== ""
-                        ? "Chưa lấy được quãng đường. Cửa hàng sẽ báo phí để bạn đồng ý tổng tiền."
+                        ? quote?.shipping_reason ||
+                          "Đang lấy quãng đường và phí giao…"
                         : "Chọn gợi ý địa chỉ để tự tính quãng đường và phí giao."}
                     </small>
                   </div>
                 </>
               )}
             </div>
-            <Field label="Ghi chú cho cửa hàng">
-              <textarea
-                rows={2}
-                value={form.note}
-                onChange={(e) => change("note", e.target.value)}
-                placeholder="Thời gian nhận hàng, hướng dẫn tìm địa chỉ…"
-                maxLength={1000}
-              />
-            </Field>
+            <details className="checkout-extra">
+              <summary>Thêm ghi chú (không bắt buộc)</summary>
+              <Field label="Ghi chú cho cửa hàng">
+                <textarea
+                  rows={2}
+                  value={form.note}
+                  onChange={(e) => change("note", e.target.value)}
+                  placeholder="Thời gian nhận hàng, hướng dẫn tìm địa chỉ…"
+                  maxLength={1000}
+                />
+              </Field>
+            </details>
           </section>
           <section className="panel">
             <h2>
@@ -1745,66 +1690,7 @@ export function Checkout() {
   );
 }
 export function Lookup() {
-  const [code, setCode] = useState(""),
-    [phone, setPhone] = useState(""),
-    [error, setError] = useState(""),
-    [busy, setBusy] = useState(false);
-  const navigate = useNavigate();
-  return (
-    <div className="container page narrow">
-      <div className="page-heading">
-        <div>
-          <p className="eyebrow">TRA CỨU ĐƠN HÀNG</p>
-          <h1>Đơn hàng của bạn ở đâu?</h1>
-          <p>Dùng mã tra cứu riêng và số điện thoại đã đặt hàng.</p>
-        </div>
-      </div>
-      <form
-        className="panel stack"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          setBusy(true);
-          setError("");
-          try {
-            const r = await api("lookup", { code, phone });
-            navigate("/order/" + r.token);
-          } catch (e: any) {
-            setError(e.message);
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
-        <Field label="Mã tra cứu riêng">
-          <input
-            required
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="12 ký tự trong trang xác nhận đơn"
-            autoComplete="off"
-            maxLength={24}
-          />
-        </Field>
-        <Field label="Số điện thoại đặt hàng">
-          <input
-            required
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="09xx xxx xxx"
-          />
-        </Field>
-        <ErrorBox>{error}</ErrorBox>
-        <Button variant="dark" loading={busy}>
-          <Search size={17} /> Tra cứu đơn hàng
-        </Button>
-        <p className="muted small">
-          Mã tra cứu khác với mã đơn OD. Nếu làm mất link theo dõi, vui lòng
-          liên hệ cửa hàng.
-        </p>
-      </form>
-    </div>
-  );
+  return <PhoneLookup />;
 }
 export function Order() {
   const { token } = useParams();
@@ -1814,7 +1700,10 @@ export function Order() {
   const { setToast } = useStore();
   const load = () =>
     api("order/" + token)
-      .then(setO)
+      .then((order) => {
+        rememberOrder(order.code, token!);
+        setO(order);
+      })
       .catch((e) => setError(e.message));
   useEffect(() => {
     load();

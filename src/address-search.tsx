@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Search, MapPin, Loader2, Check } from "lucide-react";
 import { api, type Obj } from "./api";
 export function AddressSearch({
@@ -15,6 +15,7 @@ export function AddressSearch({
   onSelect: (v: Obj) => void;
 }) {
   const id = useId();
+  const explicitSearch = useRef(false);
   const [results, setResults] = useState<Obj[]>([]),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -33,7 +34,11 @@ export function AddressSearch({
     const timer = setTimeout(async () => {
       try {
         const query = [value.trim(), region.trim()].filter(Boolean).join(", ");
-        const r = await api("geocoding/search", { query });
+        const r = await api("geocoding/search", {
+          query,
+          explicit: explicitSearch.current,
+        });
+        explicitSearch.current = false;
         if (active) {
           setResults(r.results);
           setOpen(true);
@@ -54,10 +59,18 @@ export function AddressSearch({
       clearTimeout(timer);
     };
   }, [value, region, selected, attempt]);
-  function choose(result: Obj) {
-    onSelect(result);
+  async function choose(result: Obj) {
     setOpen(false);
-    setResults([]);
+    setBusy(true);
+    setError("");
+    try {
+      onSelect(result);
+      setResults([]);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
   }
   return (
     <div className="address-autocomplete">
@@ -97,7 +110,10 @@ export function AddressSearch({
             if (e.key === "Enter") {
               e.preventDefault();
               if (open && results[index]) choose(results[index]);
-              else setAttempt((n) => n + 1);
+              else {
+                explicitSearch.current = true;
+                setAttempt((n) => n + 1);
+              }
             }
           }}
         />
@@ -106,7 +122,17 @@ export function AddressSearch({
         ) : selected ? (
           <Check size={17} />
         ) : (
-          <Search size={17} />
+          <button
+            type="button"
+            className="address-search-submit"
+            aria-label="Tìm địa chỉ"
+            onClick={() => {
+              explicitSearch.current = true;
+              setAttempt((n) => n + 1);
+            }}
+          >
+            <Search size={17} />
+          </button>
         )}
       </div>
       {open && results.length > 0 && (
@@ -135,9 +161,7 @@ export function AddressSearch({
               {index === i && <ArrowHint />}
             </button>
           ))}
-          <small className="geocoder-credit">
-            Địa chỉ © OpenStreetMap / Photon
-          </small>
+          <small className="geocoder-credit">© OpenStreetMap / Photon</small>
         </div>
       )}
       {selected ? (

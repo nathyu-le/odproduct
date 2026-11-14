@@ -100,3 +100,24 @@ Ví dụ hosting dùng CloudLinux PHP 8.3 và tài khoản tmuapluscom:
 Cron này giữ nguyên cron xử lý đơn/Telegram nếu đã có. Không cần API token
 sau khi cấu hình cron xong. Đối chiếu assets/release.txt với bản build để xác
 nhận hosting đã nhận bản mới. Log và trạng thái chỉ truy cập qua cPanel/admin.
+
+BẢN CẬP NHẬT CHECKOUT / TRA CỨU / ADMIN:
+- Checkout chỉ bắt buộc tên, điện thoại, địa chỉ đầy đủ. Nút vị trí hiện tại
+  ngay dưới địa chỉ; map có thể mở để chạm/kéo ghim. Ghi chú không bắt buộc.
+- Không cần key Google/billing. Photon gợi ý khi gõ; nút tìm/Enter có thêm
+  tìm kiếm OpenStreetMap khi chưa có kết quả. Bản đồ có tên đường rõ.
+- Vận chuyển vẫn cấu hình trong admin. Không cần cron để tính phí.
+  Menu Thiết lập / Bản đồ & kết nối có nút kiểm tra dịch vụ tính đường.
+  Có OSRM dự phòng và cache tuyến, lỗi phải xác nhận phí thủ công.
+- Tra cứu bằng điện thoại xem lịch sử mọi thời điểm, lọc đang xử lý/đã giao/
+  huỷ, chuyển trang. Không công khai địa chỉ, ghi chú, token đơn hoặc giá vốn.
+  Thiết bị đã lưu link đơn có nút mở đầy đủ phiếu/thanh toán.
+- Admin xử lý theo số 01–05; ưu tiên việc cần làm ở bước hiện tại.
+  Phí chưa xác nhận -> báo phí -> khách đồng ý. Chuyển khoản chưa nhận
+  tiền -> đối chiếu -> xác nhận tiền. Sau đó xác nhận/chuẩn bị/giao/hoàn tất.
+  COD ghi nhận tiền khi đã thực thu. Huỷ không tự hoàn; các thao tác phụ
+  nằm trong Thao tác bổ sung, có ghi chú giải thích.
+- Sản phẩm chỉ có một mẫu: giữ Mặc định, điền giá bán, giá vốn, số lượng.
+  Nhiều màu/cấu hình: thêm biến thể riêng. SKU có thể để trống để tự tạo;
+  slug tự lấy từ tên. Giá vốn không hiển thị cho khách.
+- Flash sale trang chủ hiển thị tất cả sản phẩm, vuốt ngang hoặc dùng mũi tên.

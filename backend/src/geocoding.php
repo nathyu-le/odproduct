@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/bootstrap.php";
+require_once __DIR__ . "/maps.php";
 function geocode_search(array $body): array
 {
     $q = required($body, "query", 300);
@@ -18,7 +19,10 @@ function geocode_search(array $body): array
     $cache = $directory . "/" . $key . ".json";
     if (is_file($cache) && filemtime($cache) > time() - 86400) {
         $cached = json_decode(file_get_contents($cache), true);
-        if (is_array($cached)) {
+        if (
+            is_array($cached) &&
+            (!empty($cached["results"]) || empty($body["explicit"]))
+        ) {
             return $cached;
         }
     }
@@ -67,13 +71,13 @@ function geocode_search(array $body): array
         $raw = curl_exec($ch);
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        if ($code !== 200 || !$raw) {
+        if (($code !== 200 || !$raw) && empty($body["explicit"])) {
             fail(
                 503,
                 "Chưa kết nối được dịch vụ địa chỉ. Thử lại hoặc chạm bản đồ để chọn điểm nhận.",
             );
         }
-        $data = json_decode($raw, true);
+        $data = $code === 200 && $raw ? json_decode($raw, true) : [];
         $results = [];
         foreach ($data["features"] ?? [] as $feature) {
             $p = $feature["properties"] ?? [];
@@ -122,6 +126,38 @@ function geocode_search(array $body): array
                 "longitude" => (float) $coordinates[0],
             ];
         }
+        if (!$results && !empty($body["explicit"])) {
+            $lastFile = $directory . "/nominatim.time";
+            if (!is_file($lastFile) || time() - filemtime($lastFile) >= 2) {
+                touch($lastFile);
+                $search = maps_http_json(
+                    "https://nominatim.openstreetmap.org/search?" .
+                        http_build_query([
+                            "q" => preg_replace("/\bsố\s+/iu", "", $q),
+                            "format" => "jsonv2",
+                            "countrycodes" => "vn",
+                            "limit" => 6,
+                            "addressdetails" => 1,
+                        ]),
+                );
+                foreach ($search as $place) {
+                    if (
+                        !is_numeric($place["lat"] ?? null) ||
+                        !is_numeric($place["lon"] ?? null)
+                    ) {
+                        continue;
+                    }
+                    $results[] = [
+                        "id" => "osm-" . $place["place_id"],
+                        "address" => $place["display_name"],
+                        "label" => $place["display_name"],
+                        "region" => "Việt Nam",
+                        "latitude" => (float) $place["lat"],
+                        "longitude" => (float) $place["lon"],
+                    ];
+                }
+            }
+        }
         $out = [
             "results" => $results,
             "attribution" => "© OpenStreetMap contributors / Photon",
@@ -132,4 +168,50 @@ function geocode_search(array $body): array
         flock($lock, LOCK_UN);
         fclose($lock);
     }
+}
+
+function geocode_reverse(array $b): array
+{
+    rate_limit("reverse_address", 30, 60);
+    foreach (["latitude" => 90, "longitude" => 180] as $k => $max) {
+        if (!is_numeric($b[$k] ?? null) || abs((float) $b[$k]) > $max) {
+            fail(422, "Vị trí không hợp lệ.");
+        }
+    }
+    $r = maps_http_json(
+        "https://photon.komoot.io/reverse?" .
+            http_build_query([
+                "lat" => (float) $b["latitude"],
+                "lon" => (float) $b["longitude"],
+                "lang" => "en",
+                "limit" => 1,
+            ]),
+    );
+    $p = $r["features"][0]["properties"] ?? null;
+    if (!$p) {
+        fail(
+            503,
+            "Chưa tìm được tên đường ở ghim này. Bạn vẫn có thể nhập địa chỉ bằng tay.",
+        );
+    }
+    $street = trim(
+        ($p["housenumber"] ?? "") . " " . ($p["street"] ?? ($p["name"] ?? "")),
+    );
+    $region = implode(
+        ", ",
+        array_unique(
+            array_filter([
+                $p["district"] ?? null,
+                $p["city"] ?? ($p["county"] ?? null),
+                $p["state"] ?? null,
+            ]),
+        ),
+    );
+    return [
+        "address" => implode(", ", array_filter([$street, $region])),
+        "label" => implode(", ", array_filter([$street, $region])),
+        "region" => $region ?: "Việt Nam",
+        "latitude" => (float) $b["latitude"],
+        "longitude" => (float) $b["longitude"],
+    ];
 }

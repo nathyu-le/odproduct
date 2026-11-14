@@ -452,6 +452,18 @@ function deployment_prepare_access(): void
     }
     $text = is_file($file) ? file_get_contents($file) : "";
     $patched = $text;
+    // The unsharded OSM tile host is separate from *.tile.openstreetmap.org.
+    if (!str_contains($patched, "https://tile.openstreetmap.org")) {
+        $patched = preg_replace_callback(
+            '/^Header always set Content-Security-Policy .*$/m',
+            fn($m) => preg_replace(
+                "/(img-src[^;]*)(;)/",
+                '$1 https://tile.openstreetmap.org$2',
+                $m[0],
+            ),
+            $patched,
+        );
+    }
     if (!str_contains($patched, "https://basemaps.cartocdn.com")) {
         $patched = preg_replace_callback(
             '/^Header always set Content-Security-Policy .*$/m',

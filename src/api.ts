@@ -60,8 +60,11 @@ export const money = (n: any) =>
 export const date = (d: string) =>
   new Date(d.replace(" ", "T") + "+07:00").toLocaleString("vi-VN", {
     timeZone: "Asia/Ho_Chi_Minh",
-    dateStyle: "short",
-    timeStyle: "short",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 export const status: Obj = {
   received: "Đã nhận đơn",

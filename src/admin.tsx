@@ -1,3 +1,5 @@
+import { OrderWorkflow } from "./order-workflow";
+import { MapsSettings } from "./maps-settings";
 import { AddressSearch } from "./address-search";
 import { AdminDashboard } from "./admin-dashboard";
 import { AdminFlashSales } from "./admin-flash-sales";
@@ -743,32 +745,7 @@ function AdminOrder() {
       </Heading>
       <div className="admin-order-grid">
         <div>
-          <section className="panel">
-            <div className="panel-title">
-              <h2>Xử lý đơn hàng</h2>
-              <Badge>{status[o.payment_status]}</Badge>
-            </div>
-            <div className="action-grid">
-              {Object.entries(actions)
-                .filter(
-                  ([a]) =>
-                    isAdmin ||
-                    !["paid", "costs", "refund", "shipping_quote"].includes(a),
-                )
-                .map(([a, label]: any) => (
-                  <Button
-                    variant={a === "cancel" ? "danger" : "outline"}
-                    key={a}
-                    onClick={() => open(a)}
-                  >
-                    {label}
-                  </Button>
-                ))}
-            </div>
-            <p className="report-note">
-              Máy chủ kiểm tra bước chuyển hợp lệ. Huỷ đơn không tự hoàn tiền.
-            </p>
-          </section>
+          <OrderWorkflow o={o} isAdmin={isAdmin} open={open} />
           <section className="panel">
             <h2>Thông tin giao hàng</h2>
             <p>
@@ -1170,6 +1147,15 @@ function Products() {
     </>
   );
 }
+function slugify(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[đĐ]/g, "d")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 function ProductEditor({ product, categories, onClose, onSaved }: any) {
   const [f, setF] = useState<Obj>(product),
     [error, setError] = useState(""),
@@ -1188,7 +1174,19 @@ function ProductEditor({ product, categories, onClose, onSaved }: any) {
           setBusy(true);
           setError("");
           try {
-            await api("admin/products", f);
+            const prefix = (f.slug || slugify(f.name) || "SP")
+              .toUpperCase()
+              .slice(0, 45);
+            const suffix =
+              f.id || crypto.randomUUID().slice(0, 6).toUpperCase();
+            await api("admin/products", {
+              ...f,
+              slug: f.slug || slugify(f.name),
+              variants: f.variants.map((v: Obj, i: number) => ({
+                ...v,
+                sku: v.sku.trim() || `${prefix}-${suffix}-${i + 1}`,
+              })),
+            });
             refresh();
             onSaved();
           } catch (e: any) {
@@ -1208,7 +1206,15 @@ function ProductEditor({ product, categories, onClose, onSaved }: any) {
               <input
                 required
                 value={f[k]}
-                onChange={(e) => change(k, e.target.value)}
+                onChange={(e) =>
+                  k === "name" && !f.id
+                    ? setF({
+                        ...f,
+                        name: e.target.value,
+                        slug: slugify(e.target.value),
+                      })
+                    : change(k, e.target.value)
+                }
               />
             </Field>
           ))}
@@ -1291,12 +1297,32 @@ function ProductEditor({ product, categories, onClose, onSaved }: any) {
             />
           </Field>
         </div>
-        <h3>Biến thể & tồn kho</h3>
+        <div className="product-help">
+          <h3>Bán một mẫu hay nhiều lựa chọn?</h3>
+          <p>
+            <b>Một mẫu:</b> giữ dòng “Mặc định”, nhập giá bán, giá vốn và số
+            lượng còn trong kho là xong.
+          </p>
+          <p>
+            <b>Nhiều màu / cấu hình:</b> thêm mỗi lựa chọn thành một biến thể,
+            ví dụ “Đen”, “Trắng” hoặc “Bluetooth”. Mỗi biến thể có giá và tồn
+            kho riêng.
+          </p>
+          <details>
+            <summary>SKU và đường dẫn sản phẩm là gì?</summary>
+            <p>
+              SKU là mã kho để phân biệt từng mẫu, ví dụ H1-DEN. Có thể để
+              trống, hệ thống tự tạo mã riêng. Slug là phần chữ trong đường dẫn,
+              tự điền theo tên sản phẩm. Giá vốn chỉ dùng cho báo cáo nội bộ.
+            </p>
+          </details>
+        </div>
+        <h3>Giá & tồn kho theo lựa chọn</h3>
         {f.variants.map((v: Obj, i: number) => (
           <div className="variant-editor" key={i}>
             <div className="form-grid">
               {[
-                ["sku", "SKU", "text"],
+                ["sku", "Mã kho SKU (để trống để tự tạo)", "text"],
                 ["name", "Tên biến thể", "text"],
                 ["price", "Giá bán (VND)", "number"],
                 ["cost", "Giá vốn (VND)", "number"],
@@ -1306,7 +1332,7 @@ function ProductEditor({ product, categories, onClose, onSaved }: any) {
                   <input
                     type={t}
                     min="0"
-                    required
+                    required={k !== "sku"}
                     value={v[k]}
                     onChange={(e) =>
                       change(
@@ -1894,6 +1920,7 @@ function StoreSettings() {
           ["shipping", "Vận chuyển"],
           ["payment", "Thanh toán"],
           ["telegram", "Telegram"],
+          ["maps", "Bản đồ & kết nối"],
         ].map(([k, l]) => (
           <button
             className={tab === k ? "active" : ""}
@@ -1905,7 +1932,9 @@ function StoreSettings() {
         ))}
       </div>
       <ErrorBox>{error}</ErrorBox>
-      {data ? (
+      {tab === "maps" ? (
+        <MapsSettings />
+      ) : data ? (
         <SettingsForm
           key={tab + JSON.stringify(data[tab])}
           tab={tab}
@@ -1935,8 +1964,6 @@ function SettingsForm({ tab, data, reload }: any) {
       ["banner", "Nội dung giới thiệu", "text"],
     ],
     shipping: [
-      ["origin_lat", "Vĩ độ kho", "number"],
-      ["origin_lng", "Kinh độ kho", "number"],
       ["base_fee", "Phí cơ bản (VND)", "number"],
       ["included_km", "Số km bao gồm", "number"],
       ["per_km", "Giá mỗi km thêm (VND)", "number"],
