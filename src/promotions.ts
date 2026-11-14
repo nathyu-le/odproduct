@@ -59,7 +59,10 @@ export function savings(p: Obj) {
     p.variants[0]?.compare_price ?? p.variants[0]?.price ?? 0,
   );
   return base > 0
-    ? Math.max(0, Math.round(((base - Number(p.price)) / base) * 100))
+    ? Math.min(
+        Number(p.price) > 0 ? 99 : 100,
+        Math.max(0, Math.round(((base - Number(p.price)) / base) * 100)),
+      )
     : 0;
 }
 export function remaining(end: string, now = currentTime()) {

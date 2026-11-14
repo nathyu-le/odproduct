@@ -4,10 +4,11 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsc -b && node scripts/check-php.mjs && vite build && node scripts/package.mjs",
+    "build": "tsc -b && node scripts/check-php.mjs && node scripts/check-promotions.mjs && vite build && node scripts/package.mjs",
     "check": "tsc -b",
     "check:php": "node scripts/check-php.mjs",
-    "demo:sql": "node scripts/demo-sql.mjs"
+    "demo:sql": "node scripts/demo-sql.mjs",
+    "check:promotions": "node scripts/check-promotions.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

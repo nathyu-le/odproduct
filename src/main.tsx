@@ -6,7 +6,8 @@ import "./styles.css";
 import "./storefront.css";
 import "./analytics.css";
 import "./market.css";
-import { StoreProvider } from "./context";
+import "./catalogue.css";
+import { StoreProvider, useStore } from "./context";
 import {
   Layout,
   Home,
@@ -21,6 +22,30 @@ import {
 const Admin = lazy(() => import("./admin").then((m) => ({ default: m.Admin })));
 function Scroll() {
   const l = useLocation();
+  const { data } = useStore();
+  const storeName = data?.store?.name || "OD. Store";
+  const productName = l.pathname.startsWith("/product/")
+    ? data?.products?.find((p: any) => p.slug === l.pathname.split("/")[2])
+        ?.name
+    : "";
+  React.useEffect(() => {
+    const titles: Record<string, string> = {
+      "/": "Phụ kiện công nghệ",
+      "/products": "Sản phẩm",
+      "/flash-sale": "Flash sale",
+      "/cart": "Giỏ hàng",
+      "/checkout": "Đặt hàng",
+      "/lookup": "Tra cứu đơn hàng",
+    };
+    const page =
+      productName ||
+      (l.pathname.startsWith("/admin")
+        ? "Quản trị cửa hàng"
+        : l.pathname.startsWith("/order/")
+          ? "Thông tin đơn hàng"
+          : titles[l.pathname] || "Trang không tồn tại");
+    document.title = page + " | " + storeName;
+  }, [l.pathname, productName, storeName]);
   React.useEffect(() => {
     window.scrollTo(0, 0);
     const privatePage = /order\/|admin|lookup/.test(l.pathname);

@@ -1,0 +1,60 @@
+# Thiết kế lại giao diện — Catalogue công nghệ
+
+Ngày 14/11/2026. Mục tiêu: nền sáng, chữ đen than, khoảng thở rõ; lime dùng tiết chế. Flash sale có trọng tâm riêng, không phủ màu toàn bộ thẻ sản phẩm.
+
+## 1. Ba concept và quyết định
+
+Điểm dưới đây là đánh giá thiết kế nội bộ trên cùng yêu cầu, không phải điểm nghiên cứu người dùng.
+
+| Concept | Hướng thiết kế | Điểm / 10 |
+| --- | --- | ---: |
+| Catalogue công nghệ | Ảnh sản phẩm lớn, bố cục sáng, phân cấp rõ, khu ưu đãi tương phản | **9,2** |
+| Cửa hàng đô thị | Lưới dày hơn, typography mạnh, ưu tiên duyệt nhanh nhiều sản phẩm | 8,7 |
+| Phòng trưng bày | Ít nội dung, nhiều khoảng trắng, ưu tiên ảnh và câu chuyện sản phẩm | 8,5 |
+
+Chọn **Catalogue công nghệ** vì cân bằng việc mua nhanh trên điện thoại, hình ảnh sản phẩm và khả năng nhận diện flash sale. Thiết kế này được triển khai bằng layout, trang chủ và product card mới; bỏ các component cũ tương ứng.
+
+## 2. Cải thiện so với bản trước
+
+- **Trang chủ:** thay hero ảnh tối với chữ chồng lên ảnh bằng bố cục chia đôi: nội dung ở một bên, ảnh và thông tin sản phẩm ở bên còn lại. Mobile đưa flash sale lên ngay sau phần giới thiệu, trước các khối phụ.
+- **Màu sắc:** nền trắng ngà, bề mặt trắng, chữ và nút đen than, viền xám nhẹ. Lime dành cho điểm nhấn và trạng thái chọn. Đỏ dành cho giá/nhãn ưu đãi; không tô màu cả ô sản phẩm.
+- **Header:** ô tìm kiếm hiện rõ cả trên điện thoại, điều hướng nhất quán, số lượng giỏ hàng có nhãn riêng. Menu hỗ trợ bàn phím, Escape và trả focus.
+- **Flash sale:** phần tiêu đề nền than, biểu tượng lime, đồng hồ đúng lịch và hàng sản phẩm nền trắng. Vuốt, cuộn bằng bàn phím hoặc dùng mũi tên để xem toàn bộ sản phẩm; không giới hạn ở hai hay ba sản phẩm.
+- **Trạng thái ưu đãi:** có giao diện khi chưa có sale, chỉ có một sản phẩm, nhiều sản phẩm và sale sắp diễn ra. Sale tương lai được ghi rõ thời điểm bắt đầu; không hiển thị giá tương lai như giá đang bán.
+- **Product card:** dùng chung cho trang chủ, danh mục và trang flash sale. Ảnh, tên, biến thể, giá và nút thêm giỏ có cấu trúc thống nhất. Yêu thích đồng bộ khi cùng sản phẩm xuất hiện ở nhiều khu vực.
+- **Nhãn giảm giá:** giá bán lớn hơn 0 không bị làm tròn thành giảm 100%; kiểm tra ranh giới bắt đầu/kết thúc và khôi phục giá thường.
+- **Typography và khoảng cách:** Inter hỗ trợ tiếng Việt, nội dung dễ đọc, nhãn phụ tối thiểu 12px trên các trang đã kiểm tra. Bo góc control 8px, panel 12px, nút thao tác chính tối thiểu 44px.
+- **Các trang mua hàng:** đồng bộ màu, chữ, input, tổng tiền, thông tin đơn và phiếu bán hàng. Giữ luồng checkout gọn, tìm địa chỉ/GPS và tra cứu lịch sử bằng số điện thoại.
+- **Admin:** tăng độ đọc được của menu, chú thích biểu đồ, bảng, số liệu và hướng dẫn thao tác; chỉnh tương phản theo cùng hệ màu trung tính.
+- **Bàn phím và chuyển động:** thêm lối đến nội dung chính, focus rõ, vùng sale cuộn được bằng bàn phím, tôn trọng giảm chuyển động. Khi in phiếu, ẩn header/footer/thanh điều hướng mua sắm.
+- **Dọn mã:** gỡ layout, hero, card và trang sale cũ cùng các lớp CSS quảng bá chồng chéo; bổ sung tiêu đề trình duyệt theo trang.
+
+## 3. Tự critique và sửa lại
+
+Điểm “vòng đầu” đánh giá bản concept vừa code, trước khi chỉnh theo checklist. Chỉ chốt bản cuối khi cả sáu mục đạt ít nhất 8,5/10.
+
+| Tiêu chí | Vòng đầu | Điểm cuối | Sửa đổi chính |
+| --- | ---: | ---: | --- |
+| Hierarchy | 8,1 | **9,2** | Rút gọn hero mobile, đưa flash sale lên trước nội dung phụ, làm rõ CTA và giá |
+| Spacing | 8,3 | **9,0** | Chuẩn hóa khoảng cách, chiều cao tên/biến thể và hàng giá, xử lý sale một sản phẩm |
+| Contrast | 7,9 | **9,2** | Tăng độ đậm nhãn, timer, giá cũ, tổng tiền, lịch sử đơn và chú thích admin |
+| Typography | 8,2 | **9,0** | Tăng cỡ nhãn nhỏ, giảm chữ hoa trang trí, giữ heading medium và line-height dễ đọc |
+| Consistency | 8,6 | **9,0** | Dùng chung card/timer, đồng bộ trang sale và các trang mua hàng, bỏ theme cũ xung đột |
+| Accessibility | 8,2 | **8,8** | Sửa focus/menu/skip link, kích thước nút, giảm chuyển động, kiểm tra bàn phím và axe |
+
+Trong vòng chỉnh sửa, vị trí bắt đầu flash sale trên màn hình 360px được đưa từ khoảng **923px xuống 664px**. Các điểm trên là tự đánh giá; kết quả kiểm tra thực tế được ghi riêng bên dưới.
+
+## 4. Kiểm tra thực tế
+
+- `npm run build`: TypeScript, parse 13 file PHP, kiểm tra logic nhãn/thời gian sale, build frontend và đóng gói cPanel thành công.
+- Chromium/Playwright: trang chủ ở **360, 390, 768, 1440px**, không phát sinh lỗi JavaScript hoặc tràn ngang. Không tìm thấy nhãn chữ dưới 12px trên các trang chủ này.
+- axe: không phát hiện vi phạm tự động trong tập quy tắc WCAG A/AA đã chạy trên các kích thước trang chủ trên; danh mục, chi tiết sản phẩm, flash sale, checkout, tra cứu và đơn hàng ở 390px; dashboard và chi tiết đơn admin ở 1440px; giỏ hàng và kết quả lịch sử đơn.
+- Kiểm tra riêng sale trống, một sản phẩm và bốn sản phẩm sắp diễn ra tại 360/1440px: số lượng đúng, không tràn ngang, không có timer giả hoặc gắn nhãn đang sale cho ưu đãi tương lai.
+- Kiểm tra thao tác: tìm kiếm, thêm giỏ, đồng bộ yêu thích, mũi tên/bàn phím cuộn đủ sản phẩm sale, menu Escape/focus, checkout ba trường chính, GPS/bản đồ và tính khoảng cách, lịch sử đơn cũ theo số điện thoại.
+- Kiểm tra trên dữ liệu thử trong database cục bộ; không tạo đơn thử hoặc sửa giá sản phẩm trên hosting. Giá/ưu đãi hiển thị lấy từ cấu hình của cửa hàng.
+
+Ảnh giao diện cuối: [desktop](docs/design/catalogue-desktop.png), [điện thoại](docs/design/catalogue-mobile.png).
+
+## 5. Bàn giao
+
+Source và gói build được lưu cùng commit. `odproduct-update.zip` phục vụ cập nhật tự động; `odproduct-cpanel.zip` là bản đã build để upload/Extract thủ công nếu cần. Gói cập nhật không chứa config thật, database, token, dữ liệu storage hoặc ảnh khách đã upload. Lần thay đổi này không có migration database hay thay đổi quy tắc tính tiền ở backend.

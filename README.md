@@ -9,6 +9,7 @@ Cài mới: chọn PHP 8.2+, tạo MySQL database/user trong cPanel, upload ZIP 
 - [Hướng dẫn A–Z](HUONG-DAN.txt)
 - [Kết quả kiểm tra thực tế](KIEM-TRA.txt)
 - [Nguồn ảnh và font](docs/ASSETS.md)
+- [Thiết kế lại: concept, tự critique, changelog và ảnh giao diện](DESIGN-CHANGELOG.md)
 
 Giao diện cửa hàng, trang flash sale `/#/flash-sale`, quản lý flash sale `/#/admin/flash-sales`, dashboard với biểu đồ từ database, địa chỉ nhận hàng có gợi ý và tự lấy vị trí. Backend kiểm tra phí/tổng tiền, tồn kho, thanh toán, hoàn trả, quyền và báo cáo.
 
