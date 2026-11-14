@@ -10,6 +10,7 @@ import "./styles/home-content.css";
 import "./styles/layout.css";
 // Load only the selected language before UI modules evaluate their labels.
 import { loadTranslations } from "./i18n";
+import { signalContentReady } from "./startup";
 loadTranslations()
   .then(() => import("./App"))
   .catch(() => {
@@ -22,4 +23,5 @@ loadTranslations()
     button.textContent = "Try again";
     button.onclick = () => location.reload();
     root.replaceChildren(text, button);
+    signalContentReady();
   });

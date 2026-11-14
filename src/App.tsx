@@ -11,6 +11,7 @@ import { Seo } from "./components/Seo";
 import { StoreProvider } from "./context";
 import { I18nProvider, tx } from "./i18n";
 import { runtime } from "./runtime";
+import { signalContentReady } from "./startup";
 import {
   CartPage,
   Catalog,
@@ -43,6 +44,9 @@ class Boundary extends React.Component<
   state = { error: false };
   static getDerivedStateFromError() {
     return { error: true };
+  }
+  componentDidCatch() {
+    signalContentReady();
   }
   render() {
     return this.state.error ? (

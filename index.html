@@ -1,1 +1,141 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#c5f36a"><meta name="description" content="Headphones, keyboards, mice and speakers. Everyday technology for work and play."><title>OD. — Everyday technology.</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#c5f36a" />
+    <meta
+      name="description"
+      content="Headphones, keyboards, mice and speakers. Everyday technology for work and play."
+    />
+    <title>OD. — Everyday technology.</title>
+    <style>
+      /* Critical startup styles: the logo paints before the app's CSS/JS downloads. */
+      html.od-booting {
+        overflow: hidden;
+      }
+      #od-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 100000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 28px;
+        padding: 24px;
+        box-sizing: border-box;
+        background: #fff;
+        color: #2b2b2b;
+        opacity: 1;
+        transition: opacity 220ms ease;
+        touch-action: none;
+      }
+      #od-splash.is-leaving {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .od-splash-mark {
+        position: relative;
+        width: 112px;
+        max-width: 40vw;
+        overflow: hidden;
+        flex: 0 0 auto;
+      }
+      .od-splash-mark img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .od-splash-mark::after {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 55%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          #ffffffdb 50%,
+          transparent
+        );
+        transform: translateX(-180%) skewX(-25deg);
+        animation: od-logo-shine 1500ms ease-in-out infinite;
+        pointer-events: none;
+      }
+      @keyframes od-logo-shine {
+        0% {
+          transform: translateX(-180%) skewX(-25deg);
+        }
+        70%,
+        100% {
+          transform: translateX(300%) skewX(-25deg);
+        }
+      }
+      .od-splash-error {
+        max-width: 320px;
+        text-align: center;
+        font:
+          14px/1.6 system-ui,
+          sans-serif;
+      }
+      .od-splash-error p {
+        margin: 0 0 16px;
+      }
+      .od-splash-error button {
+        min-height: 44px;
+        padding: 10px 20px;
+        border: 1px solid #2b2b2b;
+        border-radius: 8px;
+        background: #2b2b2b;
+        color: #fff;
+        font: inherit;
+        cursor: pointer;
+      }
+      .od-splash-error button:focus-visible {
+        outline: 2px solid #2b2b2b;
+        outline-offset: 4px;
+      }
+      #od-splash.is-failed .od-splash-mark::after {
+        animation: none;
+        opacity: 0;
+      }
+      @media (min-width: 760px) {
+        .od-splash-mark {
+          width: 128px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #od-splash {
+          transition: none;
+        }
+        .od-splash-mark::after {
+          animation: none;
+          display: none;
+        }
+      }
+    </style>
+    <noscript
+      ><style>
+        #od-splash {
+          display: none;
+        }
+      </style></noscript
+    >
+    <script src="./assets/startup.js" defer></script>
+  </head>
+  <body>
+    <div id="od-splash" role="status" aria-label="Loading OD Store">
+      <div class="od-splash-mark">
+        <img
+          src="./images/od-logo.svg"
+          alt="OD."
+          width="128"
+          height="76"
+          fetchpriority="high"
+        />
+      </div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

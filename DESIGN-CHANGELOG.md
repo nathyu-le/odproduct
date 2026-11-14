@@ -67,3 +67,12 @@ Source và gói build được lưu cùng commit. `odproduct-update.zip` phục 
 - Đưa HTML dự phòng vào `noscript`: trình duyệt có JavaScript không còn nháy trang chữ trước khi React tải. Không thêm màn hình loading. Metadata, canonical, schema và nội dung dự phòng khi tắt JavaScript vẫn được giữ.
 - Đo với cùng dữ liệu bốn sale và countdown có ngày: khung 390px giảm từ 712 xuống 419px; khung desktop giảm từ 759 xuống 555px. Chiều cao thực tế có thể thay đổi theo nội dung/ngôn ngữ.
 - Kiểm tra Chromium tại 360/390/768/1440px, bốn ngôn ngữ, giá dài, sale trống/một/nhiều/sắp mở, countdown bốn ô, cuộn hết hàng, thao tác vuốt bằng sự kiện chạm, yêu thích/thêm giỏ cục bộ; không tràn ngang hay lỗi JavaScript. Kiểm tra điều hướng/F5 khi trì hoãn JS và chế độ tắt JS đạt. axe WCAG A/AA không ghi nhận lỗi trong vùng flash sale đã kiểm tra. Build và các kiểm tra PHP routing/sanitizer đạt.
+
+## Cập nhật 15/11/2026 — Loading logo OD.
+
+- Thêm splash nền trắng với logo OD. dạng vector (~2 KB), giữ màu thương hiệu. Vệt sáng trắng nghiêng quét ngang logo theo chu kỳ 1,5 giây, sau đó splash fade ra khi trang sẵn sàng.
+- Markup/CSS ban đầu nằm trong `index.html`; bộ điều khiển độc lập ở `public/assets/startup.js`; logo ở `public/images/od-logo.svg`; tín hiệu nội dung sẵn sàng ở `src/startup.ts`. Không phụ thuộc logo hay script của website tham chiếu.
+- Loading xuất hiện khi mở trang/F5. Chờ nội dung và ảnh banner đầu tiên trong thời gian giới hạn; không chạy lại trên mỗi chuyển trang trong ứng dụng. Chuyển động tắt theo `prefers-reduced-motion`.
+- Khóa thao tác nền khi loading; khôi phục tương tác/cuộn sau khi fade. Có retry sau 15 giây nếu bundle không tải được; lỗi API vẫn hiển thị giao diện lỗi bình thường. Ứng dụng vẫn mở được nếu script splash riêng bị chặn.
+- Giữ metadata/schema/canonical và nội dung `noscript`; người tắt JavaScript không bị splash che nội dung SEO.
+- Kiểm tra Chromium 360/390/1440px: logo xuất hiện trước React, vệt sáng thực sự chuyển động, vị trí giữa màn hình, F5, chuyển trang nội bộ, EN/VI/KO/ZH, cài trong thư mục con, blog/admin lazy load, giảm chuyển động, tắt JS, API lỗi, script splash lỗi và bundle ứng dụng lỗi. Kiểm tra với CSP tương đương cPanel không có vi phạm. Build, PHP routing/sanitizer, checksum và dữ liệu được bảo vệ trong ZIP đạt.

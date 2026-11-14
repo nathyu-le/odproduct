@@ -8,6 +8,7 @@ import {
 } from "react";
 import { api, type Obj } from "./api";
 import { localized, tx } from "./i18n";
+import { signalContentReady } from "./startup";
 type CartItem = { variant_id: number; quantity: number };
 const Context = createContext<any>(null);
 export const useStore = () => useContext(Context);
@@ -73,6 +74,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem("od.cart", JSON.stringify(cart));
   }, [cart]);
+  useEffect(() => {
+    if (data || error) signalContentReady();
+  }, [data, error]);
   useEffect(() => {
     localStorage.setItem("od.coupon", coupon);
   }, [coupon]);
