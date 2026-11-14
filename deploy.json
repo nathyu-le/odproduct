@@ -1,6 +1,6 @@
 {
-  "sha256": "cb940c9748609dc89f6dc1c47fa93158f1faffc1904d4d8727b16c9c58f3d055",
-  "built_at": "2026-11-14T18:51:50.837Z",
+  "sha256": "0eaaefe09fd2578008c53bc8f7108393e7a4088e5fdfc24918aa774be88ac819",
+  "built_at": "2026-11-14T20:27:16.568Z",
   "php_min": 80200,
   "archive": "odproduct-update.zip"
 }
