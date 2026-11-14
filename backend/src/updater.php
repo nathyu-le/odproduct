@@ -75,6 +75,7 @@ function deployment_allowed(string $name): bool
                 "api/index.php",
                 "api/.htaccess",
                 "api/bin/cron.php",
+                "api/bin/update.php",
                 "api/src/.htaccess",
             ],
             true,

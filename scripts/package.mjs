@@ -26,6 +26,8 @@ await cp("backend", root + "/api", {
 
 await mkdir(root + "/api/storage", { recursive: true });
 await mkdir(root + "/uploads", { recursive: true });
+// A public build marker makes it possible to verify an automatic deployment.
+await writeFile(root + "/assets/release.txt", new Date().toISOString() + "\n");
 // Access guards are merged by PHP, preserving every cPanel PHP handler already on hosting.
 await writeFile(root + "/robots.txt", "User-agent: *\nDisallow: /api/\n");
 await cp("HUONG-DAN.txt", root + "/HUONG-DAN.txt");
@@ -55,6 +57,7 @@ await cp(root + "/api/src", updateRoot + "/api/src", {
 });
 await cp(root + "/api/index.php", updateRoot + "/api/index.php");
 await cp(root + "/api/bin/cron.php", updateRoot + "/api/bin/cron.php");
+await cp(root + "/api/bin/update.php", updateRoot + "/api/bin/update.php");
 await zipDirectory(updateRoot, "odproduct-update.zip");
 const sha256 = createHash("sha256")
   .update(await readFile("odproduct-update.zip"))

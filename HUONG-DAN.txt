@@ -92,3 +92,11 @@ Gợi ý địa chỉ dùng Photon; đường đi OSRM tương thích HTTPS; b�
 Dịch vụ công khai không cam kết SLA. Có thể đổi endpoint trong config khi
 có nhà cung cấp riêng. Chưa kết nối xác nhận ngân hàng tự động.
 Thay dữ liệu minh hoạ và cấu hình dịch vụ thật trước khi bán hàng.
+
+CRON RIÊNG CHO TỰ CẬP NHẬT (không phụ thuộc database):
+Mỗi phút chạy api/bin/update.php bằng PHP CLI cùng phiên bản với website.
+Ví dụ hosting dùng CloudLinux PHP 8.3 và tài khoản tmuapluscom:
+/opt/alt/php83/usr/bin/php /home/tmuapluscom/public_html/api/bin/update.php >> /home/tmuapluscom/public_html/api/storage/updates/cron.log 2>&1
+Cron này giữ nguyên cron xử lý đơn/Telegram nếu đã có. Không cần API token
+sau khi cấu hình cron xong. Đối chiếu assets/release.txt với bản build để xác
+nhận hosting đã nhận bản mới. Log và trạng thái chỉ truy cập qua cPanel/admin.
