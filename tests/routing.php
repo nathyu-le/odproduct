@@ -37,7 +37,31 @@ try {
     if (file_get_contents($file) !== $new) {
         throw new RuntimeException("Routing guard is not idempotent");
     }
-    echo "PASS routing: PHP homepage precedes directory handling; old guard upgraded; hosting directives preserved.\n";
+    $legacyCache = <<<'APACHE'
+# OD EDITABLE ASSET CACHE V1
+<IfModule mod_headers.c>
+<FilesMatch \"\\.(js|css)$\">
+Header always set Cache-Control \"no-cache, must-revalidate\"
+</FilesMatch>
+</IfModule>
+APACHE;
+    file_put_contents($file, $new . "\n" . $legacyCache . "\n");
+    deployment_asset_cache($dir);
+    $cache = file_get_contents($file);
+    if (!str_contains($cache, '<FilesMatch "\.(js|css)$">') || str_contains($cache, chr(92) . chr(34))) {
+        throw new RuntimeException("Apache asset regex or quotes are incorrectly escaped");
+    }
+    if (str_contains($cache, "OD EDITABLE ASSET CACHE V1") || !str_contains($cache, 'Header always set Cache-Control "no-cache, no-store, must-revalidate"')) {
+        throw new RuntimeException("Asset cache policy was not upgraded");
+    }
+    if (!str_contains($cache, $handler) || !str_contains($cache, "# User directive")) {
+        throw new RuntimeException("Asset cache upgrade changed hosting directives");
+    }
+    deployment_asset_cache($dir);
+    if (file_get_contents($file) !== $cache) {
+        throw new RuntimeException("Asset cache guard is not idempotent");
+    }
+    echo "PASS routing/cache: PHP homepage, Apache asset rules, idempotent upgrades and preserved hosting directives.\n";
 } finally {
     @unlink($file);
     @rmdir($dir);

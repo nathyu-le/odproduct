@@ -17,6 +17,8 @@ Giao diện cửa hàng, trang flash sale `/flash-sale`, quản lý flash sale `
 
 Telegram, tài khoản ngân hàng và vị trí kho cần cấu hình thật trong admin. Routing mặc định tắt; lỗi lấy quãng đường sẽ yêu cầu xác nhận phí thủ công. QR mẫu ghi rõ demo; không có kết nối xác nhận ngân hàng tự động.
 
-Sau upload, PHP-FPM/LiteSpeed hoặc cron có thể tải bản build từ GitHub, kiểm tra SHA256, backup và bảo toàn dữ liệu/cấu hình. Hosting phải kết nối được GitHub. Git lưu cả source và build; sửa source phải build trước khi push.
+Sau upload, PHP-FPM/LiteSpeed hoặc cron có thể tải bản build từ GitHub, kiểm tra SHA256, backup và bảo toàn dữ liệu/cấu hình. Hosting phải kết nối được GitHub. Git lưu cả source và build. Khi push source lên `main`, GitHub Actions tự kiểm tra, build và ghi lại gói cPanel; hosting tải bản mới theo cơ chế hiện có.
 
 Source React/TypeScript + PHP/MySQL. Máy phát triển chạy `npm ci` và `npm run build`, tạo `muaplus-cpanel-v3.zip`, `odproduct-cpanel.zip`, `odproduct-update.zip`, `deploy.json`. Không chạy các lệnh này trên hosting.
+
+Workflow [Build cPanel package](.github/workflows/cpanel-build.yml) chạy trên GitHub, không cần Node trên hosting hoặc cPanel token trong Git. Có kiểm tra checksum, cấu hình được bảo toàn và xác minh bản mới/SEO/cache trên muaplus.com.

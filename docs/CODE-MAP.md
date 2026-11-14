@@ -35,8 +35,8 @@
 
 ## CSS/JS và cache
 
-HTML đi qua PHP: các file CSS/JS entry có `?v=<filemtime>`. Khi file thay đổi, URL version đổi theo. Các chunk CSS/JS còn lại dùng tên hash và HTTP `Cache-Control: no-cache, must-revalidate`, nên trình duyệt kiểm tra bản mới khi tải lại. Không dùng timestamp thay đổi mỗi giây, không tự reload giữa lúc khách checkout hoặc admin đang soạn bài.
+HTML đi qua PHP: các file CSS/JS entry có `?v=<filemtime>`. Khi file thay đổi, URL version đổi theo. Các chunk CSS/JS còn lại dùng tên hash và HTTP `Cache-Control: no-cache, no-store, must-revalidate`, nên trình duyệt kiểm tra bản mới khi tải lại. Không dùng timestamp thay đổi mỗi giây, không tự reload giữa lúc khách checkout hoặc admin đang soạn bài.
 
-Source React cần build để tạo tài nguyên chạy trên hosting. Source và các ZIP đã build được lưu trong Git; cơ chế cPanel đang có tải gói `odproduct-update.zip` theo `deploy.json`. Hosting không chạy Node. Sửa trực tiếp file CSS/JS đã build trên hosting có hiệu lực khi tải lại, nhưng có thể bị thay bằng bản build tiếp theo; nên giữ thay đổi trong source Git.
+Source React cần build để tạo tài nguyên chạy trên hosting. Khi push lên `main`, `.github/workflows/cpanel-build.yml` tự chạy kiểm tra/build và lưu các ZIP; bạn không phải build trên cPanel. Source và các ZIP đã build được lưu trong Git; cơ chế cPanel đang có tải gói `odproduct-update.zip` theo `deploy.json`. Hosting không chạy Node. Sửa trực tiếp file CSS/JS đã build trên hosting có hiệu lực khi tải lại, nhưng có thể bị thay bằng bản build tiếp theo; nên giữ thay đổi trong source Git.
 
 URL mới là `/products`, `/blog/...`, `/admin/...`; link cũ `/#/...` được chuyển sang URL mới trong trình duyệt. Có hỗ trợ cài ở thư mục con.

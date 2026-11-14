@@ -1,0 +1,77 @@
+name: Build cPanel package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "backend/**"
+      - "public/**"
+      - "scripts/**"
+      - "tests/**"
+      - "index.html"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - "vite.config.ts"
+      - "HUONG-DAN.txt"
+      - "KIEM-TRA.txt"
+      - ".github/workflows/cpanel-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cpanel-main
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CPANEL_SITE_URL: https://muaplus.com
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Runtime checks
+        run: |
+          php -v
+          php tests/routing.php
+          php tests/content-sanitizer.php
+      - name: Build upload-ready packages
+        run: npm run build
+      - name: Verify archives and protected paths
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, zipfile
+          manifest = json.loads(pathlib.Path("deploy.json").read_text())
+          assert hashlib.sha256(pathlib.Path("odproduct-update.zip").read_bytes()).hexdigest() == manifest["sha256"]
+          assert pathlib.Path("odproduct-cpanel.zip").read_bytes() == pathlib.Path("muaplus-cpanel-v3.zip").read_bytes()
+          for filename in ["odproduct-update.zip", "odproduct-cpanel.zip"]:
+              with zipfile.ZipFile(filename) as archive:
+                  assert archive.testzip() is None
+                  names = archive.namelist()
+                  assert "index.php" in names and "api/src/content.php" in names
+                  assert "api/config.php" not in names
+                  assert not any(name.startswith(("api/storage/", "uploads/")) for name in names)
+                  assert not any(name.endswith(".htaccess") for name in names)
+          print("PASS archive integrity and protected configuration/data paths")
+          PY
+      - name: Publish generated packages to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deploy.json odproduct-update.zip odproduct-cpanel.zip muaplus-cpanel-v3.zip backend/src/locales.php backend/src/content-schema.php
+          git diff --cached --quiet && exit 0
+          git commit -m "build: refresh cPanel package [skip ci]"
+          git push origin HEAD:main
+      - name: Verify the live cPanel deployment
+        run: python3 scripts/check-live-deployment.py

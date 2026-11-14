@@ -438,15 +438,45 @@ function deployment_clean_urls(string $root): void
         unlink($temporary);
     }
 }
+function deployment_asset_cache(string $root): void
+{
+    $file = $root . "/.htaccess";
+    if ((is_file($file) && !is_writable($file)) || (!is_file($file) && !is_writable($root))) {
+        return;
+    }
+    $old = is_file($file) ? file_get_contents($file) : "";
+    $rules = <<<'APACHE'
+# OD EDITABLE ASSET CACHE V2
+<IfModule mod_headers.c>
+<FilesMatch "\.(js|css)$">
+Header unset Cache-Control
+Header always set Cache-Control "no-cache, no-store, must-revalidate"
+Header unset Expires
+Header always unset Expires
+</FilesMatch>
+</IfModule>
+APACHE;
+    $pattern = '~# OD EDITABLE ASSET CACHE V[12]\R<IfModule mod_headers\.c>.*?</IfModule>~s';
+    $base = preg_replace($pattern, "", $old);
+    $new = rtrim($base) . "\n\n" . $rules . "\n";
+    if ($new === $old) {
+        return;
+    }
+    $temporary = $root . "/.od-cache-" . bin2hex(random_bytes(8));
+    if (file_put_contents($temporary, $new, LOCK_EX) === strlen($new)) {
+        chmod($temporary, 0644);
+        if (!rename($temporary, $file)) {
+            unlink($temporary);
+        }
+    } elseif (is_file($temporary)) {
+        unlink($temporary);
+    }
+}
 function deployment_prepare_access(): void
 {
     $root = deployment_paths()["root"];
     deployment_clean_urls($root);
-    deployment_append_guard(
-        $root . "/.htaccess",
-        "OD EDITABLE ASSET CACHE V1",
-        "<IfModule mod_headers.c>\n<FilesMatch \"\\.(js|css)$\">\nHeader always set Cache-Control \"no-cache, must-revalidate\"\n</FilesMatch>\n</IfModule>",
-    );
+    deployment_asset_cache($root);
     $deny =
         "<IfModule mod_authz_core.c>\nRequire all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\nDeny from all\n</IfModule>";
     foreach (["src", "storage", "migrations", "demo", "bin"] as $private) {
