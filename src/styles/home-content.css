@@ -1,0 +1,385 @@
+/* Banner images and all copy come from Admin > Settings > Banner & brands. */
+.home-banners {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #272727;
+  color: #fff;
+}
+.banner-slide {
+  position: relative;
+  min-height: 520px;
+  aspect-ratio: 2.15;
+}
+.banner-slide picture,
+.banner-slide picture > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.banner-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.84),
+    rgba(0, 0, 0, 0.7) 45%,
+    rgba(0, 0, 0, 0.05) 100%
+  );
+}
+.banner-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+  padding: 75px 52px 110px;
+}
+.banner-eyebrow {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.banner-copy h1 {
+  font-size: clamp(35px, 4.1vw, 58px);
+  line-height: 1.08;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  white-space: pre-line;
+  margin: 0 0 24px;
+  color: inherit;
+}
+.banner-copy p {
+  font-size: 15px;
+  line-height: 1.8;
+  max-width: 390px;
+  color: #eee;
+  margin: 0 0 28px;
+  white-space: pre-line;
+}
+.banner-cta {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 20px;
+  background: white;
+  color: #222;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+}
+.banner-cta:hover {
+  background: #eef8dd;
+}
+.banner-controls {
+  position: absolute;
+  z-index: 2;
+  left: 52px;
+  right: 32px;
+  bottom: 23px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.banner-tabs {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+  max-width: 650px;
+}
+.banner-tabs button {
+  background: transparent;
+  color: #eee;
+  text-align: left;
+  border: 0;
+  border-top: 1px solid #ffffff88;
+  min-height: 50px;
+  padding: 10px 0 0;
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  flex: 1;
+  align-items: center;
+  line-height: 1.35;
+}
+.banner-tabs button.active {
+  border-top-color: #c5f36a;
+  color: #fff;
+}
+.banner-tabs button.active > span:first-child {
+  color: #c5f36a;
+}
+.banner-arrows {
+  display: flex;
+  gap: 7px;
+}
+.banner-arrows > button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #ffffffaa;
+  border-radius: 6px;
+  background: #0003;
+  color: white;
+}
+.home-banners.theme-light {
+  color: #1e1e1e;
+}
+.theme-light .banner-shade {
+  background: linear-gradient(
+    90deg,
+    #fffffff5,
+    #ffffffd9 45%,
+    transparent 100%
+  );
+}
+.theme-light .banner-copy p,
+.theme-light .banner-tabs button {
+  color: #343434;
+}
+.theme-light .banner-tabs button {
+  border-top-color: #626262;
+}
+.theme-light .banner-tabs button.active {
+  border-color: #486526;
+}
+.theme-light .banner-tabs button.active > span:first-child {
+  color: #415a27;
+}
+.theme-light .banner-cta {
+  background: #292929;
+  color: white;
+}
+.theme-light .banner-arrows > button {
+  background: #fff9;
+  border-color: #646464;
+  color: #222;
+}
+.banner-empty {
+  padding: 60px 24px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+.brand-marquee {
+  margin: 46px 0 0;
+  border-top: 1px solid #e8e8e8;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 20px 0 30px;
+}
+.brand-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.brand-heading h2 {
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin: 0;
+}
+.brand-heading button {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  min-height: 44px;
+  border: 0;
+  background: none;
+  font-size: 12px;
+  color: #555;
+}
+.brand-window {
+  overflow: hidden;
+}
+.brand-track {
+  display: flex;
+  width: max-content;
+  animation: brands-drift 35s linear infinite;
+}
+.brand-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 56px;
+  padding-right: 56px;
+  min-width: 1240px;
+  flex-shrink: 0;
+}
+.brand-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 150px;
+  min-height: 85px;
+}
+.brand-logo img {
+  max-width: 150px;
+  max-height: 65px;
+  object-fit: contain;
+  width: auto;
+  height: auto;
+}
+.brand-marquee:hover .brand-track,
+.brand-marquee:focus-within .brand-track,
+.brand-marquee.is-paused .brand-track {
+  animation-play-state: paused;
+}
+@keyframes brands-drift {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (max-width: 1000px) {
+  .banner-slide {
+    min-height: 480px;
+    aspect-ratio: 1.7;
+  }
+  .banner-copy {
+    padding: 55px 34px 125px;
+    max-width: 540px;
+  }
+  .banner-controls {
+    left: 34px;
+    right: 24px;
+  }
+  .banner-arrows {
+    display: none;
+  }
+  .banner-tabs {
+    max-width: none;
+  }
+  .brand-group {
+    min-width: calc(100vw - 32px);
+  }
+}
+@media (max-width: 600px) {
+  .banner-slide {
+    aspect-ratio: auto;
+    min-height: 500px;
+  }
+  .banner-slide picture img {
+    object-position: 60% center;
+  }
+  .banner-shade {
+    background:
+      linear-gradient(90deg, #000d, #0009),
+      linear-gradient(0deg, #0007, transparent 45%);
+  }
+  .banner-copy {
+    padding: 37px 24px 140px;
+    max-width: 100%;
+  }
+  .banner-copy h1 {
+    font-size: 37px;
+    letter-spacing: -0.04em;
+    max-width: 290px;
+  }
+  .banner-copy p {
+    font-size: 13px;
+    line-height: 1.8;
+    max-width: 260px;
+  }
+  .banner-eyebrow {
+    font-size: 11px;
+  }
+  .banner-controls {
+    left: 24px;
+    right: 24px;
+    bottom: 20px;
+    display: block;
+  }
+  .banner-tabs {
+    gap: 12px;
+  }
+  .banner-tabs button {
+    font-size: 10px;
+    gap: 7px;
+    min-width: 0;
+    align-items: flex-start;
+    padding-top: 11px;
+  }
+  .banner-tabs button > span:last-child {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .banner-tabs button > span:first-child {
+    font-size: 11px;
+  }
+  .brand-marquee {
+    margin-top: 32px;
+    padding-bottom: 18px;
+  }
+  .brand-heading {
+    margin-bottom: 12px;
+  }
+  .brand-heading h2 {
+    font-size: 16px;
+  }
+  .brand-group {
+    gap: 30px;
+    padding-right: 30px;
+  }
+  .brand-logo {
+    width: 115px;
+    min-height: 66px;
+  }
+  .brand-logo img {
+    max-width: 115px;
+    max-height: 48px;
+  }
+  .brand-heading button span {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand-track {
+    animation: none !important;
+    transform: none !important;
+  }
+  .brand-window {
+    overflow: auto;
+  }
+  .brand-group[aria-hidden="true"] {
+    display: none;
+  }
+  .brand-heading button {
+    display: none;
+  }
+}
+/* Avoid aspect-ratio minimum sizing and long translated service labels widening tablets. */
+.banner-slide {
+  width: 100%;
+  min-width: 0;
+}
+@media (max-width: 1000px) {
+  .cx-services {
+    overflow-x: auto;
+    justify-content: flex-start;
+    gap: 24px;
+    overscroll-behavior-x: contain;
+  }
+}
+.brand-marquee.is-single .brand-track {
+  animation: none;
+  transform: none;
+}
+.brand-marquee.is-single .brand-group[aria-hidden="true"],
+.brand-marquee.is-single .brand-heading > button {
+  display: none;
+}
+.banner-copy h1,
+.banner-copy p {
+  overflow-wrap: anywhere;
+}

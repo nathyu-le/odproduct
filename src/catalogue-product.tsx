@@ -1,24 +1,26 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import {
+  ArrowUpRight,
   Check,
   Heart,
+  Image as ImageIcon,
   Plus,
   Zap,
-  Image as ImageIcon,
-  ArrowUpRight,
 } from "lucide-react";
-import { useStore } from "./context";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { asset, money, type Obj } from "./api";
+import { useStore } from "./context";
+import { tx } from "./i18n";
 import {
-  useNow,
   displayProduct,
   saleState,
   savings,
   timestamp,
+  useNow,
 } from "./promotions";
 export function ProductCard({ p: source }: { p: Obj; number?: number }) {
   const { add } = useStore();
+  const navigate = useNavigate();
   const now = useNow();
   const p = displayProduct(source, now);
   const active = saleState(p, now) === "active";
@@ -73,7 +75,7 @@ export function ProductCard({ p: source }: { p: Obj; number?: number }) {
   function quickAdd() {
     if (!stock) return;
     if (p.variants.length > 1) {
-      location.hash = "/product/" + p.slug;
+      navigate("/product/" + p.slug);
       return;
     }
     add(Number(p.variants[0].id));
@@ -94,25 +96,25 @@ export function ProductCard({ p: source }: { p: Obj; number?: number }) {
           ) : (
             <span className="cx-no-photo">
               <ImageIcon size={32} />
-              <span>Chưa có ảnh</span>
+              <span>{tx("Chưa có ảnh")}</span>
             </span>
           )}
         </Link>
         {!stock ? (
-          <span className="cx-product-tag is-muted">Hết hàng</span>
+          <span className="cx-product-tag is-muted">{tx("Hết hàng")}</span>
         ) : active && percent > 0 ? (
           <span className="cx-product-tag is-sale">
             <Zap size={12} />−{percent}%
           </span>
         ) : isNew ? (
-          <span className="cx-product-tag">Mới về</span>
+          <span className="cx-product-tag">{tx("Mới về")}</span>
         ) : Number(p.pinned) ? (
-          <span className="cx-product-tag">Được chọn</span>
+          <span className="cx-product-tag">{tx("Được chọn")}</span>
         ) : null}
         <button
           className={"cx-favorite" + (liked ? " selected" : "")}
           onClick={toggle}
-          aria-label={(liked ? "Bỏ yêu thích " : "Yêu thích ") + p.name}
+          aria-label={(liked ? tx("Bỏ yêu thích ") : tx("Yêu thích ")) + p.name}
           aria-pressed={liked}
         >
           <Heart size={18} fill={liked ? "currentColor" : "none"} />
@@ -122,13 +124,16 @@ export function ProductCard({ p: source }: { p: Obj; number?: number }) {
         <div className="cx-product-meta">
           <span>{p.brand}</span>
           {stock > 0 && stock <= 5 && (
-            <span className="cx-low-stock">Còn {stock}</span>
+            <span className="cx-low-stock">
+              {tx("Còn ")}
+              {stock}
+            </span>
           )}
         </div>
         <Link to={"/product/" + p.slug}>
           <h3>{p.name}</h3>
         </Link>
-        <p>{p.variants[0]?.name || "Chưa có mẫu đang bán"}</p>
+        <p>{p.variants[0]?.name || tx("Chưa có mẫu đang bán")}</p>
         <p className="cx-product-excerpt">{p.description}</p>
         <div className="cx-product-bottom">
           <div>
@@ -142,7 +147,8 @@ export function ProductCard({ p: source }: { p: Obj; number?: number }) {
             disabled={!stock}
             onClick={quickAdd}
             aria-label={
-              (p.variants.length > 1 ? "Chọn mẫu " : "Thêm vào giỏ ") + p.name
+              (p.variants.length > 1 ? tx("Chọn mẫu ") : tx("Thêm vào giỏ ")) +
+              p.name
             }
           >
             {added ? (
@@ -157,7 +163,7 @@ export function ProductCard({ p: source }: { p: Obj; number?: number }) {
         {active && stock > 0 && (
           <span className="cx-sale-caption">
             <Zap size={12} />
-            Giá flash sale
+            {tx("Giá flash sale")}
           </span>
         )}
         {!(active && stock > 0) && (

@@ -1,6 +1,7 @@
+import { Check, Loader2, MapPin, Search } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
-import { Search, MapPin, Loader2, Check } from "lucide-react";
 import { api, type Obj } from "./api";
+import { tx } from "./i18n";
 export function AddressSearch({
   value,
   region,
@@ -45,7 +46,9 @@ export function AddressSearch({
           setIndex(0);
           if (!r.results.length)
             setError(
-              "Chưa có gợi ý. Thêm tên phường/xã hoặc thành phố để tìm chính xác hơn.",
+              tx(
+                "Chưa có gợi ý. Thêm tên phường/xã hoặc thành phố để tìm chính xác hơn.",
+              ),
             );
         }
       } catch (e: any) {
@@ -78,7 +81,7 @@ export function AddressSearch({
         <MapPin size={18} />
         <input
           role="combobox"
-          aria-label="Địa chỉ nhận hàng, có gợi ý bản đồ"
+          aria-label={tx("Địa chỉ nhận hàng, có gợi ý bản đồ")}
           aria-autocomplete="list"
           aria-expanded={open && results.length > 0}
           aria-controls={id}
@@ -88,7 +91,7 @@ export function AddressSearch({
           autoComplete="off"
           required
           maxLength={300}
-          placeholder="Nhập số nhà, đường, phường/xã, thành phố…"
+          placeholder={tx("Nhập số nhà, đường, phường/xã, thành phố…")}
           value={value}
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
@@ -125,7 +128,7 @@ export function AddressSearch({
           <button
             type="button"
             className="address-search-submit"
-            aria-label="Tìm địa chỉ"
+            aria-label={tx("Tìm địa chỉ")}
             onClick={() => {
               explicitSearch.current = true;
               setAttempt((n) => n + 1);
@@ -140,7 +143,7 @@ export function AddressSearch({
           className="address-results"
           role="listbox"
           id={id}
-          aria-label="Địa chỉ gợi ý"
+          aria-label={tx("Địa chỉ gợi ý")}
         >
           {results.map((r, i) => (
             <button
@@ -166,15 +169,19 @@ export function AddressSearch({
       )}
       {selected ? (
         <small className="address-confirmed">
-          <Check size={12} /> Đã ghim vị trí nhận hàng. Phí giao đang được cập
-          nhật theo điểm này.
+          <Check size={12} />
+          {tx(
+            " Đã ghim vị trí nhận hàng. Phí giao đang được cập nhật theo điểm này.",
+          )}
         </small>
       ) : (
         <small className={error ? "address-hint error" : "address-hint"}>
           {busy
-            ? "Đang tìm địa chỉ trên bản đồ…"
+            ? tx("Đang tìm địa chỉ trên bản đồ…")
             : error ||
-              "Gõ địa chỉ rồi chọn một gợi ý để tự ghim vị trí và tính phí giao."}
+              tx(
+                "Gõ địa chỉ rồi chọn một gợi ý để tự ghim vị trí và tính phí giao.",
+              )}
         </small>
       )}
     </div>

@@ -1,7 +1,10 @@
+import { currentLocale, tx } from "./i18n";
 import { syncServerClock } from "./promotions";
+import { appBase } from "./runtime";
 export type Obj = Record<string, any>;
 let csrf = "";
-export const asset = (p: string) => `${import.meta.env.BASE_URL}${p}`;
+export const asset = (p: string) =>
+  /^https?:\/\//.test(p) ? p : `${appBase}${p.replace(/^\//, "")}`;
 async function requestApi(
   route: string,
   body?: Obj,
@@ -9,7 +12,7 @@ async function requestApi(
 ) {
   const [path, queryString = ""] = route.split("?");
   const res = await fetch(
-    `${import.meta.env.BASE_URL}api/index.php?route=${encodeURIComponent(path)}${queryString ? "&" + queryString : ""}`,
+    `${appBase}api/index.php?route=${encodeURIComponent(path)}${queryString ? "&" + queryString : ""}`,
     {
       method: body ? "POST" : "GET",
       credentials: "same-origin",
@@ -21,15 +24,14 @@ async function requestApi(
   );
   const data = await res
     .json()
-    .catch(() => ({ error: "Máy chủ trả dữ liệu không hợp lệ." }));
+    .catch(() => ({ error: tx("Máy chủ trả dữ liệu không hợp lệ.") }));
   if (data?.installation_required) {
     location.replace(
-      new URL(`${import.meta.env.BASE_URL}api/install.php`, document.baseURI)
-        .href,
+      new URL(`${appBase}api/install.php`, document.baseURI).href,
     );
-    throw new Error("Mở trang cài đặt cửa hàng…");
+    throw new Error(tx("Mở trang cài đặt cửa hàng…"));
   }
-  if (!res.ok) throw new Error(data.error || "Không kết nối được máy chủ.");
+  if (!res.ok) throw new Error(tx(data.error || "Không kết nối được máy chủ."));
   if (data?.csrf) csrf = data.csrf;
   if (data?.server_time) syncServerClock(data.server_time);
   return data;
@@ -54,46 +56,49 @@ export async function upload(file: File) {
   if (!csrf) await api("session");
   const form = new FormData();
   form.append("image", file);
-  const r = await fetch(
-    `${import.meta.env.BASE_URL}api/index.php?route=admin/upload`,
-    {
-      method: "POST",
-      credentials: "same-origin",
-      headers: { "X-CSRF-Token": csrf },
-      body: form,
-    },
-  );
+  const r = await fetch(`${appBase}api/index.php?route=admin/upload`, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "X-CSRF-Token": csrf },
+    body: form,
+  });
   const d = await r.json();
-  if (!r.ok) throw Error(d.error);
+  if (!r.ok) throw Error(tx(d.error));
   return d.path;
 }
 export const money = (n: any) =>
   n == null
-    ? "Chờ xác nhận"
-    : new Intl.NumberFormat("vi-VN", {
-        style: "currency",
-        currency: "VND",
-      }).format(Number(n));
+    ? tx("Chờ xác nhận")
+    : new Intl.NumberFormat(
+        { en: "en-US", vi: "vi-VN", ko: "ko-KR", zh: "zh-CN" }[currentLocale()],
+        {
+          style: "currency",
+          currency: "VND",
+        },
+      ).format(Number(n));
 export const date = (d: string) =>
-  new Date(d.replace(" ", "T") + "+07:00").toLocaleString("vi-VN", {
-    timeZone: "Asia/Ho_Chi_Minh",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  new Date(d.replace(" ", "T") + "+07:00").toLocaleString(
+    { en: "en-GB", vi: "vi-VN", ko: "ko-KR", zh: "zh-CN" }[currentLocale()],
+    {
+      timeZone: "Asia/Ho_Chi_Minh",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+  );
 export const status: Obj = {
-  received: "Đã nhận đơn",
-  confirmed: "Đã xác nhận",
-  preparing: "Đang chuẩn bị",
-  shipping: "Đang giao",
-  delivered: "Giao thành công",
-  cancelled: "Đã huỷ",
-  pending: "Chờ thanh toán",
-  review: "Chờ kiểm tra",
-  paid: "Đã thanh toán",
-  refunded: "Đã hoàn tiền",
-  partial_refund: "Hoàn một phần",
-  awaiting_customer: "Chờ bạn xác nhận",
+  received: tx("Đã nhận đơn"),
+  confirmed: tx("Đã xác nhận"),
+  preparing: tx("Đang chuẩn bị"),
+  shipping: tx("Đang giao"),
+  delivered: tx("Giao thành công"),
+  cancelled: tx("Đã huỷ"),
+  pending: tx("Chờ thanh toán"),
+  review: tx("Chờ kiểm tra"),
+  paid: tx("Đã thanh toán"),
+  refunded: tx("Đã hoàn tiền"),
+  partial_refund: tx("Hoàn một phần"),
+  awaiting_customer: tx("Chờ bạn xác nhận"),
 };

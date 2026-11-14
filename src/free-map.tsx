@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import type { Obj } from "./api";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { useEffect, useRef, useState } from "react";
+import type { Obj } from "./api";
+import { tx } from "./i18n";
 export function FreeMapPicker({
   lat,
   lng,
@@ -93,12 +94,13 @@ export function FreeMapPicker({
       <div
         className="map street-map"
         ref={node}
-        aria-label="Bản đồ nhận hàng, chạm để đổi điểm giao"
+        aria-label={tx("Bản đồ nhận hàng, chạm để đổi điểm giao")}
       />
       {tileError && (
         <div className="map-unavailable">
-          Chưa tải được nền bản đồ. Bạn vẫn có thể chọn địa chỉ từ gợi ý phía
-          trên.
+          {tx(
+            "Chưa tải được nền bản đồ. Bạn vẫn có thể chọn địa chỉ từ gợi ý phía trên.",
+          )}
         </div>
       )}
     </div>

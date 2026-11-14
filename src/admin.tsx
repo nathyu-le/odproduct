@@ -1,62 +1,66 @@
-import { OrderWorkflow } from "./order-workflow";
-import { MapsSettings } from "./maps-settings";
-import { AddressSearch } from "./address-search";
-import { AdminDashboard } from "./admin-dashboard";
-import { AdminFlashSales } from "./admin-flash-sales";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  ChartNoAxesCombined,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  ExternalLink,
+  FileText,
+  History,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Package,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Search,
+  Settings,
+  ShieldCheck,
+  ShoppingBag,
+  Tag,
+  TrendingUp,
+  Truck,
+  Users,
+  Wallet,
+  X,
+  Zap,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   Link,
   NavLink,
-  Routes,
   Route,
-  useNavigate,
+  Routes,
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Package,
-  ShoppingBag,
-  ChartNoAxesCombined,
-  Settings,
-  Users,
-  LogOut,
-  ArrowUpRight,
-  ArrowLeft,
-  Plus,
-  Search,
-  Pencil,
-  Download,
-  RefreshCw,
-  Tag,
-  History,
-  Menu,
-  X,
-  Truck,
-  Wallet,
-  TrendingUp,
-  ChevronLeft,
-  ChevronRight,
-  Upload,
-  ExternalLink,
-  Check,
-  ShieldCheck,
-  Zap,
-} from "lucide-react";
-import { api, asset, money, date, status, upload, type Obj } from "./api";
+import { AddressSearch } from "./address-search";
+import { AdminDashboard } from "./admin-dashboard";
+import { AdminFlashSales } from "./admin-flash-sales";
+import { api, asset, date, money, status, upload, type Obj } from "./api";
+import { LanguageSelector } from "./components/layout/LanguageSelector";
 import { useStore } from "./context";
+import { csv } from "./csv";
+import { BlogManager } from "./features/blog/BlogManager";
+import { ContentSettings } from "./features/settings/ContentSettings";
+import { ContentTranslations } from "./features/settings/ContentTranslations";
+import { SeoSettings } from "./features/settings/SeoSettings";
+import { tx, useI18n } from "./i18n";
+import { MapsSettings } from "./maps-settings";
+import { OrderWorkflow } from "./order-workflow";
+import { Receipt } from "./store";
 import {
-  Button,
   Badge,
+  Button,
+  Empty,
+  ErrorBox,
   Field,
   Loading,
-  ErrorBox,
-  Empty,
   Modal,
   Success,
 } from "./ui";
-import { Receipt } from "./store";
-import { csv } from "./csv";
 function useLoad(route: string) {
   const [data, setData] = useState<any>(null),
     [error, setError] = useState("");
@@ -74,24 +78,26 @@ function useLoad(route: string) {
   return { data, setData, error, load };
 }
 export function Admin() {
+  useI18n();
   const { session, setSession } = useStore();
   const [menu, setMenu] = useState(false);
   if (!session) return <Loading />;
   if (!session.user) return <Login />;
   const u = session.user;
   const links = [
-    ["", "Tổng quan", LayoutDashboard],
-    ["orders", "Đơn hàng", ShoppingBag],
+    ["", tx("Tổng quan"), LayoutDashboard],
+    ["orders", tx("Đơn hàng"), ShoppingBag],
     ...(u.role === "admin"
       ? [
-          ["products", "Sản phẩm", Package],
-          ["flash-sales", "Flash sale", Zap],
-          ["categories", "Danh mục", Tag],
-          ["coupons", "Mã giảm giá", Tag],
-          ["reports", "Báo cáo", ChartNoAxesCombined],
-          ["settings", "Thiết lập", Settings],
-          ["users", "Nhân viên", Users],
-          ["audit", "Lịch sử thao tác", History],
+          ["products", tx("Sản phẩm"), Package],
+          ["flash-sales", tx("Flash sale"), Zap],
+          ["categories", tx("Danh mục"), Tag],
+          ["blog", tx("Bài viết / SEO"), FileText],
+          ["coupons", tx("Mã giảm giá"), Tag],
+          ["reports", tx("Báo cáo"), ChartNoAxesCombined],
+          ["settings", tx("Thiết lập"), Settings],
+          ["users", tx("Nhân viên"), Users],
+          ["audit", tx("Lịch sử thao tác"), History],
         ]
       : []),
   ];
@@ -100,7 +106,7 @@ export function Admin() {
       <aside className="admin-sidebar">
         <button
           className="icon-button admin-sidebar-close"
-          aria-label="Đóng menu quản trị"
+          aria-label={tx("Đóng menu quản trị")}
           onClick={() => setMenu(false)}
         >
           <X size={16} />
@@ -110,12 +116,12 @@ export function Admin() {
             od<span>.</span>
           </Link>
           <span>
-            WORKSPACE
+            {tx("WORKSPACE")}
             <br />
-            QUẢN TRỊ
+            {tx("QUẢN TRỊ")}
           </span>
         </div>
-        <div className="sidebar-label">CỬA HÀNG CỦA BẠN</div>
+        <div className="sidebar-label">{tx("CỬA HÀNG CỦA BẠN")}</div>
         <nav>
           {links.map(([path, label, Icon]: any) => (
             <NavLink
@@ -130,23 +136,27 @@ export function Admin() {
           ))}
         </nav>
         <div className="sidebar-label" style={{ marginTop: 20 }}>
-          KÊNH BÁN HÀNG
+          {tx("KÊNH BÁN HÀNG")}
         </div>
         <nav>
           <Link to="/">
-            <ExternalLink size={16} /> Xem cửa hàng
+            <ExternalLink size={16} />
+            {tx(" Xem cửa hàng")}
           </Link>
         </nav>
         <div className="admin-sidebar-bottom">
           <p>{u.name}</p>
-          <small>{u.role === "admin" ? "Quản trị viên" : "Nhân viên"}</small>
+          <small>
+            {u.role === "admin" ? tx("Quản trị viên") : tx("Nhân viên")}
+          </small>
           <button
             onClick={async () => {
               await api("logout", {});
               setSession(await api("session"));
             }}
           >
-            <LogOut size={15} /> Đăng xuất
+            <LogOut size={15} />
+            {tx(" Đăng xuất")}
           </button>
         </div>
       </aside>
@@ -155,15 +165,16 @@ export function Admin() {
           <div>
             <button
               className="icon-button admin-mobile-toggle"
-              aria-label="Menu quản trị"
+              aria-label={tx("Menu quản trị")}
               onClick={() => setMenu(!menu)}
             >
               {menu ? <X size={18} /> : <Menu size={18} />}
             </button>
             <span className="lime-dot" />
-            <span>OD. Store / Quản trị cửa hàng</span>
+            <span>{tx("OD. Store / Quản trị cửa hàng")}</span>
           </div>
           <div>
+            <LanguageSelector />
             <span>Asia/Ho_Chi_Minh</span>
             <span className="avatar">{u.name.slice(0, 1)}</span>
           </div>
@@ -178,6 +189,7 @@ export function Admin() {
                 <Route path="products" element={<Products />} />
                 <Route path="flash-sales" element={<AdminFlashSales />} />
                 <Route path="categories" element={<Categories />} />
+                <Route path="blog/*" element={<BlogManager />} />
                 <Route path="coupons" element={<Coupons />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="settings" element={<StoreSettings />} />
@@ -188,8 +200,8 @@ export function Admin() {
             <Route
               path="*"
               element={
-                <Empty title="Trang không khả dụng">
-                  Tài khoản cần quyền quản trị viên cho chức năng này.
+                <Empty title={tx("Trang không khả dụng")}>
+                  {tx("Tài khoản cần quyền quản trị viên cho chức năng này.")}
                 </Empty>
               }
             />
@@ -211,10 +223,11 @@ function Login() {
         <Link className="logo" to="/">
           od<span>.</span>
         </Link>
+        <LanguageSelector />
         <div className="panel">
-          <p className="eyebrow">STORE WORKSPACE</p>
-          <h1>Chào mừng trở lại.</h1>
-          <p>Đăng nhập để chăm sóc cửa hàng của bạn.</p>
+          <p className="eyebrow">{tx("STORE WORKSPACE")}</p>
+          <h1>{tx("Chào mừng trở lại.")}</h1>
+          <p>{tx("Đăng nhập để chăm sóc cửa hàng của bạn.")}</p>
           <form
             onSubmit={async (e) => {
               e.preventDefault();
@@ -238,7 +251,7 @@ function Login() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </Field>
-            <Field label="Mật khẩu">
+            <Field label={tx("Mật khẩu")}>
               <input
                 type="password"
                 required
@@ -249,16 +262,19 @@ function Login() {
             </Field>
             <ErrorBox>{error}</ErrorBox>
             <Button variant="dark full" loading={busy}>
-              Đăng nhập <ArrowUpRight size={16} />
+              {tx("Đăng nhập ")}
+              <ArrowUpRight size={16} />
             </Button>
           </form>
           <p className="small" style={{ marginTop: 20 }}>
-            Tài khoản đầu tiên được tạo trên trang cài đặt khi upload hosting.
-            Không có mật khẩu mặc định.
+            {tx(
+              "Tài khoản đầu tiên được tạo trên trang cài đặt khi upload hosting. Không có mật khẩu mặc định.",
+            )}
           </p>
         </div>
         <Link className="text-link" to="/">
-          <ArrowLeft size={14} /> Về cửa hàng
+          <ArrowLeft size={14} />
+          {tx(" Về cửa hàng")}
         </Link>
       </div>
     </div>
@@ -311,39 +327,40 @@ function StaffDashboard() {
   return (
     <>
       <Heading
-        title="Một ngày tốt lành 👋"
-        description="Mọi hoạt động của cửa hàng, gọn trong một nơi."
+        title={tx("Một ngày tốt lành 👋")}
+        description={tx("Mọi hoạt động của cửa hàng, gọn trong một nơi.")}
       >
         <Link className="button outline" to="/">
-          Xem cửa hàng <ArrowUpRight size={15} />
+          {tx("Xem cửa hàng ")}
+          <ArrowUpRight size={15} />
         </Link>
       </Heading>
       <ErrorBox>{error}</ErrorBox>
       {isAdmin && (
         <div className="stats-grid">
           <Stat
-            label="Doanh thu thuần tháng này"
+            label={tx("Doanh thu thuần tháng này")}
             value={money(r?.totals?.revenue || 0)}
-            note="Chỉ đơn giao thành công"
+            note={tx("Chỉ đơn giao thành công")}
             icon={Wallet}
             primary
           />
           <Stat
-            label="Đơn hàng"
+            label={tx("Đơn hàng")}
             value={r?.rows?.length || 0}
-            note="Theo ngày đặt trong tháng"
+            note={tx("Theo ngày đặt trong tháng")}
             icon={ShoppingBag}
           />
           <Stat
-            label="Lãi sau chi phí"
+            label={tx("Lãi sau chi phí")}
             value={money(r?.totals?.profit || 0)}
-            note="Đã tính giá vốn và chi phí"
+            note={tx("Đã tính giá vốn và chi phí")}
             icon={TrendingUp}
           />
           <Stat
-            label="Công nợ còn lại"
+            label={tx("Công nợ còn lại")}
             value={money(r?.totals?.receivable || 0)}
-            note="Tách riêng tiền đã thực thu"
+            note={tx("Tách riêng tiền đã thực thu")}
             icon={ChartNoAxesCombined}
           />
         </div>
@@ -351,7 +368,7 @@ function StaffDashboard() {
       <div className="dashboard-grid">
         <section className="panel">
           <div className="panel-title">
-            <h2>Doanh thu trong tháng</h2>
+            <h2>{tx("Doanh thu trong tháng")}</h2>
             <Badge>VND</Badge>
           </div>
           {isAdmin && r?.rows?.some((x: Obj) => x.revenue > 0) ? (
@@ -381,25 +398,27 @@ function StaffDashboard() {
           ) : (
             <div className="chart-empty">
               {isAdmin
-                ? "Chưa có doanh thu được ghi nhận. Dữ liệu sẽ xuất hiện khi giao đơn thành công."
-                : "Báo cáo tài chính dành cho quản trị viên."}
+                ? tx(
+                    "Chưa có doanh thu được ghi nhận. Dữ liệu sẽ xuất hiện khi giao đơn thành công.",
+                  )
+                : tx("Báo cáo tài chính dành cho quản trị viên.")}
             </div>
           )}
         </section>
         <section className="panel">
           <div className="panel-title">
-            <h2>Việc cần chú ý</h2>
+            <h2>{tx("Việc cần chú ý")}</h2>
             <ShieldCheck size={17} strokeWidth={1.4} />
           </div>
           <div className="admin-detail-line">
-            <span>Đơn chờ xác nhận (20 đơn gần nhất)</span>
+            <span>{tx("Đơn chờ xác nhận (20 đơn gần nhất)")}</span>
             <strong>
               {orders?.orders.filter((o: Obj) => o.status === "received")
                 .length || 0}
             </strong>
           </div>
           <div className="admin-detail-line">
-            <span>Chuyển khoản chờ kiểm tra</span>
+            <span>{tx("Chuyển khoản chờ kiểm tra")}</span>
             <strong>
               {orders?.orders.filter((o: Obj) => o.payment_status === "review")
                 .length || 0}
@@ -408,16 +427,19 @@ function StaffDashboard() {
           <div className="notice">
             <Truck size={17} />
             <p>
-              Đơn chờ phí giao cần khách chấp nhận tổng tiền trước khi xử lý.
+              {tx(
+                "Đơn chờ phí giao cần khách chấp nhận tổng tiền trước khi xử lý.",
+              )}
             </p>
           </div>
         </section>
       </div>
       <section className="panel">
         <div className="panel-title">
-          <h2>Đơn hàng gần đây</h2>
+          <h2>{tx("Đơn hàng gần đây")}</h2>
           <Link className="text-link" to="/admin/orders">
-            Tất cả đơn <ArrowUpRight size={15} />
+            {tx("Tất cả đơn ")}
+            <ArrowUpRight size={15} />
           </Link>
         </div>
         {orders ? <OrderTable rows={orders.orders.slice(0, 6)} /> : <Loading />}
@@ -431,12 +453,12 @@ function OrderTable({ rows }: { rows: Obj[] }) {
       <thead>
         <tr>
           {[
-            "Mã đơn",
-            "Khách hàng",
-            "Thời gian",
-            "Tổng tiền",
-            "Xử lý",
-            "Thanh toán",
+            tx("Mã đơn"),
+            tx("Khách hàng"),
+            tx("Thời gian"),
+            tx("Tổng tiền"),
+            tx("Xử lý"),
+            tx("Thanh toán"),
             "",
           ].map((s, i) => (
             <th key={i}>{s}</th>
@@ -446,17 +468,17 @@ function OrderTable({ rows }: { rows: Obj[] }) {
       <tbody>
         {rows.map((o) => (
           <tr key={o.id}>
-            <td data-label="Mã đơn">
+            <td data-label={tx("Mã đơn")}>
               <Link to={"/admin/orders/" + o.id}>
                 <strong>{o.code}</strong>
               </Link>
             </td>
-            <td data-label="Khách hàng">{o.customer_name}</td>
-            <td data-label="Thời gian">{date(o.created_at)}</td>
-            <td data-label="Tổng tiền">
+            <td data-label={tx("Khách hàng")}>{o.customer_name}</td>
+            <td data-label={tx("Thời gian")}>{date(o.created_at)}</td>
+            <td data-label={tx("Tổng tiền")}>
               <strong>{money(o.total)}</strong>
             </td>
-            <td data-label="Xử lý">
+            <td data-label={tx("Xử lý")}>
               <Badge
                 tone={
                   o.status === "delivered"
@@ -469,7 +491,7 @@ function OrderTable({ rows }: { rows: Obj[] }) {
                 {status[o.status]}
               </Badge>
             </td>
-            <td data-label="Thanh toán">
+            <td data-label={tx("Thanh toán")}>
               <Badge tone={o.payment_status === "paid" ? "lime" : ""}>
                 {status[o.payment_status]}
               </Badge>
@@ -477,7 +499,7 @@ function OrderTable({ rows }: { rows: Obj[] }) {
             <td>
               <Link
                 className="icon-button"
-                aria-label={"Xem đơn " + o.code}
+                aria-label={tx("Xem đơn ") + o.code}
                 to={"/admin/orders/" + o.id}
               >
                 <ArrowUpRight size={15} />
@@ -488,7 +510,9 @@ function OrderTable({ rows }: { rows: Obj[] }) {
       </tbody>
     </table>
   ) : (
-    <Empty title="Chưa có đơn hàng">Đơn mới sẽ xuất hiện tại đây.</Empty>
+    <Empty title={tx("Chưa có đơn hàng")}>
+      {tx("Đơn mới sẽ xuất hiện tại đây.")}
+    </Empty>
   );
 }
 function Orders() {
@@ -511,8 +535,8 @@ function Orders() {
   return (
     <>
       <Heading
-        title="Đơn hàng"
-        description="Theo dõi, xác nhận và xử lý từng đơn hàng."
+        title={tx("Đơn hàng")}
+        description={tx("Theo dõi, xác nhận và xử lý từng đơn hàng.")}
       >
         <Button
           variant="outline"
@@ -535,13 +559,13 @@ function Orders() {
               }
               csv("Danh-sach-don-hang.csv", [
                 [
-                  "Mã đơn",
-                  "Khách hàng",
-                  "SĐT",
-                  "Ngày",
-                  "Tổng",
-                  "Xử lý",
-                  "Thanh toán",
+                  tx("Mã đơn"),
+                  tx("Khách hàng"),
+                  tx("SĐT"),
+                  tx("Ngày"),
+                  tx("Tổng"),
+                  tx("Xử lý"),
+                  tx("Thanh toán"),
                 ],
                 ...rows.map((o) => [
                   o.code,
@@ -560,7 +584,8 @@ function Orders() {
             }
           }}
         >
-          <Download size={15} /> Xuất CSV
+          <Download size={15} />
+          {tx(" Xuất CSV")}
         </Button>
       </Heading>
       <ErrorBox>{error || expError}</ErrorBox>
@@ -570,17 +595,17 @@ function Orders() {
             <Search size={16} />
             <input
               value={filters.q}
-              placeholder="Mã đơn, tên, điện thoại…"
-              aria-label="Tìm đơn hàng"
+              placeholder={tx("Mã đơn, tên, điện thoại…")}
+              aria-label={tx("Tìm đơn hàng")}
               onChange={(e) => change("q", e.target.value)}
             />
           </div>
           <select
-            aria-label="Lọc xử lý"
+            aria-label={tx("Lọc xử lý")}
             value={filters.status}
             onChange={(e) => change("status", e.target.value)}
           >
-            <option value="">Tất cả xử lý</option>
+            <option value="">{tx("Tất cả xử lý")}</option>
             {[
               "received",
               "confirmed",
@@ -595,11 +620,11 @@ function Orders() {
             ))}
           </select>
           <select
-            aria-label="Lọc thanh toán"
+            aria-label={tx("Lọc thanh toán")}
             value={filters.payment_status}
             onChange={(e) => change("payment_status", e.target.value)}
           >
-            <option value="">Tất cả thanh toán</option>
+            <option value="">{tx("Tất cả thanh toán")}</option>
             {["pending", "review", "paid", "refunded", "partial_refund"].map(
               (s) => (
                 <option key={s} value={s}>
@@ -611,13 +636,13 @@ function Orders() {
           <input
             type="date"
             value={filters.from}
-            aria-label="Từ ngày"
+            aria-label={tx("Từ ngày")}
             onChange={(e) => change("from", e.target.value)}
           />
           <input
             type="date"
             value={filters.to}
-            aria-label="Đến ngày"
+            aria-label={tx("Đến ngày")}
             onChange={(e) => change("to", e.target.value)}
           />
           <Button variant="outline" onClick={load}>
@@ -629,8 +654,9 @@ function Orders() {
             <OrderTable rows={data.orders} />
             <div className="pagination">
               <span>
-                {data.total} đơn · Trang {data.page}/
-                {Math.max(1, Math.ceil(data.total / 20))}
+                {data.total}
+                {tx(" đơn · Trang ")}
+                {data.page}/{Math.max(1, Math.ceil(data.total / 20))}
               </span>
               <div>
                 <Button
@@ -638,7 +664,8 @@ function Orders() {
                   disabled={filters.page === 1}
                   onClick={() => change("page", filters.page - 1)}
                 >
-                  <ChevronLeft size={14} /> Trước
+                  <ChevronLeft size={14} />
+                  {tx(" Trước")}
                 </Button>
                 <Button
                   variant="outline"
@@ -689,7 +716,7 @@ function AdminOrder() {
     try {
       setO(await api(`admin/orders/${id}/${action}`, form));
       setAction("");
-      setToast("Đã cập nhật đơn hàng");
+      setToast(tx("Đã cập nhật đơn hàng"));
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -714,30 +741,34 @@ function AdminOrder() {
                 reason: "",
               }
             : a === "cancel"
-              ? { reason: "Khách yêu cầu" }
+              ? { reason: tx("Khách yêu cầu") }
               : {}),
     });
   };
   const actions: Obj = {
-    confirm: "Xác nhận đơn",
-    paid: "Xác nhận đã nhận đủ tiền",
-    prepare: "Đang chuẩn bị",
-    ship: "Bắt đầu giao",
-    deliver: "Giao thành công",
-    cancel: "Huỷ đơn",
-    costs: "Chi phí thực tế",
-    internal_note: "Ghi chú nội bộ",
-    shipping_quote: "Báo phí giao thủ công",
-    refund: "Hoàn tiền / trả hàng",
+    confirm: tx("Xác nhận đơn"),
+    paid: tx("Xác nhận đã nhận đủ tiền"),
+    prepare: tx("Đang chuẩn bị"),
+    ship: tx("Bắt đầu giao"),
+    deliver: tx("Giao thành công"),
+    cancel: tx("Huỷ đơn"),
+    costs: tx("Chi phí thực tế"),
+    internal_note: tx("Ghi chú nội bộ"),
+    shipping_quote: tx("Báo phí giao thủ công"),
+    refund: tx("Hoàn tiền / trả hàng"),
   };
   return (
     <>
       <Link className="text-link" to="/admin/orders">
-        <ArrowLeft size={14} /> Danh sách đơn
+        <ArrowLeft size={14} />
+        {tx(" Danh sách đơn")}
       </Link>
       <Heading
         title={o.code}
-        description={`Đặt lúc ${date(o.created_at)} · ${o.customer_name}`}
+        description={tx("Đặt lúc {0} · {1}", [
+          date(o.created_at),
+          o.customer_name,
+        ])}
       >
         <Badge tone={o.status === "cancelled" ? "red" : "lime"}>
           {status[o.status]}
@@ -747,32 +778,34 @@ function AdminOrder() {
         <div>
           <OrderWorkflow o={o} isAdmin={isAdmin} open={open} />
           <section className="panel">
-            <h2>Thông tin giao hàng</h2>
+            <h2>{tx("Thông tin giao hàng")}</h2>
             <p>
               <strong>{o.customer_name}</strong> · {o.phone}
             </p>
             <p>
               {o.address}, {o.region}
             </p>
-            <p className="muted">{o.note || "Không có ghi chú từ khách."}</p>
+            <p className="muted">
+              {o.note || tx("Không có ghi chú từ khách.")}
+            </p>
             <div className="admin-detail-line">
-              <span>Quãng đường</span>
+              <span>{tx("Quãng đường")}</span>
               <strong>
-                {o.distance_km ? o.distance_km + " km" : "Chưa xác định"}
+                {o.distance_km ? o.distance_km + " km" : tx("Chưa xác định")}
               </strong>
             </div>
             <div className="admin-detail-line">
-              <span>Phí giao</span>
+              <span>{tx("Phí giao")}</span>
               <strong>{money(o.shipping_fee)}</strong>
             </div>
             <div className="admin-detail-line">
-              <span>Xác nhận phí</span>
+              <span>{tx("Xác nhận phí")}</span>
               <strong>
                 {o.shipping_status === "confirmed"
-                  ? "Đã xác nhận"
+                  ? tx("Đã xác nhận")
                   : o.shipping_status === "pending"
-                    ? "Chờ báo phí"
-                    : "Chờ khách đồng ý"}
+                    ? tx("Chờ báo phí")
+                    : tx("Chờ khách đồng ý")}
               </strong>
             </div>
             <div className="notice">
@@ -780,36 +813,36 @@ function AdminOrder() {
               <p>
                 {o.latitude
                   ? `${o.latitude}, ${o.longitude}`
-                  : "Khách chưa ghim vị trí"}
+                  : tx("Khách chưa ghim vị trí")}
               </p>
             </div>
           </section>
           <section className="panel">
-            <h2>Ghi chú nội bộ</h2>
-            <p>{o.internal_note || "Chưa có ghi chú."}</p>
+            <h2>{tx("Ghi chú nội bộ")}</h2>
+            <p>{o.internal_note || tx("Chưa có ghi chú.")}</p>
             {isAdmin && (
               <>
                 <div className="admin-detail-line">
-                  <span>Phí giao thực trả</span>
+                  <span>{tx("Phí giao thực trả")}</span>
                   <strong>{money(o.actual_shipping)}</strong>
                 </div>
                 <div className="admin-detail-line">
-                  <span>Chi phí khác</span>
+                  <span>{tx("Chi phí khác")}</span>
                   <strong>{money(o.other_cost)}</strong>
                 </div>
                 <div className="admin-detail-line">
-                  <span>Tiền thực thu</span>
+                  <span>{tx("Tiền thực thu")}</span>
                   <strong>{money(o.paid_amount)}</strong>
                 </div>
                 <div className="admin-detail-line">
-                  <span>Đã hoàn tiền</span>
+                  <span>{tx("Đã hoàn tiền")}</span>
                   <strong>{money(o.refunded_amount)}</strong>
                 </div>
               </>
             )}
           </section>
           <section className="panel">
-            <h2>Lịch sử thao tác</h2>
+            <h2>{tx("Lịch sử thao tác")}</h2>
             {o.history.map((h: Obj, i: number) => (
               <div className="history-line" key={i}>
                 <span>{actions[h.action] || h.action}</span>
@@ -830,13 +863,17 @@ function AdminOrder() {
               action,
             ) && (
               <p>
-                Xác nhận thực hiện “{actions[action]}” cho đơn {o.code}?{" "}
-                {action === "paid" && "Chỉ xác nhận khi đã thực nhận đủ tiền."}
+                {tx("Xác nhận thực hiện “")}
+                {actions[action]}
+                {tx("” cho đơn ")}
+                {o.code}?{" "}
+                {action === "paid" &&
+                  tx("Chỉ xác nhận khi đã thực nhận đủ tiền.")}
               </p>
             )}
             {action === "cancel" && (
               <>
-                <Field label="Lý do huỷ">
+                <Field label={tx("Lý do huỷ")}>
                   <select
                     value={form.reason}
                     onChange={(e) =>
@@ -844,26 +881,28 @@ function AdminOrder() {
                     }
                   >
                     {[
-                      "Khách yêu cầu",
-                      "Hết hàng",
-                      "Không liên hệ được",
-                      "Ngoài phạm vi giao",
-                      "Lý do khác",
+                      tx("Khách yêu cầu"),
+                      tx("Hết hàng"),
+                      tx("Không liên hệ được"),
+                      tx("Ngoài phạm vi giao"),
+                      tx("Lý do khác"),
                     ].map((x) => (
                       <option key={x}>{x}</option>
                     ))}
                   </select>
                 </Field>
                 {![
-                  "Khách yêu cầu",
-                  "Hết hàng",
-                  "Không liên hệ được",
-                  "Ngoài phạm vi giao",
+                  tx("Khách yêu cầu"),
+                  tx("Hết hàng"),
+                  tx("Không liên hệ được"),
+                  tx("Ngoài phạm vi giao"),
                 ].includes(form.reason) && (
-                  <Field label="Nhập lý do">
+                  <Field label={tx("Nhập lý do")}>
                     <input
                       required
-                      value={form.reason === "Lý do khác" ? "" : form.reason}
+                      value={
+                        form.reason === tx("Lý do khác") ? "" : form.reason
+                      }
                       onChange={(e) =>
                         setForm({ ...form, reason: e.target.value })
                       }
@@ -871,16 +910,17 @@ function AdminOrder() {
                   </Field>
                 )}
                 <p className="muted small">
-                  Tồn kho được trả lại một lần. Nếu đã thu tiền, thực hiện hoàn
-                  tiền riêng.
+                  {tx(
+                    "Tồn kho được trả lại một lần. Nếu đã thu tiền, thực hiện hoàn tiền riêng.",
+                  )}
                 </p>
               </>
             )}
             {action === "costs" && (
               <div className="form-grid">
                 {[
-                  ["actual_shipping", "Phí giao thực trả"],
-                  ["other_cost", "Chi phí khác"],
+                  ["actual_shipping", tx("Phí giao thực trả")],
+                  ["other_cost", tx("Chi phí khác")],
                 ].map(([k, l]) => (
                   <Field key={k} label={l + " (VND)"}>
                     <input
@@ -898,7 +938,7 @@ function AdminOrder() {
               </div>
             )}
             {action === "internal_note" && (
-              <Field label="Ghi chú chỉ nội bộ nhìn thấy">
+              <Field label={tx("Ghi chú chỉ nội bộ nhìn thấy")}>
                 <textarea
                   rows={4}
                   value={form.note}
@@ -908,7 +948,7 @@ function AdminOrder() {
             )}
             {action === "shipping_quote" && (
               <>
-                <Field label="Phí giao báo khách (VND)">
+                <Field label={tx("Phí giao báo khách (VND)")}>
                   <input
                     type="number"
                     min="0"
@@ -920,13 +960,15 @@ function AdminOrder() {
                   />
                 </Field>
                 <p className="muted small">
-                  Khách cần mở link theo dõi và chấp nhận tổng tiền mới.
+                  {tx("Khách cần mở link theo dõi và chấp nhận tổng tiền mới.")}
                 </p>
               </>
             )}
             {action === "refund" && (
               <>
-                <Field label="Giảm doanh thu phí giao (VND, nếu hoàn phí ship)">
+                <Field
+                  label={tx("Giảm doanh thu phí giao (VND, nếu hoàn phí ship)")}
+                >
                   <input
                     required
                     type="number"
@@ -940,7 +982,7 @@ function AdminOrder() {
                     }
                   />
                 </Field>
-                <Field label="Số tiền thực hoàn (VND)">
+                <Field label={tx("Số tiền thực hoàn (VND)")}>
                   <input
                     required
                     type="number"
@@ -951,7 +993,7 @@ function AdminOrder() {
                     }
                   />
                 </Field>
-                <Field label="Dòng hàng trả (chỉ đơn đã giao)">
+                <Field label={tx("Dòng hàng trả (chỉ đơn đã giao)")}>
                   <select
                     value={form.item_id}
                     onChange={(e) =>
@@ -960,13 +1002,16 @@ function AdminOrder() {
                   >
                     {o.items.map((i: Obj) => (
                       <option key={i.id} value={i.id}>
-                        {i.product_name} · Đã trả {i.returned_quantity}/
-                        {i.quantity}
+                        {i.product_name}
+                        {tx(" · Đã trả ")}
+                        {i.returned_quantity}/{i.quantity}
                       </option>
                     ))}
                   </select>
                 </Field>
-                <Field label="Số lượng nhập lại kho (0 nếu chỉ hoàn tiền)">
+                <Field
+                  label={tx("Số lượng nhập lại kho (0 nếu chỉ hoàn tiền)")}
+                >
                   <input
                     type="number"
                     min="0"
@@ -976,7 +1021,7 @@ function AdminOrder() {
                     }
                   />
                 </Field>
-                <Field label="Lý do">
+                <Field label={tx("Lý do")}>
                   <textarea
                     required
                     value={form.reason}
@@ -986,9 +1031,9 @@ function AdminOrder() {
                   />
                 </Field>
                 <p className="muted small">
-                  Trả hàng điều chỉnh doanh thu và giá vốn theo snapshot. Hoàn
-                  tiền chỉ điều chỉnh thực thu, không trừ doanh thu lần hai. Chỉ
-                  nhập lại kho hàng thực sự nhận lại.
+                  {tx(
+                    "Trả hàng điều chỉnh doanh thu và giá vốn theo snapshot. Hoàn tiền chỉ điều chỉnh thực thu, không trừ doanh thu lần hai. Chỉ nhập lại kho hàng thực sự nhận lại.",
+                  )}
                 </p>
               </>
             )}
@@ -997,7 +1042,7 @@ function AdminOrder() {
               loading={busy}
               variant={action === "cancel" ? "danger" : "dark"}
             >
-              Xác nhận thao tác
+              {tx("Xác nhận thao tác")}
             </Button>
           </form>
         </Modal>
@@ -1015,8 +1060,8 @@ function Products() {
   return (
     <>
       <Heading
-        title="Sản phẩm"
-        description="Chăm chút danh mục, giá bán và tồn kho."
+        title={tx("Sản phẩm")}
+        description={tx("Chăm chút danh mục, giá bán và tồn kho.")}
       >
         <Button
           variant="dark"
@@ -1038,7 +1083,7 @@ function Products() {
               variants: [
                 {
                   sku: "",
-                  name: "Mặc định",
+                  name: tx("Mặc định"),
                   price: 0,
                   cost: 0,
                   stock: 0,
@@ -1048,7 +1093,8 @@ function Products() {
             })
           }
         >
-          <Plus size={16} /> Thêm sản phẩm
+          <Plus size={16} />
+          {tx(" Thêm sản phẩm")}
         </Button>
       </Heading>
       <ErrorBox>{error}</ErrorBox>
@@ -1057,14 +1103,15 @@ function Products() {
           <div className="search-input">
             <Search size={16} />
             <input
-              aria-label="Tìm sản phẩm quản trị"
-              placeholder="Tìm tên hoặc SKU…"
+              aria-label={tx("Tìm sản phẩm quản trị")}
+              placeholder={tx("Tìm tên hoặc SKU…")}
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
           </div>
           <span className="muted small">
-            {data?.products.length || 0} sản phẩm
+            {data?.products.length || 0}
+            {tx(" sản phẩm")}
           </span>
         </div>
         {data ? (
@@ -1072,12 +1119,12 @@ function Products() {
             <thead>
               <tr>
                 {[
-                  "Sản phẩm",
-                  "Danh mục",
-                  "Giá bán",
-                  "Giá vốn",
-                  "Tồn kho",
-                  "Trạng thái",
+                  tx("Sản phẩm"),
+                  tx("Danh mục"),
+                  tx("Giá bán"),
+                  tx("Giá vốn"),
+                  tx("Tồn kho"),
+                  tx("Trạng thái"),
                   "",
                 ].map((x, i) => (
                   <th key={i}>{x}</th>
@@ -1093,7 +1140,7 @@ function Products() {
                 )
                 .map((p: Obj) => (
                   <tr key={p.id}>
-                    <td data-label="Sản phẩm">
+                    <td data-label={tx("Sản phẩm")}>
                       <div className="table-product">
                         {p.images[0] && <img src={asset(p.images[0])} alt="" />}
                         <div>
@@ -1102,24 +1149,28 @@ function Products() {
                         </div>
                       </div>
                     </td>
-                    <td data-label="Danh mục">{p.category}</td>
-                    <td data-label="Giá bán">{money(p.variants[0]?.price)}</td>
-                    <td data-label="Giá vốn">{money(p.variants[0]?.cost)}</td>
-                    <td data-label="Tồn kho">
+                    <td data-label={tx("Danh mục")}>{p.category}</td>
+                    <td data-label={tx("Giá bán")}>
+                      {money(p.variants[0]?.price)}
+                    </td>
+                    <td data-label={tx("Giá vốn")}>
+                      {money(p.variants[0]?.cost)}
+                    </td>
+                    <td data-label={tx("Tồn kho")}>
                       {p.variants.reduce(
                         (s: number, v: Obj) => s + Number(v.stock),
                         0,
                       )}
                     </td>
-                    <td data-label="Trạng thái">
+                    <td data-label={tx("Trạng thái")}>
                       <Badge tone={p.active == 1 ? "lime" : ""}>
-                        {p.active == 1 ? "Đang bán" : "Ngừng bán"}
+                        {p.active == 1 ? tx("Đang bán") : tx("Ngừng bán")}
                       </Badge>
                     </td>
                     <td>
                       <button
                         className="icon-button"
-                        aria-label={"Sửa " + p.name}
+                        aria-label={tx("Sửa ") + p.name}
                         onClick={() => setEdit(structuredClone(p))}
                       >
                         <Pencil size={16} />
@@ -1164,7 +1215,7 @@ function ProductEditor({ product, categories, onClose, onSaved }: any) {
   const { refresh } = useStore();
   return (
     <Modal
-      title={f.id ? "Sửa sản phẩm" : "Thêm sản phẩm"}
+      title={f.id ? tx("Sửa sản phẩm") : tx("Thêm sản phẩm")}
       onClose={onClose}
       wide
     >
@@ -1198,9 +1249,9 @@ function ProductEditor({ product, categories, onClose, onSaved }: any) {
       >
         <div className="form-grid">
           {[
-            ["name", "Tên sản phẩm"],
-            ["slug", "Slug (a-z, số, dấu -)"],
-            ["brand", "Thương hiệu"],
+            ["name", tx("Tên sản phẩm")],
+            ["slug", tx("Slug (a-z, số, dấu -)")],
+            ["brand", tx("Thương hiệu")],
           ].map(([k, l]) => (
             <Field key={k} label={l}>
               <input
@@ -1218,7 +1269,7 @@ function ProductEditor({ product, categories, onClose, onSaved }: any) {
               />
             </Field>
           ))}
-          <Field label="Danh mục">
+          <Field label={tx("Danh mục")}>
             <select
               value={f.category_id}
               onChange={(e) => change("category_id", Number(e.target.value))}
@@ -1231,20 +1282,24 @@ function ProductEditor({ product, categories, onClose, onSaved }: any) {
             </select>
           </Field>
         </div>
-        <Field label="Mô tả">
+        <Field label={tx("Mô tả")}>
           <textarea
             rows={4}
             value={f.description}
             onChange={(e) => change("description", e.target.value)}
           />
         </Field>
+        <ContentTranslations
+          value={f.translations}
+          onChange={(v) => change("translations", v)}
+        />
         <div className="images-editor">
           {f.images.map((s: string, i: number) => (
             <div key={i}>
               <img src={asset(s)} alt="" />
               <button
                 type="button"
-                aria-label="Xoá ảnh"
+                aria-label={tx("Xoá ảnh")}
                 onClick={() =>
                   change(
                     "images",
@@ -1257,7 +1312,7 @@ function ProductEditor({ product, categories, onClose, onSaved }: any) {
             </div>
           ))}
         </div>
-        <Field label="Thêm ảnh JPG, PNG hoặc WebP (tối đa 5MB)">
+        <Field label={tx("Thêm ảnh JPG, PNG hoặc WebP (tối đa 5MB)")}>
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp"
@@ -1275,9 +1330,9 @@ function ProductEditor({ product, categories, onClose, onSaved }: any) {
         </Field>
         <div className="toolbar">
           {[
-            ["active", "Đang bán"],
-            ["featured", "Nổi bật"],
-            ["pinned", "Ghim sản phẩm"],
+            ["active", tx("Đang bán")],
+            ["featured", tx("Nổi bật")],
+            ["pinned", tx("Ghim sản phẩm")],
           ].map(([k, l]) => (
             <label className="check" key={k}>
               <input
@@ -1288,7 +1343,7 @@ function ProductEditor({ product, categories, onClose, onSaved }: any) {
               {l}
             </label>
           ))}
-          <Field label="Thứ tự">
+          <Field label={tx("Thứ tự")}>
             <input
               type="number"
               min="0"
@@ -1298,35 +1353,38 @@ function ProductEditor({ product, categories, onClose, onSaved }: any) {
           </Field>
         </div>
         <div className="product-help">
-          <h3>Bán một mẫu hay nhiều lựa chọn?</h3>
+          <h3>{tx("Bán một mẫu hay nhiều lựa chọn?")}</h3>
           <p>
-            <b>Một mẫu:</b> giữ dòng “Mặc định”, nhập giá bán, giá vốn và số
-            lượng còn trong kho là xong.
+            <b>{tx("Một mẫu:")}</b>
+            {tx(
+              " giữ dòng “Mặc định”, nhập giá bán, giá vốn và số lượng còn trong kho là xong.",
+            )}
           </p>
           <p>
-            <b>Nhiều màu / cấu hình:</b> thêm mỗi lựa chọn thành một biến thể,
-            ví dụ “Đen”, “Trắng” hoặc “Bluetooth”. Mỗi biến thể có giá và tồn
-            kho riêng.
+            <b>{tx("Nhiều màu / cấu hình:")}</b>
+            {tx(
+              " thêm mỗi lựa chọn thành một biến thể, ví dụ “Đen”, “Trắng” hoặc “Bluetooth”. Mỗi biến thể có giá và tồn kho riêng.",
+            )}
           </p>
           <details>
-            <summary>SKU và đường dẫn sản phẩm là gì?</summary>
+            <summary>{tx("SKU và đường dẫn sản phẩm là gì?")}</summary>
             <p>
-              SKU là mã kho để phân biệt từng mẫu, ví dụ H1-DEN. Có thể để
-              trống, hệ thống tự tạo mã riêng. Slug là phần chữ trong đường dẫn,
-              tự điền theo tên sản phẩm. Giá vốn chỉ dùng cho báo cáo nội bộ.
+              {tx(
+                "SKU là mã kho để phân biệt từng mẫu, ví dụ H1-DEN. Có thể để trống, hệ thống tự tạo mã riêng. Slug là phần chữ trong đường dẫn, tự điền theo tên sản phẩm. Giá vốn chỉ dùng cho báo cáo nội bộ.",
+              )}
             </p>
           </details>
         </div>
-        <h3>Giá & tồn kho theo lựa chọn</h3>
+        <h3>{tx("Giá & tồn kho theo lựa chọn")}</h3>
         {f.variants.map((v: Obj, i: number) => (
           <div className="variant-editor" key={i}>
             <div className="form-grid">
               {[
-                ["sku", "Mã kho SKU (để trống để tự tạo)", "text"],
-                ["name", "Tên biến thể", "text"],
-                ["price", "Giá bán (VND)", "number"],
-                ["cost", "Giá vốn (VND)", "number"],
-                ["stock", "Tồn kho khả dụng", "number"],
+                ["sku", tx("Mã kho SKU (để trống để tự tạo)"), "text"],
+                ["name", tx("Tên biến thể"), "text"],
+                ["price", tx("Giá bán (VND)"), "number"],
+                ["cost", tx("Giá vốn (VND)"), "number"],
+                ["stock", tx("Tồn kho khả dụng"), "number"],
               ].map(([k, l, t]) => (
                 <Field key={k} label={l}>
                   <input
@@ -1368,7 +1426,7 @@ function ProductEditor({ product, categories, onClose, onSaved }: any) {
                     )
                   }
                 />{" "}
-                Đang bán biến thể
+                {tx("Đang bán biến thể")}
               </label>
             </div>
           </div>
@@ -1383,12 +1441,13 @@ function ProductEditor({ product, categories, onClose, onSaved }: any) {
             ])
           }
         >
-          <Plus size={14} /> Thêm biến thể
+          <Plus size={14} />
+          {tx(" Thêm biến thể")}
         </Button>
         <div className="form-divider">
-          <h3>Flash sale (bỏ giá trống để tắt)</h3>
+          <h3>{tx("Flash sale (bỏ giá trống để tắt)")}</h3>
           <div className="form-grid">
-            <Field label="Giá flash sale (VND)">
+            <Field label={tx("Giá flash sale (VND)")}>
               <input
                 type="number"
                 min="0"
@@ -1402,10 +1461,10 @@ function ProductEditor({ product, categories, onClose, onSaved }: any) {
               />
             </Field>
             {[
-              ["flash_start", "Bắt đầu"],
-              ["flash_end", "Kết thúc"],
+              ["flash_start", tx("Bắt đầu")],
+              ["flash_end", tx("Kết thúc")],
             ].map(([k, l]) => (
-              <Field key={k} label={l + " · giờ Việt Nam"}>
+              <Field key={k} label={l + tx(" · giờ Việt Nam")}>
                 <input
                   type="datetime-local"
                   value={f[k]?.replace(" ", "T") || ""}
@@ -1417,7 +1476,7 @@ function ProductEditor({ product, categories, onClose, onSaved }: any) {
         </div>
         <ErrorBox>{error}</ErrorBox>
         <Button variant="dark full" loading={busy}>
-          Lưu sản phẩm
+          {tx("Lưu sản phẩm")}
         </Button>
       </form>
     </Modal>
@@ -1428,12 +1487,16 @@ function Categories() {
   const [edit, setEdit] = useState<Obj | null>(null);
   return (
     <>
-      <Heading title="Danh mục" description="Tổ chức sản phẩm để khách dễ tìm.">
+      <Heading
+        title={tx("Danh mục")}
+        description={tx("Tổ chức sản phẩm để khách dễ tìm.")}
+      >
         <Button
           variant="dark"
           onClick={() => setEdit({ name: "", slug: "", sort_order: 0 })}
         >
-          <Plus size={16} /> Thêm danh mục
+          <Plus size={16} />
+          {tx(" Thêm danh mục")}
         </Button>
       </Heading>
       <ErrorBox>{error}</ErrorBox>
@@ -1442,22 +1505,22 @@ function Categories() {
           <table className="responsive-table">
             <thead>
               <tr>
-                <th>Tên</th>
+                <th>{tx("Tên")}</th>
                 <th>Slug</th>
-                <th>Thứ tự</th>
+                <th>{tx("Thứ tự")}</th>
                 <th />
               </tr>
             </thead>
             <tbody>
               {data.map((c: Obj) => (
                 <tr key={c.id}>
-                  <td data-label="Tên">{c.name}</td>
+                  <td data-label={tx("Tên")}>{c.name}</td>
                   <td data-label="Slug">{c.slug}</td>
-                  <td data-label="Thứ tự">{c.sort_order}</td>
+                  <td data-label={tx("Thứ tự")}>{c.sort_order}</td>
                   <td>
                     <button
                       className="icon-button"
-                      aria-label="Sửa danh mục"
+                      aria-label={tx("Sửa danh mục")}
                       onClick={() => setEdit(c)}
                     >
                       <Pencil size={16} />
@@ -1473,13 +1536,13 @@ function Categories() {
       </section>
       {edit && (
         <SimpleEditor
-          title="Danh mục"
+          title={tx("Danh mục")}
           initial={edit}
           route="admin/categories"
           fields={[
-            ["name", "Tên", "text"],
+            ["name", tx("Tên"), "text"],
             ["slug", "Slug", "text"],
-            ["sort_order", "Thứ tự", "number"],
+            ["sort_order", tx("Thứ tự"), "number"],
           ]}
           onClose={() => setEdit(null)}
           onSaved={() => {
@@ -1569,9 +1632,16 @@ function SimpleEditor({
             </Field>
           ),
         )}
+        {route === "admin/categories" && (
+          <ContentTranslations
+            category
+            value={f.translations}
+            onChange={(v) => setF({ ...f, translations: v })}
+          />
+        )}
         <ErrorBox>{error}</ErrorBox>
         <Button loading={busy} variant="dark full">
-          Lưu
+          {tx("Lưu")}
         </Button>
       </form>
     </Modal>
@@ -1583,8 +1653,8 @@ function Coupons() {
   return (
     <>
       <Heading
-        title="Mã giảm giá"
-        description="Điều kiện, thời gian và giới hạn sử dụng rõ ràng."
+        title={tx("Mã giảm giá")}
+        description={tx("Điều kiện, thời gian và giới hạn sử dụng rõ ràng.")}
       >
         <Button
           variant="dark"
@@ -1602,7 +1672,8 @@ function Coupons() {
             })
           }
         >
-          <Plus size={16} /> Thêm mã
+          <Plus size={16} />
+          {tx(" Thêm mã")}
         </Button>
       </Heading>
       <ErrorBox>{error}</ErrorBox>
@@ -1612,11 +1683,11 @@ function Coupons() {
             <thead>
               <tr>
                 {[
-                  "Mã",
-                  "Mức giảm",
-                  "Đơn tối thiểu",
-                  "Lượt dùng",
-                  "Hết hạn",
+                  tx("Mã"),
+                  tx("Mức giảm"),
+                  tx("Đơn tối thiểu"),
+                  tx("Lượt dùng"),
+                  tx("Hết hạn"),
                   "",
                 ].map((s, i) => (
                   <th key={i}>{s}</th>
@@ -1626,21 +1697,21 @@ function Coupons() {
             <tbody>
               {data.map((c: Obj) => (
                 <tr key={c.code}>
-                  <td data-label="Mã">
+                  <td data-label={tx("Mã")}>
                     <strong>{c.code}</strong>
                   </td>
-                  <td data-label="Mức giảm">
+                  <td data-label={tx("Mức giảm")}>
                     {c.type === "percent" ? c.value + "%" : money(c.value)}
                   </td>
-                  <td data-label="Đơn tối thiểu">{money(c.min_total)}</td>
-                  <td data-label="Lượt dùng">
+                  <td data-label={tx("Đơn tối thiểu")}>{money(c.min_total)}</td>
+                  <td data-label={tx("Lượt dùng")}>
                     {c.uses}/{c.max_uses}
                   </td>
-                  <td data-label="Hết hạn">{date(c.ends_at)}</td>
+                  <td data-label={tx("Hết hạn")}>{date(c.ends_at)}</td>
                   <td>
                     <button
                       className="icon-button"
-                      aria-label="Sửa mã"
+                      aria-label={tx("Sửa mã")}
                       onClick={() => setEdit(c)}
                     >
                       <Pencil size={16} />
@@ -1656,27 +1727,27 @@ function Coupons() {
       </div>
       {edit && (
         <SimpleEditor
-          title="Thiết lập mã giảm giá"
+          title={tx("Thiết lập mã giảm giá")}
           initial={edit}
           route="admin/coupons"
           fields={[
-            ["code", "Mã", "text"],
+            ["code", tx("Mã"), "text"],
             [
               "type",
-              "Loại giảm",
+              tx("Loại giảm"),
               "select",
               [
-                ["percent", "Phần trăm"],
-                ["fixed", "Số tiền cố định"],
+                ["percent", tx("Phần trăm")],
+                ["fixed", tx("Số tiền cố định")],
               ],
             ],
-            ["value", "Giá trị", "number"],
-            ["min_total", "Đơn tối thiểu (VND)", "number"],
-            ["max_discount", "Giảm tối đa (VND, 0 = không giảm)", "number"],
-            ["max_uses", "Lượt dùng tối đa", "number"],
-            ["starts_at", "Bắt đầu · giờ Việt Nam", "datetime-local"],
-            ["ends_at", "Kết thúc · giờ Việt Nam", "datetime-local"],
-            ["active", "Đang kích hoạt", "checkbox"],
+            ["value", tx("Giá trị"), "number"],
+            ["min_total", tx("Đơn tối thiểu (VND)"), "number"],
+            ["max_discount", tx("Giảm tối đa (VND, 0 = không giảm)"), "number"],
+            ["max_uses", tx("Lượt dùng tối đa"), "number"],
+            ["starts_at", tx("Bắt đầu · giờ Việt Nam"), "datetime-local"],
+            ["ends_at", tx("Kết thúc · giờ Việt Nam"), "datetime-local"],
+            ["active", tx("Đang kích hoạt"), "checkbox"],
           ]}
           onClose={() => setEdit(null)}
           onSaved={() => {
@@ -1709,15 +1780,15 @@ function Reports() {
     "receivable",
   ];
   const labels = [
-    "Doanh thu thuần",
-    "Giá vốn",
-    "Lãi gộp",
-    "Ship thu khách",
-    "Giao thực trả",
-    "Chi phí khác",
-    "Lãi sau chi phí",
-    "Tiền thực thu ròng",
-    "Công nợ",
+    tx("Doanh thu thuần"),
+    tx("Giá vốn"),
+    tx("Lãi gộp"),
+    tx("Ship thu khách"),
+    tx("Giao thực trả"),
+    tx("Chi phí khác"),
+    tx("Lãi sau chi phí"),
+    tx("Tiền thực thu ròng"),
+    tx("Công nợ"),
   ];
   const quick = (type: string) => {
     const d = new Date(today() + "T00:00:00Z");
@@ -1738,8 +1809,8 @@ function Reports() {
   return (
     <>
       <Heading
-        title="Báo cáo bán hàng"
-        description="Doanh thu, giá vốn và lãi/lỗ từ dữ liệu đơn thực tế."
+        title={tx("Báo cáo bán hàng")}
+        description={tx("Doanh thu, giá vốn và lãi/lỗ từ dữ liệu đơn thực tế.")}
       >
         <div className="toolbar" style={{ margin: 0 }}>
           <Button
@@ -1747,14 +1818,14 @@ function Reports() {
             disabled={!r}
             onClick={() =>
               csv(`Bao-cao-${from}-${to}.csv`, [
-                ["Mã đơn", "Ngày đặt", "Trạng thái", ...labels],
+                [tx("Mã đơn"), tx("Ngày đặt"), tx("Trạng thái"), ...labels],
                 ...r.rows.map((o: Obj) => [
                   o.code,
                   o.created_at,
                   status[o.status],
                   ...keys.map((k) => o[k]),
                 ]),
-                ["TỔNG", "", "", ...keys.map((k) => r.totals[k])],
+                [tx("TỔNG"), "", "", ...keys.map((k) => r.totals[k])],
               ])
             }
           >
@@ -1769,7 +1840,7 @@ function Reports() {
               try {
                 await (await import("./pdf")).reportPDF(r);
               } catch {
-                setPdfError("Không tạo được PDF. Vui lòng thử lại.");
+                setPdfError(tx("Không tạo được PDF. Vui lòng thử lại."));
               } finally {
                 setPdfBusy(false);
               }
@@ -1782,32 +1853,32 @@ function Reports() {
       <div className="panel">
         <div className="toolbar">
           <Button variant="outline" onClick={() => quick("today")}>
-            Hôm nay
+            {tx("Hôm nay")}
           </Button>
           <Button variant="outline" onClick={() => quick("week")}>
-            Tuần này
+            {tx("Tuần này")}
           </Button>
           <Button variant="outline" onClick={() => quick("month")}>
-            Tháng này
+            {tx("Tháng này")}
           </Button>
           <input
             type="date"
-            aria-label="Báo cáo từ ngày"
+            aria-label={tx("Báo cáo từ ngày")}
             value={from}
             onChange={(e) => setFrom(e.target.value)}
           />
           <input
             type="date"
-            aria-label="Báo cáo đến ngày"
+            aria-label={tx("Báo cáo đến ngày")}
             value={to}
             onChange={(e) => setTo(e.target.value)}
           />
           <select
-            aria-label="Trạng thái báo cáo"
+            aria-label={tx("Trạng thái báo cáo")}
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           >
-            <option value="">Mọi trạng thái</option>
+            <option value="">{tx("Mọi trạng thái")}</option>
             {[
               "received",
               "confirmed",
@@ -1823,9 +1894,10 @@ function Reports() {
           </select>
         </div>
         <p className="report-note">
-          {r?.basis} Múi giờ Asia/Ho_Chi_Minh. Tiền thực thu = đã nhận − đã
-          hoàn; hoàn tiền không trừ doanh thu lần hai. Trả hàng điều chỉnh doanh
-          thu và giá vốn theo từng dòng hàng.
+          {r?.basis}
+          {tx(
+            " Múi giờ Asia/Ho_Chi_Minh. Tiền thực thu = đã nhận − đã hoàn; hoàn tiền không trừ doanh thu lần hai. Trả hàng điều chỉnh doanh thu và giá vốn theo từng dòng hàng.",
+          )}
         </p>
       </div>
       <ErrorBox>{error || pdfError}</ErrorBox>
@@ -1839,8 +1911,8 @@ function Reports() {
                 value={money(r.totals[k])}
                 note={
                   i === 6
-                    ? "Lãi gộp + ship thu − giao thực − chi phí khác"
-                    : "Theo bộ lọc hiện tại"
+                    ? tx("Lãi gộp + ship thu − giao thực − chi phí khác")
+                    : tx("Theo bộ lọc hiện tại")
                 }
                 primary={i === 0 || i === 6}
               />
@@ -1848,15 +1920,18 @@ function Reports() {
           </div>
           <section className="panel">
             <div className="panel-title">
-              <h2>Bảng kê từng đơn</h2>
-              <Badge>{r.rows.length} đơn</Badge>
+              <h2>{tx("Bảng kê từng đơn")}</h2>
+              <Badge>
+                {r.rows.length}
+                {tx(" đơn")}
+              </Badge>
             </div>
             <div className="table-wrap">
               <table className="responsive-table">
                 <thead>
                   <tr>
-                    <th>Mã đơn</th>
-                    <th>Trạng thái</th>
+                    <th>{tx("Mã đơn")}</th>
+                    <th>{tx("Trạng thái")}</th>
                     {labels.map((l) => (
                       <th key={l}>{l}</th>
                     ))}
@@ -1865,12 +1940,12 @@ function Reports() {
                 <tbody>
                   {r.rows.map((o: Obj) => (
                     <tr key={o.id}>
-                      <td data-label="Mã đơn">
+                      <td data-label={tx("Mã đơn")}>
                         <Link to={"/admin/orders/" + o.id}>
                           <strong>{o.code}</strong>
                         </Link>
                       </td>
-                      <td data-label="Trạng thái">{status[o.status]}</td>
+                      <td data-label={tx("Trạng thái")}>{status[o.status]}</td>
                       {keys.map((k, i) => (
                         <td key={k} data-label={labels[i]}>
                           {money(o[k])}
@@ -1879,8 +1954,8 @@ function Reports() {
                     </tr>
                   ))}
                   <tr>
-                    <td data-label="Tổng">
-                      <strong>TỔNG</strong>
+                    <td data-label={tx("Tổng")}>
+                      <strong>{tx("TỔNG")}</strong>
                     </td>
                     <td />
                     {keys.map((k, i) => (
@@ -1894,7 +1969,7 @@ function Reports() {
             </div>
             {!r.rows.length && (
               <p className="report-note">
-                Chưa có đơn trong khoảng ngày đã chọn.
+                {tx("Chưa có đơn trong khoảng ngày đã chọn.")}
               </p>
             )}
           </section>
@@ -1907,20 +1982,24 @@ function Reports() {
 }
 function StoreSettings() {
   const { data, error, load } = useLoad("admin/settings");
-  const [tab, setTab] = useState("store");
+  const [params, setParams] = useSearchParams();
+  const tab = params.get("tab") || "store";
+  const setTab = (value: string) => setParams({ tab: value });
   return (
     <>
       <Heading
-        title="Thiết lập cửa hàng"
-        description="Thông tin, giao hàng, thanh toán và Telegram."
+        title={tx("Thiết lập cửa hàng")}
+        description={tx("Thông tin, giao hàng, thanh toán và Telegram.")}
       />
       <div className="settings-tabs">
         {[
-          ["store", "Cửa hàng"],
-          ["shipping", "Vận chuyển"],
-          ["payment", "Thanh toán"],
+          ["store", tx("Cửa hàng")],
+          ["appearance", tx("Banner & thương hiệu")],
+          ["seo", "SEO website"],
+          ["shipping", tx("Vận chuyển")],
+          ["payment", tx("Thanh toán")],
           ["telegram", "Telegram"],
-          ["maps", "Bản đồ & kết nối"],
+          ["maps", tx("Bản đồ & kết nối")],
         ].map(([k, l]) => (
           <button
             className={tab === k ? "active" : ""}
@@ -1932,7 +2011,11 @@ function StoreSettings() {
         ))}
       </div>
       <ErrorBox>{error}</ErrorBox>
-      {tab === "maps" ? (
+      {tab === "appearance" ? (
+        <ContentSettings />
+      ) : tab === "seo" ? (
+        <SeoSettings />
+      ) : tab === "maps" ? (
         <MapsSettings />
       ) : data ? (
         <SettingsForm
@@ -1955,31 +2038,33 @@ function SettingsForm({ tab, data, reload }: any) {
   const { refresh } = useStore();
   const fields: Obj = {
     store: [
-      ["name", "Tên cửa hàng", "text"],
-      ["address", "Địa chỉ", "text"],
-      ["phone", "Điện thoại", "text"],
-      ["email", "Email hỗ trợ", "email"],
-      ["hero_title", "Tiêu đề banner (dùng \\n để xuống dòng)", "text"],
-      ["hero_subtitle", "Mô tả banner", "text"],
-      ["banner", "Nội dung giới thiệu", "text"],
+      ["name", tx("Tên cửa hàng"), "text"],
+      ["address", tx("Địa chỉ"), "text"],
+      ["phone", tx("Điện thoại"), "text"],
+      ["email", tx("Email hỗ trợ"), "email"],
+      ["banner", tx("Nội dung giới thiệu"), "text"],
     ],
     shipping: [
-      ["base_fee", "Phí cơ bản (VND)", "number"],
-      ["included_km", "Số km bao gồm", "number"],
-      ["per_km", "Giá mỗi km thêm (VND)", "number"],
-      ["max_km", "Khoảng cách tối đa (km)", "number"],
-      ["free_above", "Miễn ship từ tiền hàng ròng (0 = tắt)", "number"],
-      ["round_step", "Bước làm tròn (km)", "number"],
+      ["base_fee", tx("Phí cơ bản (VND)"), "number"],
+      ["included_km", tx("Số km bao gồm"), "number"],
+      ["per_km", tx("Giá mỗi km thêm (VND)"), "number"],
+      ["max_km", tx("Khoảng cách tối đa (km)"), "number"],
+      ["free_above", tx("Miễn ship từ tiền hàng ròng (0 = tắt)"), "number"],
+      ["round_step", tx("Bước làm tròn (km)"), "number"],
     ],
     payment: [
-      ["cod", "Bật COD", "checkbox"],
-      ["bank", "Bật chuyển khoản", "checkbox"],
-      ["demo", "Dữ liệu ngân hàng demo", "checkbox"],
-      ["bank_bin", "Mã BIN ngân hàng", "text"],
-      ["bank_account", "Số tài khoản", "text"],
-      ["bank_owner", "Chủ tài khoản", "text"],
-      ["transfer_template", "Mẫu nội dung chuyển khoản, cần {code}", "text"],
-      ["instructions", "Hướng dẫn thanh toán", "text"],
+      ["cod", tx("Bật COD"), "checkbox"],
+      ["bank", tx("Bật chuyển khoản"), "checkbox"],
+      ["demo", tx("Dữ liệu ngân hàng demo"), "checkbox"],
+      ["bank_bin", tx("Mã BIN ngân hàng"), "text"],
+      ["bank_account", tx("Số tài khoản"), "text"],
+      ["bank_owner", tx("Chủ tài khoản"), "text"],
+      [
+        "transfer_template",
+        tx("Mẫu nội dung chuyển khoản, cần {code}"),
+        "text",
+      ],
+      ["instructions", tx("Hướng dẫn thanh toán"), "text"],
     ],
   };
   const save = async (e: React.FormEvent) => {
@@ -2005,17 +2090,17 @@ function SettingsForm({ tab, data, reload }: any) {
           {
             (
               {
-                store: "Thông tin & nội dung",
-                shipping: "Quy tắc giao hàng",
-                payment: "Phương thức thanh toán",
-                telegram: "Kết nối Telegram",
+                store: tx("Thông tin & nội dung"),
+                shipping: tx("Quy tắc giao hàng"),
+                payment: tx("Phương thức thanh toán"),
+                telegram: tx("Kết nối Telegram"),
               } as Obj
             )[tab]
           }
         </h2>
         {tab === "shipping" && (
           <div className="shipping-origin-editor">
-            <Field label="Địa chỉ xuất phát giao hàng">
+            <Field label={tx("Địa chỉ xuất phát giao hàng")}>
               <AddressSearch
                 value={f.origin_address || ""}
                 region=""
@@ -2048,11 +2133,12 @@ function SettingsForm({ tab, data, reload }: any) {
                   setF({ ...f, routing_enabled: e.target.checked })
                 }
               />{" "}
-              Tự tính phí giao theo quãng đường xe chạy
+              {tx("Tự tính phí giao theo quãng đường xe chạy")}
             </label>
             <p className="report-note">
-              Chọn đúng địa chỉ cửa hàng trước khi bật. Khi dịch vụ đường đi
-              lỗi, đơn chờ xác nhận phí giao.
+              {tx(
+                "Chọn đúng địa chỉ cửa hàng trước khi bật. Khi dịch vụ đường đi lỗi, đơn chờ xác nhận phí giao.",
+              )}
             </p>
           </div>
         )}
@@ -2088,14 +2174,14 @@ function SettingsForm({ tab, data, reload }: any) {
               ),
             )}
             {tab === "shipping" && (
-              <Field label="Cách làm tròn phần km thêm">
+              <Field label={tx("Cách làm tròn phần km thêm")}>
                 <select
                   value={f.round_mode}
                   onChange={(e) => setF({ ...f, round_mode: e.target.value })}
                 >
-                  <option value="ceil">Làm tròn lên</option>
-                  <option value="nearest">Làm tròn gần nhất</option>
-                  <option value="exact">Không làm tròn km</option>
+                  <option value="ceil">{tx("Làm tròn lên")}</option>
+                  <option value="nearest">{tx("Làm tròn gần nhất")}</option>
+                  <option value="exact">{tx("Không làm tròn km")}</option>
                 </select>
               </Field>
             )}
@@ -2103,13 +2189,16 @@ function SettingsForm({ tab, data, reload }: any) {
         ) : (
           <>
             <Badge tone={f.configured ? "lime" : ""}>
-              {f.configured ? "Đã cấu hình token" : "Chưa cấu hình token"}
+              {f.configured
+                ? tx("Đã cấu hình token")
+                : tx("Chưa cấu hình token")}
             </Badge>
             <p className="report-note">
-              Bot token và webhook secret được mã hoá trong database, không trả
-              về trình duyệt. Lưu xong bấm Đăng ký webhook bên dưới.
+              {tx(
+                "Bot token và webhook secret được mã hoá trong database, không trả về trình duyệt. Lưu xong bấm Đăng ký webhook bên dưới.",
+              )}
             </p>
-            <Field label="Bot token mới (để trống giữ nguyên)">
+            <Field label={tx("Bot token mới (để trống giữ nguyên)")}>
               <input
                 type="password"
                 autoComplete="new-password"
@@ -2117,7 +2206,11 @@ function SettingsForm({ tab, data, reload }: any) {
                 onChange={(e) => setF({ ...f, token: e.target.value })}
               />
             </Field>
-            <Field label="Webhook secret mới (ít nhất 32 ký tự, để trống giữ nguyên)">
+            <Field
+              label={tx(
+                "Webhook secret mới (ít nhất 32 ký tự, để trống giữ nguyên)",
+              )}
+            >
               <input
                 type="password"
                 autoComplete="new-password"
@@ -2125,13 +2218,15 @@ function SettingsForm({ tab, data, reload }: any) {
                 onChange={(e) => setF({ ...f, secret: e.target.value })}
               />
             </Field>
-            <Field label="Chat ID được phép">
+            <Field label={tx("Chat ID được phép")}>
               <input
                 value={f.chat_id}
                 onChange={(e) => setF({ ...f, chat_id: e.target.value })}
               />
             </Field>
-            <Field label="Telegram User ID được phép, phân cách bằng dấu phẩy">
+            <Field
+              label={tx("Telegram User ID được phép, phân cách bằng dấu phẩy")}
+            >
               <input
                 value={
                   Array.isArray(f.allowed_users)
@@ -2159,7 +2254,7 @@ function SettingsForm({ tab, data, reload }: any) {
               }}
               loading={busy}
             >
-              Đăng ký webhook
+              {tx("Đăng ký webhook")}
             </Button>
           </>
         )}
@@ -2167,28 +2262,29 @@ function SettingsForm({ tab, data, reload }: any) {
           <div className="notice">
             <Truck size={17} />
             <p>
-              Ví dụ 15.000đ / 3km đầu + 5.000đ/km → 5km = 25.000đ. Routing cần
-              bật trong config.php. Không có quãng đường sẽ chờ báo phí thủ
-              công.
+              {tx(
+                "Ví dụ 15.000đ / 3km đầu + 5.000đ/km → 5km = 25.000đ. Routing cần bật trong config.php. Không có quãng đường sẽ chờ báo phí thủ công.",
+              )}
             </p>
           </div>
         )}
         {tab === "payment" && (
           <p className="report-note">
-            VietQR chỉ tạo mã thanh toán theo số tiền, không kết nối xác thực
-            ngân hàng. Chuyển khoản luôn cần xác nhận thủ công.
+            {tx(
+              "VietQR chỉ tạo mã thanh toán theo số tiền, không kết nối xác thực ngân hàng. Chuyển khoản luôn cần xác nhận thủ công.",
+            )}
           </p>
         )}
         <ErrorBox>{error}</ErrorBox>
-        {success && <Success>Đã lưu thiết lập.</Success>}
+        {success && <Success>{tx("Đã lưu thiết lập.")}</Success>}
         <Button loading={busy} variant="dark">
-          Lưu thay đổi
+          {tx("Lưu thay đổi")}
         </Button>
       </form>
       {tab === "telegram" && (
         <section className="panel">
           <div className="panel-title">
-            <h2>Hàng đợi gửi thông báo</h2>
+            <h2>{tx("Hàng đợi gửi thông báo")}</h2>
             <Button
               variant="outline"
               onClick={async () => {
@@ -2200,28 +2296,29 @@ function SettingsForm({ tab, data, reload }: any) {
                 }
               }}
             >
-              <RefreshCw size={15} /> Thử lại
+              <RefreshCw size={15} />
+              {tx(" Thử lại")}
             </Button>
           </div>
           <div className="table-wrap">
             <table className="responsive-table">
               <thead>
                 <tr>
-                  <th>ID đơn</th>
-                  <th>Trạng thái</th>
-                  <th>Số lần</th>
-                  <th>Lỗi</th>
-                  <th>Lần tiếp</th>
+                  <th>{tx("ID đơn")}</th>
+                  <th>{tx("Trạng thái")}</th>
+                  <th>{tx("Số lần")}</th>
+                  <th>{tx("Lỗi")}</th>
+                  <th>{tx("Lần tiếp")}</th>
                 </tr>
               </thead>
               <tbody>
                 {data.outbox.map((o: Obj) => (
                   <tr key={o.id}>
-                    <td data-label="ID đơn">{o.order_id}</td>
-                    <td data-label="Trạng thái">{o.state}</td>
-                    <td data-label="Số lần">{o.attempts}</td>
-                    <td data-label="Lỗi">{o.last_error || "—"}</td>
-                    <td data-label="Lần tiếp">{o.next_attempt}</td>
+                    <td data-label={tx("ID đơn")}>{o.order_id}</td>
+                    <td data-label={tx("Trạng thái")}>{o.state}</td>
+                    <td data-label={tx("Số lần")}>{o.attempts}</td>
+                    <td data-label={tx("Lỗi")}>{o.last_error || "—"}</td>
+                    <td data-label={tx("Lần tiếp")}>{o.next_attempt}</td>
                   </tr>
                 ))}
               </tbody>
@@ -2238,8 +2335,10 @@ function Staff() {
   return (
     <>
       <Heading
-        title="Nhân viên & phân quyền"
-        description="Quản trị viên quản lý toàn bộ; nhân viên chỉ xử lý đơn."
+        title={tx("Nhân viên & phân quyền")}
+        description={tx(
+          "Quản trị viên quản lý toàn bộ; nhân viên chỉ xử lý đơn.",
+        )}
       >
         <Button
           variant="dark"
@@ -2253,7 +2352,8 @@ function Staff() {
             })
           }
         >
-          <Plus size={16} /> Thêm tài khoản
+          <Plus size={16} />
+          {tx(" Thêm tài khoản")}
         </Button>
       </Heading>
       <ErrorBox>{error}</ErrorBox>
@@ -2262,29 +2362,29 @@ function Staff() {
           <table className="responsive-table">
             <thead>
               <tr>
-                <th>Họ tên</th>
+                <th>{tx("Họ tên")}</th>
                 <th>Email</th>
-                <th>Vai trò</th>
-                <th>Trạng thái</th>
+                <th>{tx("Vai trò")}</th>
+                <th>{tx("Trạng thái")}</th>
                 <th />
               </tr>
             </thead>
             <tbody>
               {data.map((u: Obj) => (
                 <tr key={u.id}>
-                  <td data-label="Họ tên">{u.name}</td>
+                  <td data-label={tx("Họ tên")}>{u.name}</td>
                   <td data-label="Email">{u.email}</td>
-                  <td data-label="Vai trò">
-                    {u.role === "admin" ? "Quản trị viên" : "Nhân viên"}
+                  <td data-label={tx("Vai trò")}>
+                    {u.role === "admin" ? tx("Quản trị viên") : tx("Nhân viên")}
                   </td>
-                  <td data-label="Trạng thái">
+                  <td data-label={tx("Trạng thái")}>
                     <Badge tone={u.active == 1 ? "lime" : ""}>
-                      {u.active == 1 ? "Hoạt động" : "Đã khoá"}
+                      {u.active == 1 ? tx("Hoạt động") : tx("Đã khoá")}
                     </Badge>
                   </td>
                   <td>
                     <button
-                      aria-label="Sửa tài khoản"
+                      aria-label={tx("Sửa tài khoản")}
                       className="icon-button"
                       onClick={() => setEdit({ ...u, password: "" })}
                     >
@@ -2301,27 +2401,27 @@ function Staff() {
       </section>
       {edit && (
         <SimpleEditor
-          title="Tài khoản nhân viên"
+          title={tx("Tài khoản nhân viên")}
           initial={edit}
           route="admin/users"
           fields={[
-            ["name", "Họ tên", "text"],
+            ["name", tx("Họ tên"), "text"],
             ["email", "Email", "email"],
             [
               "password",
-              "Mật khẩu (ít nhất 12 ký tự; trống giữ nguyên)",
+              tx("Mật khẩu (ít nhất 12 ký tự; trống giữ nguyên)"),
               "password",
             ],
             [
               "role",
-              "Vai trò",
+              tx("Vai trò"),
               "select",
               [
-                ["staff", "Nhân viên"],
-                ["admin", "Quản trị viên"],
+                ["staff", tx("Nhân viên")],
+                ["admin", tx("Quản trị viên")],
               ],
             ],
-            ["active", "Đang hoạt động", "checkbox"],
+            ["active", tx("Đang hoạt động"), "checkbox"],
           ]}
           onClose={() => setEdit(null)}
           onSaved={() => {
@@ -2338,8 +2438,8 @@ function Audit() {
   return (
     <>
       <Heading
-        title="Lịch sử thao tác"
-        description="Ai thay đổi gì, lúc nào và qua kênh nào."
+        title={tx("Lịch sử thao tác")}
+        description={tx("Ai thay đổi gì, lúc nào và qua kênh nào.")}
       />
       <ErrorBox>{error}</ErrorBox>
       <section className="panel">
@@ -2349,11 +2449,11 @@ function Audit() {
               <thead>
                 <tr>
                   {[
-                    "Thời gian",
-                    "Người thực hiện",
-                    "Kênh",
-                    "Thao tác",
-                    "Chi tiết",
+                    tx("Thời gian"),
+                    tx("Người thực hiện"),
+                    tx("Kênh"),
+                    tx("Thao tác"),
+                    tx("Chi tiết"),
                   ].map((s) => (
                     <th key={s}>{s}</th>
                   ))}
@@ -2362,11 +2462,11 @@ function Audit() {
               <tbody>
                 {data.map((a: Obj) => (
                   <tr key={a.id}>
-                    <td data-label="Thời gian">{date(a.created_at)}</td>
-                    <td data-label="Người thực hiện">{a.actor}</td>
-                    <td data-label="Kênh">{a.channel}</td>
-                    <td data-label="Thao tác">{a.action}</td>
-                    <td data-label="Chi tiết" className="audit-detail">
+                    <td data-label={tx("Thời gian")}>{date(a.created_at)}</td>
+                    <td data-label={tx("Người thực hiện")}>{a.actor}</td>
+                    <td data-label={tx("Kênh")}>{a.channel}</td>
+                    <td data-label={tx("Thao tác")}>{a.action}</td>
+                    <td data-label={tx("Chi tiết")} className="audit-detail">
                       {a.detail}
                     </td>
                   </tr>

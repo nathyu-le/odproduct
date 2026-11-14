@@ -1,14 +1,29 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . "/bootstrap.php";
+require_once __DIR__ . "/content.php";
 function catalog(bool $admin = false): array
 {
+    content_schema();
+    $translations = [];
+    foreach (
+        all(
+            "SELECT entity_id,locale,fields FROM content_translations WHERE entity='product'",
+        )
+        as $tr
+    ) {
+        $translations[$tr["entity_id"]][$tr["locale"]] = json_decode(
+            $tr["fields"],
+            true,
+        );
+    }
     $products = all(
         "SELECT p.*,c.name category,c.slug category_slug FROM products p JOIN categories c ON c.id=p.category_id " .
             ($admin ? "" : "WHERE p.active=1") .
             " ORDER BY p.pinned DESC,p.sort_order,p.id",
     );
     foreach ($products as &$p) {
+        $p["translations"] = $translations[$p["id"]] ?? [];
         $p["images"] = json_decode($p["images"], true);
         $p["variants"] = all(
             "SELECT " .

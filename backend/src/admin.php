@@ -2,6 +2,7 @@
 require_once __DIR__ . "/commerce.php";
 function save_product(array $b, array $u): array
 {
+    content_schema();
     return transaction(function () use ($b, $u) {
         $id = isset($b["id"]) ? integer($b["id"], 1) : null;
         $name = required($b, "name", 180);
@@ -114,6 +115,9 @@ function save_product(array $b, array $u): array
                     $vals,
                 );
             }
+        }
+        if (isset($b["translations"]) && is_array($b["translations"])) {
+            content_save_translations("product", (int) $id, $b["translations"]);
         }
         audit(null, $u["email"], "admin", "product_saved", [
             "product_id" => $id,

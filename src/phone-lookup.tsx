@@ -1,14 +1,15 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
 import {
-  Search,
-  Package,
-  ChevronRight,
   ChevronLeft,
+  ChevronRight,
+  Package,
+  Search,
   ShieldCheck,
 } from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { api, asset, date, money, status, type Obj } from "./api";
-import { Field, Button, ErrorBox, Badge, Empty } from "./ui";
+import { tx } from "./i18n";
+import { Badge, Button, Empty, ErrorBox, Field } from "./ui";
 export function rememberOrder(code: string, token: string) {
   try {
     const saved = JSON.parse(localStorage.getItem("od.orders") || "{}");
@@ -46,13 +47,13 @@ export function PhoneLookup() {
     <div className="container page phone-history">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">ĐƠN HÀNG CỦA BẠN</p>
+          <p className="eyebrow">{tx("ĐƠN HÀNG CỦA BẠN")}</p>
           <h1>
-            Nhập số điện thoại.
+            {tx("Nhập số điện thoại.")}
             <br />
-            <span>Xem lại mọi đơn hàng.</span>
+            <span>{tx("Xem lại mọi đơn hàng.")}</span>
           </h1>
-          <p>Cả đơn đang giao và những món bạn đã mua từ trước.</p>
+          <p>{tx("Cả đơn đang giao và những món bạn đã mua từ trước.")}</p>
         </div>
       </div>
       <form
@@ -62,7 +63,7 @@ export function PhoneLookup() {
           search(phone);
         }}
       >
-        <Field label="Số điện thoại đã đặt hàng">
+        <Field label={tx("Số điện thoại đã đặt hàng")}>
           <input
             required
             type="tel"
@@ -70,12 +71,13 @@ export function PhoneLookup() {
             inputMode="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="Nhập số điện thoại của bạn"
+            placeholder={tx("Nhập số điện thoại của bạn")}
             maxLength={25}
           />
         </Field>
         <Button loading={busy} variant="dark">
-          <Search size={18} /> Tìm đơn hàng
+          <Search size={18} />
+          {tx(" Tìm đơn hàng")}
         </Button>
       </form>
       <ErrorBox>{error}</ErrorBox>
@@ -83,10 +85,10 @@ export function PhoneLookup() {
         <>
           <div className="history-filters">
             {[
-              ["all", "Tất cả"],
-              ["active", "Đang xử lý"],
-              ["completed", "Đã giao"],
-              ["cancelled", "Đã huỷ"],
+              ["all", tx("Tất cả")],
+              ["active", tx("Đang xử lý")],
+              ["completed", tx("Đã giao")],
+              ["cancelled", tx("Đã huỷ")],
             ].map(([k, l]) => (
               <button
                 disabled={busy}
@@ -100,11 +102,14 @@ export function PhoneLookup() {
                 {l}
               </button>
             ))}
-            <span>{data.total} đơn hàng</span>
+            <span>
+              {data.total}
+              {tx(" đơn hàng")}
+            </span>
           </div>
           {!data.orders.length ? (
-            <Empty title="Chưa có đơn phù hợp">
-              Kiểm tra lại số điện thoại hoặc chọn bộ lọc khác.
+            <Empty title={tx("Chưa có đơn phù hợp")}>
+              {tx("Kiểm tra lại số điện thoại hoặc chọn bộ lọc khác.")}
             </Empty>
           ) : (
             <div className="phone-order-list">
@@ -125,17 +130,22 @@ export function PhoneLookup() {
                       <div>
                         <strong>{i.product_name}</strong>
                         <small>
-                          {i.variant_name} · Số lượng {i.quantity}
+                          {i.variant_name}
+                          {tx(" · Số lượng ")}
+                          {i.quantity}
                         </small>
                       </div>
                       <b>{money(i.unit_price * i.quantity)}</b>
                     </div>
                   ))}
                   <footer>
-                    <span>Thanh toán: {status[o.payment_status]}</span>
+                    <span>
+                      {tx("Thanh toán: ")}
+                      {status[o.payment_status]}
+                    </span>
                     <strong>
                       {o.total == null
-                        ? "Đang xác nhận phí giao"
+                        ? tx("Đang xác nhận phí giao")
                         : money(o.total)}
                     </strong>
                   </footer>
@@ -144,7 +154,7 @@ export function PhoneLookup() {
                       className="text-link"
                       to={"/order/" + savedOrderLink(o.code)}
                     >
-                      Mở chi tiết đơn đã lưu trên thiết bị{" "}
+                      {tx("Mở chi tiết đơn đã lưu trên thiết bị")}{" "}
                       <ChevronRight size={15} />
                     </Link>
                   )}
@@ -159,7 +169,8 @@ export function PhoneLookup() {
                 variant="outline"
                 onClick={() => search(searched, data.page - 1)}
               >
-                <ChevronLeft size={16} /> Trước
+                <ChevronLeft size={16} />
+                {tx(" Trước")}
               </Button>
               <span>
                 {data.page} / {data.pages}
@@ -174,16 +185,17 @@ export function PhoneLookup() {
             </div>
           )}
           <p className="lookup-privacy">
-            <ShieldCheck size={16} /> Địa chỉ và thông tin người nhận được giữ
-            riêng tư. Mở liên kết riêng của đơn để xem phiếu bán hàng và thao
-            tác thanh toán.
+            <ShieldCheck size={16} />
+            {tx(
+              " Địa chỉ và thông tin người nhận được giữ riêng tư. Mở liên kết riêng của đơn để xem phiếu bán hàng và thao tác thanh toán.",
+            )}
           </p>
         </>
       )}
       {!data && (
         <div className="lookup-empty">
           <Package size={36} />
-          <p>Không cần nhớ mã đơn hay chụp lại màn hình.</p>
+          <p>{tx("Không cần nhớ mã đơn hay chụp lại màn hình.")}</p>
         </div>
       )}
     </div>

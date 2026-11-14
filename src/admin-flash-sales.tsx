@@ -1,26 +1,26 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import {
-  Zap,
-  Plus,
-  Search,
-  Pencil,
   ArrowUpRight,
-  Clock,
   CalendarDays,
   Check,
-  Pause,
+  Clock,
+  Pencil,
+  Plus,
   RefreshCw,
+  Search,
+  Zap,
 } from "lucide-react";
-import { api, asset, money, date, type Obj } from "./api";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { api, asset, date, money, type Obj } from "./api";
 import { useStore } from "./context";
-import { useNow, saleState, timestamp } from "./promotions";
-import { Button, Badge, Field, Modal, ErrorBox, Loading, Empty } from "./ui";
+import { tx } from "./i18n";
+import { saleState, useNow } from "./promotions";
+import { Badge, Button, Empty, ErrorBox, Field, Loading, Modal } from "./ui";
 const names: Obj = {
-  active: "Đang diễn ra",
-  scheduled: "Sắp diễn ra",
-  ended: "Đã kết thúc",
-  off: "Chưa lên lịch",
+  active: tx("Đang diễn ra"),
+  scheduled: tx("Sắp diễn ra"),
+  ended: tx("Đã kết thúc"),
+  off: tx("Chưa lên lịch"),
 };
 const pad = (n: number) => String(n).padStart(2, "0");
 function localTime(date: Date) {
@@ -61,22 +61,30 @@ export function AdminFlashSales() {
     <div className="flash-admin">
       <div className="dash-heading">
         <div>
-          <span className="admin-overline">ƯU ĐÃI / THỜI GIAN & GIÁ BÁN</span>
+          <span className="admin-overline">
+            {tx("ƯU ĐÃI / THỜI GIAN & GIÁ BÁN")}
+          </span>
           <h1>
-            Flash sale<span>.</span>
+            {tx("Flash sale")}
+            <span>.</span>
           </h1>
-          <p>Lên lịch theo giờ Việt Nam. Giá tự áp dụng khi phiên bắt đầu.</p>
+          <p>
+            {tx(
+              "Lên lịch theo giờ Việt Nam. Giá tự áp dụng khi phiên bắt đầu.",
+            )}
+          </p>
         </div>
         <Button variant="dark" onClick={() => setEditing({ new: true })}>
-          <Plus size={16} /> Lên lịch ưu đãi
+          <Plus size={16} />
+          {tx(" Lên lịch ưu đãi")}
         </Button>
       </div>
       <ErrorBox>{error}</ErrorBox>
       <div className="flash-admin-stats">
         {[
-          ["active", "Đang mở", Zap],
-          ["scheduled", "Sắp diễn ra", CalendarDays],
-          ["ended", "Đã kết thúc", Clock],
+          ["active", tx("Đang mở"), Zap],
+          ["scheduled", tx("Sắp diễn ra"), CalendarDays],
+          ["ended", tx("Đã kết thúc"), Clock],
         ].map(([key, label, Icon]: any) => (
           <button
             key={key}
@@ -88,7 +96,7 @@ export function AdminFlashSales() {
               {label}
             </span>
             <strong>{counts[key as keyof typeof counts]}</strong>
-            <small>Nhấn để xem sản phẩm</small>
+            <small>{tx("Nhấn để xem sản phẩm")}</small>
           </button>
         ))}
       </div>
@@ -99,16 +107,16 @@ export function AdminFlashSales() {
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Tìm sản phẩm ưu đãi…"
-              aria-label="Tìm Flash sale"
+              placeholder={tx("Tìm sản phẩm ưu đãi…")}
+              aria-label={tx("Tìm Flash sale")}
             />
           </div>
           <select
             value={tab}
             onChange={(e) => setTab(e.target.value)}
-            aria-label="Lọc trạng thái Flash sale"
+            aria-label={tx("Lọc trạng thái Flash sale")}
           >
-            <option value="all">Tất cả sản phẩm</option>
+            <option value="all">{tx("Tất cả sản phẩm")}</option>
             {Object.entries(names).map(([k, l]) => (
               <option key={k} value={k}>
                 {l as string}
@@ -119,7 +127,8 @@ export function AdminFlashSales() {
             <RefreshCw size={15} />
           </Button>
           <Link className="text-link" to="/flash-sale">
-            Xem trang khách <ArrowUpRight size={15} />
+            {tx("Xem trang khách ")}
+            <ArrowUpRight size={15} />
           </Link>
         </div>
         {!products ? (
@@ -128,11 +137,11 @@ export function AdminFlashSales() {
           <table className="responsive-table">
             <thead>
               <tr>
-                <th>Sản phẩm</th>
-                <th>Giá thường</th>
-                <th>Giá Flash sale</th>
-                <th>Thời gian (VN)</th>
-                <th>Trạng thái</th>
+                <th>{tx("Sản phẩm")}</th>
+                <th>{tx("Giá thường")}</th>
+                <th>{tx("Giá Flash sale")}</th>
+                <th>{tx("Thời gian (VN)")}</th>
+                <th>{tx("Trạng thái")}</th>
                 <th />
               </tr>
             </thead>
@@ -141,7 +150,7 @@ export function AdminFlashSales() {
                 const state = saleState(p, now);
                 return (
                   <tr key={p.id}>
-                    <td data-label="Sản phẩm">
+                    <td data-label={tx("Sản phẩm")}>
                       <div className="table-product">
                         <img src={asset(p.images[0])} alt="" />
                         <div>
@@ -152,32 +161,35 @@ export function AdminFlashSales() {
                               (s: number, v: Obj) => s + Number(v.stock),
                               0,
                             )}{" "}
-                            sản phẩm trong kho
+                            {tx("sản phẩm trong kho")}
                           </small>
                         </div>
                       </div>
                     </td>
-                    <td data-label="Giá thường">
+                    <td data-label={tx("Giá thường")}>
                       {money(p.variants[0]?.price)}
                     </td>
-                    <td data-label="Giá ưu đãi">
+                    <td data-label={tx("Giá ưu đãi")}>
                       <strong>
                         {p.flash_price == null ? "—" : money(p.flash_price)}
                       </strong>
                     </td>
-                    <td data-label="Thời gian">
+                    <td data-label={tx("Thời gian")}>
                       <div className="sale-period">
                         {p.flash_start ? (
                           <>
                             <span>{date(p.flash_start)}</span>
-                            <small>đến {date(p.flash_end)}</small>
+                            <small>
+                              {tx("đến ")}
+                              {date(p.flash_end)}
+                            </small>
                           </>
                         ) : (
-                          "Chưa lên lịch"
+                          tx("Chưa lên lịch")
                         )}
                       </div>
                     </td>
-                    <td data-label="Trạng thái">
+                    <td data-label={tx("Trạng thái")}>
                       <Badge
                         tone={
                           state === "active"
@@ -190,13 +202,15 @@ export function AdminFlashSales() {
                         {state === "active" && <Zap size={10} />} {names[state]}
                       </Badge>
                       {!Number(p.active) && (
-                        <small className="muted"> · Sản phẩm ngừng bán</small>
+                        <small className="muted">
+                          {tx(" · Sản phẩm ngừng bán")}
+                        </small>
                       )}
                     </td>
                     <td>
                       <button
                         className="icon-button"
-                        aria-label={"Cấu hình Flash sale " + p.name}
+                        aria-label={tx("Cấu hình Flash sale ") + p.name}
                         onClick={() => setEditing(p)}
                       >
                         <Pencil size={15} />
@@ -208,17 +222,18 @@ export function AdminFlashSales() {
             </tbody>
           </table>
         ) : (
-          <Empty title="Không có sản phẩm phù hợp">
-            Đổi bộ lọc hoặc thêm sản phẩm trước.
+          <Empty title={tx("Không có sản phẩm phù hợp")}>
+            {tx("Đổi bộ lọc hoặc thêm sản phẩm trước.")}
           </Empty>
         )}
         <div className="notice">
           <Clock size={17} />
           <div>
-            <strong>Không cần bật/tắt thủ công theo giờ</strong>
+            <strong>{tx("Không cần bật/tắt thủ công theo giờ")}</strong>
             <p>
-              Hết thời gian, sản phẩm tự trở lại giá thường. Flash sale dùng tồn
-              kho thật; coupon vẫn theo điều kiện đã cấu hình.
+              {tx(
+                "Hết thời gian, sản phẩm tự trở lại giá thường. Flash sale dùng tồn kho thật; coupon vẫn theo điều kiện đã cấu hình.",
+              )}
             </p>
           </div>
         </div>
@@ -232,7 +247,7 @@ export function AdminFlashSales() {
             setEditing(null);
             load();
             refresh();
-            setToast("Đã lưu lịch Flash sale");
+            setToast(tx("Đã lưu lịch Flash sale"));
           }}
         />
       )}
@@ -267,7 +282,7 @@ function FlashEditor({ product, products, onClose, onSaved }: any) {
       ? Math.round(((base - Number(price)) / base) * 100)
       : 0;
   return (
-    <Modal title="Cấu hình Flash sale" onClose={onClose}>
+    <Modal title={tx("Cấu hình Flash sale")} onClose={onClose}>
       <form
         onSubmit={async (e) => {
           e.preventDefault();
@@ -289,7 +304,7 @@ function FlashEditor({ product, products, onClose, onSaved }: any) {
           }
         }}
       >
-        <Field label="Sản phẩm">
+        <Field label={tx("Sản phẩm")}>
           <select
             value={id}
             required
@@ -304,7 +319,7 @@ function FlashEditor({ product, products, onClose, onSaved }: any) {
             {products.map((p: Obj) => (
               <option key={p.id} value={p.id}>
                 {p.name}
-                {!Number(p.active) ? " (ngừng bán)" : ""}
+                {!Number(p.active) ? tx(" (ngừng bán)") : ""}
               </option>
             ))}
           </select>
@@ -315,20 +330,25 @@ function FlashEditor({ product, products, onClose, onSaved }: any) {
             checked={enabled}
             onChange={(e) => setEnabled(e.target.checked)}
           />{" "}
-          Bật lịch Flash sale
+          {tx("Bật lịch Flash sale")}
         </label>
         {enabled ? (
           <>
             <div className="flash-price-preview">
               <span>
-                Giá thường từ{" "}
+                {tx("Giá thường từ")}{" "}
                 <strong>
-                  {Number.isFinite(base) ? money(base) : "Chưa có biến thể"}
+                  {Number.isFinite(base) ? money(base) : tx("Chưa có biến thể")}
                 </strong>
               </span>
-              {percent > 0 && <Badge tone="lime">Giảm {percent}%</Badge>}
+              {percent > 0 && (
+                <Badge tone="lime">
+                  {tx("Giảm ")}
+                  {percent}%
+                </Badge>
+              )}
             </div>
-            <Field label="Giá Flash sale (VND)">
+            <Field label={tx("Giá Flash sale (VND)")}>
               <input
                 type="number"
                 min="1"
@@ -339,7 +359,7 @@ function FlashEditor({ product, products, onClose, onSaved }: any) {
               />
             </Field>
             <div className="form-grid">
-              <Field label="Bắt đầu · giờ Việt Nam">
+              <Field label={tx("Bắt đầu · giờ Việt Nam")}>
                 <input
                   type="datetime-local"
                   required
@@ -347,7 +367,7 @@ function FlashEditor({ product, products, onClose, onSaved }: any) {
                   onChange={(e) => setStart(e.target.value)}
                 />
               </Field>
-              <Field label="Kết thúc · giờ Việt Nam">
+              <Field label={tx("Kết thúc · giờ Việt Nam")}>
                 <input
                   type="datetime-local"
                   required
@@ -357,19 +377,22 @@ function FlashEditor({ product, products, onClose, onSaved }: any) {
               </Field>
             </div>
             <p className="report-note">
-              Mỗi sản phẩm có một lịch ưu đãi. Giá này áp dụng cho biến thể đang
-              bán và phải thấp hơn giá thường.
+              {tx(
+                "Mỗi sản phẩm có một lịch ưu đãi. Giá này áp dụng cho biến thể đang bán và phải thấp hơn giá thường.",
+              )}
             </p>
           </>
         ) : (
           <p className="report-note">
-            Tắt lịch sẽ đưa sản phẩm về giá thường ngay. Giá trên các đơn đã đặt
-            được giữ nguyên.
+            {tx(
+              "Tắt lịch sẽ đưa sản phẩm về giá thường ngay. Giá trên các đơn đã đặt được giữ nguyên.",
+            )}
           </p>
         )}
         <ErrorBox>{error}</ErrorBox>
         <Button variant="dark full" loading={busy}>
-          <Check size={16} /> Lưu Flash sale
+          <Check size={16} />
+          {tx(" Lưu Flash sale")}
         </Button>
       </form>
     </Modal>

@@ -1,123 +1,25 @@
-import React, { Suspense, lazy } from "react";
-import { createRoot } from "react-dom/client";
-import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
 import "@fontsource-variable/inter";
-import "./styles.css";
-import "./storefront.css";
 import "./analytics.css";
-import "./market.css";
 import "./catalogue.css";
-import { StoreProvider, useStore } from "./context";
-import {
-  Layout,
-  Home,
-  Catalog,
-  Product,
-  CartPage,
-  Checkout,
-  Order,
-  Lookup,
-  FlashSales,
-} from "./store";
-const Admin = lazy(() => import("./admin").then((m) => ({ default: m.Admin })));
-function Scroll() {
-  const l = useLocation();
-  const { data } = useStore();
-  const storeName = data?.store?.name || "OD. Store";
-  const productName = l.pathname.startsWith("/product/")
-    ? data?.products?.find((p: any) => p.slug === l.pathname.split("/")[2])
-        ?.name
-    : "";
-  React.useEffect(() => {
-    const titles: Record<string, string> = {
-      "/": "Phụ kiện công nghệ",
-      "/products": "Sản phẩm",
-      "/flash-sale": "Flash sale",
-      "/cart": "Giỏ hàng",
-      "/checkout": "Đặt hàng",
-      "/lookup": "Tra cứu đơn hàng",
-    };
-    const page =
-      productName ||
-      (l.pathname.startsWith("/admin")
-        ? "Quản trị cửa hàng"
-        : l.pathname.startsWith("/order/")
-          ? "Thông tin đơn hàng"
-          : titles[l.pathname] || "Trang không tồn tại");
-    document.title = page + " | " + storeName;
-  }, [l.pathname, productName, storeName]);
-  React.useEffect(() => {
-    window.scrollTo(0, 0);
-    const privatePage = /order\/|admin|lookup/.test(l.pathname);
-    let m = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
-    if (!m) {
-      m = document.createElement("meta");
-      m.name = "robots";
-      document.head.appendChild(m);
-    }
-    m.content = privatePage ? "noindex,nofollow" : "index,follow";
-  }, [l.pathname]);
-  return null;
-}
-class Boundary extends React.Component<
-  { children: React.ReactNode },
-  { error: boolean }
-> {
-  state = { error: false };
-  static getDerivedStateFromError() {
-    return { error: true };
-  }
-  render() {
-    return this.state.error ? (
-      <div className="empty">
-        <h1>Đã có lỗi hiển thị</h1>
-        <p>Giỏ hàng của bạn vẫn được lưu.</p>
-        <button onClick={() => location.reload()}>Tải lại trang</button>
-      </div>
-    ) : (
-      this.props.children
-    );
-  }
-}
-createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <Boundary>
-      <HashRouter>
-        <StoreProvider>
-          <Scroll />
-          <Routes>
-            <Route
-              path="/admin/*"
-              element={
-                <Suspense
-                  fallback={<div className="loading">Đang tải quản trị…</div>}
-                >
-                  <Admin />
-                </Suspense>
-              }
-            />
-            <Route element={<Layout />}>
-              <Route index element={<Home />} />
-              <Route path="products" element={<Catalog />} />
-              <Route path="flash-sale" element={<FlashSales />} />
-              <Route path="product/:slug" element={<Product />} />
-              <Route path="cart" element={<CartPage />} />
-              <Route path="checkout" element={<Checkout />} />
-              <Route path="order/:token" element={<Order />} />
-              <Route path="lookup" element={<Lookup />} />
-              <Route
-                path="*"
-                element={
-                  <div className="empty">
-                    <h1>Trang không tồn tại</h1>
-                    <a href="#/">Về trang chủ</a>
-                  </div>
-                }
-              />
-            </Route>
-          </Routes>
-        </StoreProvider>
-      </HashRouter>
-    </Boundary>
-  </React.StrictMode>,
-);
+import "./market.css";
+import "./storefront.css";
+import "./styles.css";
+import "./styles/blog.css";
+import "./styles/content-settings.css";
+import "./styles/home-content.css";
+import "./styles/layout.css";
+// Load only the selected language before UI modules evaluate their labels.
+import { loadTranslations } from "./i18n";
+loadTranslations()
+  .then(() => import("./App"))
+  .catch(() => {
+    const root = document.getElementById("root");
+    if (!root) return;
+    const text = document.createElement("p");
+    text.textContent =
+      "Unable to load the store. Please check your connection and try again.";
+    const button = document.createElement("button");
+    button.textContent = "Try again";
+    button.onclick = () => location.reload();
+    root.replaceChildren(text, button);
+  });

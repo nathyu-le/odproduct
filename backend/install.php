@@ -21,7 +21,7 @@ if (PHP_INT_SIZE < 8) {
     $errors[] = "Cần PHP 64-bit để tính tiền chính xác.";
 }
 foreach (
-    ["pdo_mysql", "curl", "mbstring", "openssl", "fileinfo", "session", "zlib"]
+    ["pdo_mysql", "curl", "mbstring", "openssl", "fileinfo", "session", "zlib", "dom"]
     as $extension
 ) {
     if (!extension_loaded($extension)) {

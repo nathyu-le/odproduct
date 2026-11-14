@@ -121,3 +121,16 @@ BẢN CẬP NHẬT CHECKOUT / TRA CỨU / ADMIN:
   Nhiều màu/cấu hình: thêm biến thể riêng. SKU có thể để trống để tự tạo;
   slug tự lấy từ tên. Giá vốn không hiển thị cho khách.
 - Flash sale trang chủ hiển thị tất cả sản phẩm, vuốt ngang hoặc dùng mũi tên.
+
+BLOG / BANNER / SEO / NGÔN NGỮ
+- Menu Admin > Bài viết / SEO: viết bài, nhập DOCX (tối đa 10 MB), up ảnh,
+  ALT, SEO title/description, nháp, xuất bản/hẹn giờ và tạo bản dịch.
+- Thiết lập > Banner & thương hiệu: chỉnh đủ 3 banner (ảnh/caption/link),
+  thêm/xoá/sắp xếp logo không giới hạn số lượng cố định. Logo nằm dưới Flash sale.
+- Thiết lập > SEO website: title/description theo ngôn ngữ, ảnh chia sẻ.
+- Khách mặc định English, chọn Việt/Hàn/Trung cạnh ô tìm kiếm. Admin mặc định
+  Việt, chọn riêng. Bài/sản phẩm mới cần nhập bản dịch ở ô tương ứng.
+- URL sạch /blog, /admin; link cũ /#/ vẫn mở được. /sitemap.xml tự cập nhật
+  theo bài đã xuất bản. Hẹn giờ bài không cần cron.
+- CSS/JS có version theo file và kiểm tra cache khi tải lại. Source các thành
+  phần đã tách trong src/components/layout, src/features, src/styles, src/i18n.

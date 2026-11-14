@@ -80,7 +80,7 @@ function outbox_run(int $limit = 10): array
         mb_substr(implode("\n", $lines), 0, 2200) .
         "\nTổng: $total\nThanh toán: {$o['payment_method']} / {$o['payment_status']}\n{$o['customer_name']} · {$o['phone']}\n{$o['address']}, {$o['region']}\n" .
         config()['url'] .
-        '/#/admin/orders/' .
+        '/admin/orders/' .
         $o['id'];
       telegram_request('sendMessage', [
         'chat_id' => telegram_config()['chat_id'],

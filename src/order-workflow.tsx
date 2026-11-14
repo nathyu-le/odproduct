@@ -1,12 +1,13 @@
-import { Check, ChevronRight, Wallet, Truck, Info } from "lucide-react";
-import { Button, Badge } from "./ui";
+import { Check, ChevronRight, Info, Truck, Wallet } from "lucide-react";
 import { money, status, type Obj } from "./api";
+import { tx } from "./i18n";
+import { Badge, Button } from "./ui";
 const steps = [
-  ["received", "Đã nhận đơn"],
-  ["confirmed", "Xác nhận"],
-  ["preparing", "Chuẩn bị"],
-  ["shipping", "Đang giao"],
-  ["delivered", "Hoàn tất"],
+  ["received", tx("Đã nhận đơn")],
+  ["confirmed", tx("Xác nhận")],
+  ["preparing", tx("Chuẩn bị")],
+  ["shipping", tx("Đang giao")],
+  ["delivered", tx("Hoàn tất")],
 ];
 export function OrderWorkflow({
   o,
@@ -21,23 +22,23 @@ export function OrderWorkflow({
   const next: Obj = {
     received: [
       "confirm",
-      "Xác nhận đơn",
-      "Kiểm tra sản phẩm và địa chỉ trước khi nhận xử lý.",
+      tx("Xác nhận đơn"),
+      tx("Kiểm tra sản phẩm và địa chỉ trước khi nhận xử lý."),
     ],
     confirmed: [
       "prepare",
-      "Chuẩn bị hàng",
-      "Lấy đủ sản phẩm, kiểm tra và đóng gói.",
+      tx("Chuẩn bị hàng"),
+      tx("Lấy đủ sản phẩm, kiểm tra và đóng gói."),
     ],
     preparing: [
       "ship",
-      "Bắt đầu giao",
-      "Bàn giao hàng cho người giao rồi chuyển sang bước này.",
+      tx("Bắt đầu giao"),
+      tx("Bàn giao hàng cho người giao rồi chuyển sang bước này."),
     ],
     shipping: [
       "deliver",
-      "Xác nhận giao thành công",
-      "Chỉ bấm khi khách đã nhận được hàng.",
+      tx("Xác nhận giao thành công"),
+      tx("Chỉ bấm khi khách đã nhận được hàng."),
     ],
   };
   const action = next[o.status];
@@ -55,7 +56,7 @@ export function OrderWorkflow({
   return (
     <section className="panel order-workflow">
       <div className="panel-title">
-        <h2>Quy trình xử lý</h2>
+        <h2>{tx("Quy trình xử lý")}</h2>
         <Badge>{status[o.payment_status]}</Badge>
       </div>
       <ol className="order-steps">
@@ -85,10 +86,12 @@ export function OrderWorkflow({
       </ol>
       {o.status === "cancelled" ? (
         <div className="workflow-next">
-          <strong>Đơn đã huỷ</strong>
+          <strong>{tx("Đơn đã huỷ")}</strong>
           <p>
             {o.cancel_reason ||
-              "Không tiếp tục giao hàng. Nếu đã thu tiền, thực hiện hoàn tiền bên dưới."}
+              tx(
+                "Không tiếp tục giao hàng. Nếu đã thu tiền, thực hiện hoàn tiền bên dưới.",
+              )}
           </p>
         </div>
       ) : shippingPending ? (
@@ -97,18 +100,22 @@ export function OrderWorkflow({
           <div>
             <strong>
               {o.shipping_status === "awaiting_customer"
-                ? "Chờ khách đồng ý phí giao"
-                : "Cần báo phí giao trước"}
+                ? tx("Chờ khách đồng ý phí giao")
+                : tx("Cần báo phí giao trước")}
             </strong>
             <p>
               {o.shipping_status === "awaiting_customer"
-                ? "Gửi khách liên kết đơn để họ xác nhận tổng. Sau đó nút bước tiếp theo sẽ mở."
-                : "Phí chưa xác định. Báo phí thủ công, sau đó chờ khách xác nhận."}
+                ? tx(
+                    "Gửi khách liên kết đơn để họ xác nhận tổng. Sau đó nút bước tiếp theo sẽ mở.",
+                  )
+                : tx(
+                    "Phí chưa xác định. Báo phí thủ công, sau đó chờ khách xác nhận.",
+                  )}
             </p>
           </div>
           {isAdmin && o.shipping_status === "pending" && (
             <Button variant="dark" onClick={() => open("shipping_quote")}>
-              Báo phí giao
+              {tx("Báo phí giao")}
             </Button>
           )}
         </div>
@@ -116,22 +123,22 @@ export function OrderWorkflow({
         <div className="workflow-next amber">
           <Wallet size={22} />
           <div>
-            <strong>Kiểm tra tiền chuyển khoản</strong>
+            <strong>{tx("Kiểm tra tiền chuyển khoản")}</strong>
             <p>
-              Đối chiếu tài khoản ngân hàng. Chỉ xác nhận khi đã nhận đủ{" "}
+              {tx("Đối chiếu tài khoản ngân hàng. Chỉ xác nhận khi đã nhận đủ")}{" "}
               {money(o.total)}.
             </p>
           </div>
           {canPay && (
             <Button variant="dark" onClick={() => open("paid")}>
-              Đã nhận đủ tiền
+              {tx("Đã nhận đủ tiền")}
             </Button>
           )}
         </div>
       ) : action ? (
         <div className="workflow-next">
           <div>
-            <small>BƯỚC TIẾP THEO</small>
+            <small>{tx("BƯỚC TIẾP THEO")}</small>
             <strong>{action[1]}</strong>
             <p>{action[2]}</p>
           </div>
@@ -143,11 +150,11 @@ export function OrderWorkflow({
         <div className="workflow-next">
           <Check size={22} />
           <div>
-            <strong>Đã giao xong</strong>
+            <strong>{tx("Đã giao xong")}</strong>
             <p>
               {o.payment_status === "paid"
-                ? "Đơn và thanh toán đã hoàn tất."
-                : "Còn chờ ghi nhận tiền COD bên dưới."}
+                ? tx("Đơn và thanh toán đã hoàn tất.")
+                : tx("Còn chờ ghi nhận tiền COD bên dưới.")}
             </p>
           </div>
         </div>
@@ -155,42 +162,46 @@ export function OrderWorkflow({
       <div className="workflow-payment">
         <span>
           <Wallet size={17} />{" "}
-          {o.payment_method === "cod" ? "Tiền mặt / COD" : "Chuyển khoản"} ·{" "}
-          {status[o.payment_status]}
+          {o.payment_method === "cod"
+            ? tx("Tiền mặt / COD")
+            : tx("Chuyển khoản")}{" "}
+          · {status[o.payment_status]}
         </span>
         {canPay && !bankPending && (
           <Button variant="outline" onClick={() => open("paid")}>
-            Ghi nhận đã thu đủ tiền
+            {tx("Ghi nhận đã thu đủ tiền")}
           </Button>
         )}
       </div>
       <details className="workflow-other">
-        <summary>Thao tác bổ sung</summary>
+        <summary>{tx("Thao tác bổ sung")}</summary>
         <div className="workflow-tools">
           <Button variant="outline" onClick={() => open("internal_note")}>
-            Ghi chú nội bộ
+            {tx("Ghi chú nội bộ")}
           </Button>
           {isAdmin && (
             <Button variant="outline" onClick={() => open("costs")}>
-              Nhập chi phí thực tế
+              {tx("Nhập chi phí thực tế")}
             </Button>
           )}
           {isAdmin &&
             (Number(o.paid_amount) > Number(o.refunded_amount) ||
               o.status === "delivered") && (
               <Button variant="outline" onClick={() => open("refund")}>
-                Hoàn tiền / trả hàng
+                {tx("Hoàn tiền / trả hàng")}
               </Button>
             )}
           {canCancel && (
             <Button variant="danger" onClick={() => open("cancel")}>
-              Huỷ đơn
+              {tx("Huỷ đơn")}
             </Button>
           )}
         </div>
         <p>
-          <Info size={14} /> Huỷ đơn và hoàn tiền là hai thao tác riêng. Đơn
-          đang giao không thể huỷ; cần xử lý trả hàng.
+          <Info size={14} />
+          {tx(
+            " Huỷ đơn và hoàn tiền là hai thao tác riêng. Đơn đang giao không thể huỷ; cần xử lý trả hàng.",
+          )}
         </p>
       </details>
     </section>

@@ -32,6 +32,7 @@ import { api, asset, date, money, status, type Obj } from "./api";
 import { CatalogueLayout } from "./catalogue-layout";
 import { ProductCard } from "./catalogue-product";
 import { useStore } from "./context";
+import { tx } from "./i18n";
 import { currentTime, displayProduct, useNow } from "./promotions";
 import {
   Badge,
@@ -88,24 +89,35 @@ export function Catalog() {
   return (
     <div className="container page">
       <div className="breadcrumbs">
-        <Link to="/">Trang chủ</Link>
+        <Link to="/">{tx("Trang chủ")}</Link>
         <ChevronRight size={13} />
-        <span>Sản phẩm</span>
+        <span>{tx("Sản phẩm")}</span>
       </div>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">SẢN PHẨM / OD. STORE</p>
-          <h1>{params.get("sale") ? "Ưu đãi hôm nay" : "Chọn món bạn cần."}</h1>
-          <p>Tai nghe, bàn phím, chuột, loa — theo cách bạn dùng mỗi ngày.</p>
+          <p className="eyebrow">{tx("SẢN PHẨM / OD. STORE")}</p>
+          <h1>
+            {params.get("sale")
+              ? tx("Ưu đãi hôm nay")
+              : tx("Chọn món bạn cần.")}
+          </h1>
+          <p>
+            {tx(
+              "Tai nghe, bàn phím, chuột, loa — theo cách bạn dùng mỗi ngày.",
+            )}
+          </p>
         </div>
-        <span className="muted">{products.length} sản phẩm</span>
+        <span className="muted">
+          {products.length}
+          {tx(" sản phẩm")}
+        </span>
       </div>
       <div className="catalog-tools">
         <div className="search-input">
           <Search size={18} />
           <input
-            placeholder="Tìm tai nghe, bàn phím, loa…"
-            aria-label="Tìm kiếm sản phẩm"
+            placeholder={tx("Tìm tai nghe, bàn phím, loa…")}
+            aria-label={tx("Tìm kiếm sản phẩm")}
             value={q}
             onChange={(e) => {
               setQ(e.target.value);
@@ -116,17 +128,18 @@ export function Catalog() {
           />
         </div>
         <Button variant="outline" onClick={() => setFilter(!filter)}>
-          <SlidersHorizontal size={17} /> Bộ lọc
+          <SlidersHorizontal size={17} />
+          {tx(" Bộ lọc")}
         </Button>
         <select
-          aria-label="Sắp xếp sản phẩm"
+          aria-label={tx("Sắp xếp sản phẩm")}
           value={sort}
           onChange={(e) => setSort(e.target.value)}
         >
-          <option value="selected">OD. đề xuất</option>
-          <option value="price-asc">Giá tăng dần</option>
-          <option value="price-desc">Giá giảm dần</option>
-          <option value="newest">Mới nhất</option>
+          <option value="selected">{tx("OD. đề xuất")}</option>
+          <option value="price-asc">{tx("Giá tăng dần")}</option>
+          <option value="price-desc">{tx("Giá giảm dần")}</option>
+          <option value="newest">{tx("Mới nhất")}</option>
         </select>
       </div>
       <div className="category-tabs">
@@ -138,7 +151,7 @@ export function Catalog() {
             setParams(p);
           }}
         >
-          Tất cả
+          {tx("Tất cả")}
         </button>
         {data.categories.map((c: Obj) => (
           <button
@@ -156,7 +169,7 @@ export function Catalog() {
       </div>
       {filter && (
         <div className="filter-panel">
-          <Field label={"Giá tối đa: " + money(max)}>
+          <Field label={tx("Giá tối đa: ") + money(max)}>
             <input
               type="range"
               min="100000"
@@ -172,7 +185,7 @@ export function Catalog() {
               checked={inStock}
               onChange={(e) => setInStock(e.target.checked)}
             />{" "}
-            Chỉ hiện sản phẩm còn hàng
+            {tx("Chỉ hiện sản phẩm còn hàng")}
           </label>
           <Button
             variant="ghost"
@@ -183,7 +196,7 @@ export function Catalog() {
               setQ("");
             }}
           >
-            Xoá bộ lọc
+            {tx("Xoá bộ lọc")}
           </Button>
         </div>
       )}
@@ -194,8 +207,8 @@ export function Catalog() {
           ))}
         </div>
       ) : (
-        <Empty title="Chưa tìm thấy sản phẩm">
-          Thử đổi từ khoá hoặc điều chỉnh bộ lọc nhé.
+        <Empty title={tx("Chưa tìm thấy sản phẩm")}>
+          {tx("Thử đổi từ khoá hoặc điều chỉnh bộ lọc nhé.")}
         </Empty>
       )}
     </div>
@@ -218,17 +231,17 @@ export function Product() {
   const p = source ? displayProduct(source, now) : null;
   if (!p)
     return (
-      <Empty title="Sản phẩm không còn được bán">
-        Khám phá những lựa chọn khác trong cửa hàng.
+      <Empty title={tx("Sản phẩm không còn được bán")}>
+        {tx("Khám phá những lựa chọn khác trong cửa hàng.")}
       </Empty>
     );
   const v = p.variants[variant];
   return (
     <div className="container page">
       <div className="breadcrumbs">
-        <Link to="/">Trang chủ</Link>
+        <Link to="/">{tx("Trang chủ")}</Link>
         <ChevronRight size={13} />
-        <Link to="/products">Sản phẩm</Link>
+        <Link to="/products">{tx("Sản phẩm")}</Link>
         <ChevronRight size={13} />
         <span>{p.name}</span>
       </div>
@@ -243,7 +256,7 @@ export function Product() {
                 key={url}
                 className={i === image ? "active" : ""}
                 onClick={() => setImage(i)}
-                aria-label={"Xem ảnh " + (i + 1)}
+                aria-label={tx("Xem ảnh ") + (i + 1)}
               >
                 <img src={asset(url)} alt="" />
               </button>
@@ -257,7 +270,7 @@ export function Product() {
           <h1>{p.name}</h1>
           <div className="detail-price">{money(v?.price)}</div>
           <p className="detail-description">{p.description}</p>
-          <Field label="Phiên bản">
+          <Field label={tx("Phiên bản")}>
             <div className="variant-options">
               {p.variants.map((x: Obj, i: number) => (
                 <button
@@ -277,8 +290,8 @@ export function Product() {
           <p className="stock-status">
             <span className={Number(v?.stock) > 0 ? "lime-dot" : "grey-dot"} />
             {Number(v?.stock) > 0
-              ? `Sẵn hàng · ${v.stock} sản phẩm`
-              : "Tạm hết hàng"}
+              ? tx("Sẵn hàng · {0} sản phẩm", [v.stock])
+              : tx("Tạm hết hàng")}
             <span className="muted">SKU: {v?.sku}</span>
           </p>
           <div className="buy-row">
@@ -295,26 +308,28 @@ export function Product() {
                 setCartOpen(true);
               }}
             >
-              <ShoppingBag size={18} /> Thêm vào giỏ hàng{" "}
-              <ArrowUpRight size={18} />
+              <ShoppingBag size={18} />
+              {tx(" Thêm vào giỏ hàng")} <ArrowUpRight size={18} />
             </Button>
           </div>
           <div className="detail-promises">
             <p>
-              <Truck size={18} /> Phí giao tính theo quãng đường thực tế
+              <Truck size={18} />
+              {tx(" Phí giao tính theo quãng đường thực tế")}
             </p>
             <p>
-              <ShieldCheck size={18} /> Kiểm tra đơn và tổng tiền trước khi xác
-              nhận
+              <ShieldCheck size={18} />
+              {tx(" Kiểm tra đơn và tổng tiền trước khi xác nhận")}
             </p>
             <p>
-              <Lock size={18} /> Mua nhanh, không cần tài khoản
+              <Lock size={18} />
+              {tx(" Mua nhanh, không cần tài khoản")}
             </p>
           </div>
         </div>
       </div>
       <section className="section">
-        <SectionTitle title="Có thể bạn cũng thích" />
+        <SectionTitle title={tx("Có thể bạn cũng thích")} />
         <div className="product-grid">
           {data.products
             .filter((x: Obj) => x.id !== p.id)
@@ -338,12 +353,15 @@ export function Quantity({
 }) {
   return (
     <div className="quantity">
-      <button aria-label="Giảm số lượng" onClick={() => onChange(quantity - 1)}>
+      <button
+        aria-label={tx("Giảm số lượng")}
+        onClick={() => onChange(quantity - 1)}
+      >
         <Minus size={14} />
       </button>
       <span>{quantity}</span>
       <button
-        aria-label="Tăng số lượng"
+        aria-label={tx("Tăng số lượng")}
         disabled={quantity >= max}
         onClick={() => onChange(quantity + 1)}
       >
@@ -376,14 +394,15 @@ function CartContent({ drawer = false }: { drawer?: boolean }) {
   }, [cart, coupon]);
   if (!cart.length)
     return (
-      <Empty title="Giỏ hàng đang chờ bạn" icon={<ShoppingBag />}>
-        <span>Thêm một món đồ bạn thích để bắt đầu.</span>
+      <Empty title={tx("Giỏ hàng đang chờ bạn")} icon={<ShoppingBag />}>
+        <span>{tx("Thêm một món đồ bạn thích để bắt đầu.")}</span>
         <Link
           className="button dark"
           to="/products"
           onClick={() => setCartOpen(false)}
         >
-          Khám phá sản phẩm <ArrowRight size={16} />
+          {tx("Khám phá sản phẩm ")}
+          <ArrowRight size={16} />
         </Link>
       </Empty>
     );
@@ -401,9 +420,9 @@ function CartContent({ drawer = false }: { drawer?: boolean }) {
             <div className="cart-line" key={item.variant_id}>
               {p && <img src={asset(p.images[0])} alt={p.name} />}
               <div className="cart-line-info">
-                <h3>{p?.name || "Sản phẩm đã ngừng bán"}</h3>
+                <h3>{p?.name || tx("Sản phẩm đã ngừng bán")}</h3>
                 <p>{v?.name}</p>
-                <strong>{v ? money(v.price) : "Không khả dụng"}</strong>
+                <strong>{v ? money(v.price) : tx("Không khả dụng")}</strong>
                 <Quantity
                   quantity={item.quantity}
                   max={Number(v?.stock || 99)}
@@ -413,7 +432,7 @@ function CartContent({ drawer = false }: { drawer?: boolean }) {
               <button
                 className="icon-button"
                 onClick={() => update(item.variant_id, 0)}
-                aria-label="Xoá sản phẩm"
+                aria-label={tx("Xoá sản phẩm")}
               >
                 <Trash2 size={17} />
               </button>
@@ -422,7 +441,7 @@ function CartContent({ drawer = false }: { drawer?: boolean }) {
         })}
       </div>
       <aside className="cart-summary">
-        <h2>Tóm tắt đơn hàng</h2>
+        <h2>{tx("Tóm tắt đơn hàng")}</h2>
         <form
           className="coupon-form"
           onSubmit={(e) => {
@@ -432,12 +451,12 @@ function CartContent({ drawer = false }: { drawer?: boolean }) {
         >
           <Tag size={17} />
           <input
-            aria-label="Mã giảm giá"
-            placeholder="Mã giảm giá"
+            aria-label={tx("Mã giảm giá")}
+            placeholder={tx("Mã giảm giá")}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
           />
-          <button>Áp dụng</button>
+          <button>{tx("Áp dụng")}</button>
         </form>
         {coupon && (
           <button
@@ -447,25 +466,26 @@ function CartContent({ drawer = false }: { drawer?: boolean }) {
               setDraft("");
             }}
           >
-            Bỏ mã {coupon} <X size={14} />
+            {tx("Bỏ mã ")}
+            {coupon} <X size={14} />
           </button>
         )}
         <ErrorBox>{error}</ErrorBox>
         <div className="totals">
           <p>
-            <span>Tạm tính</span>
+            <span>{tx("Tạm tính")}</span>
             <strong>{money(quote?.subtotal)}</strong>
           </p>
           <p>
-            <span>Giảm giá</span>
+            <span>{tx("Giảm giá")}</span>
             <strong>{money(quote?.discount || 0)}</strong>
           </p>
           <p>
-            <span>Phí giao hàng</span>
-            <span>Tính khi checkout</span>
+            <span>{tx("Phí giao hàng")}</span>
+            <span>{tx("Tính khi checkout")}</span>
           </p>
           <p className="grand-total">
-            <span>Tiền hàng</span>
+            <span>{tx("Tiền hàng")}</span>
             <strong>
               {quote ? money(quote.subtotal - quote.discount) : "—"}
             </strong>
@@ -480,10 +500,12 @@ function CartContent({ drawer = false }: { drawer?: boolean }) {
             navigate("/checkout");
           }}
         >
-          Tiến hành đặt hàng <ArrowRight size={17} />
+          {tx("Tiến hành đặt hàng ")}
+          <ArrowRight size={17} />
         </Button>
         <p className="secure-note">
-          <Lock size={13} /> Không cần đăng ký tài khoản
+          <Lock size={13} />
+          {tx(" Không cần đăng ký tài khoản")}
         </p>
       </aside>
     </div>
@@ -495,10 +517,11 @@ export function CartPage() {
       <div className="page-heading">
         <div>
           <p className="eyebrow">YOUR EVERYDAY ESSENTIALS</p>
-          <h1>Giỏ hàng của bạn.</h1>
+          <h1>{tx("Giỏ hàng của bạn.")}</h1>
         </div>
         <Link className="text-link" to="/products">
-          Tiếp tục mua sắm <ArrowRight size={16} />
+          {tx("Tiếp tục mua sắm ")}
+          <ArrowRight size={16} />
         </Link>
       </div>
       <CartContent />
@@ -552,7 +575,7 @@ export function Checkout() {
   };
   const useLocation = () => {
     if (!navigator.geolocation) {
-      setError("Trình duyệt không hỗ trợ vị trí. Hãy nhập địa chỉ.");
+      setError(tx("Trình duyệt không hỗ trợ vị trí. Hãy nhập địa chỉ."));
       return;
     }
     setLocating(true);
@@ -561,7 +584,9 @@ export function Checkout() {
       (p) => selectLocation(p.coords.latitude, p.coords.longitude),
       () => {
         setError(
-          "Chưa được phép lấy vị trí. Bạn có thể bật quyền vị trí hoặc nhập địa chỉ.",
+          tx(
+            "Chưa được phép lấy vị trí. Bạn có thể bật quyền vị trí hoặc nhập địa chỉ.",
+          ),
         );
         setLocating(false);
       },
@@ -616,8 +641,8 @@ export function Checkout() {
   if (!cart.length)
     return (
       <div className="container page">
-        <Empty title="Chưa có sản phẩm để đặt">
-          <Link to="/products">Khám phá sản phẩm</Link>
+        <Empty title={tx("Chưa có sản phẩm để đặt")}>
+          <Link to="/products">{tx("Khám phá sản phẩm")}</Link>
         </Empty>
       </div>
     );
@@ -631,7 +656,7 @@ export function Checkout() {
         {
           ...form,
           address: form.address,
-          region: form.region || "Việt Nam",
+          region: form.region || tx("Việt Nam"),
           items: cart,
           coupon,
           quote_hash: quote?.quote_hash,
@@ -643,7 +668,7 @@ export function Checkout() {
       setCoupon("");
       sessionStorage.removeItem("od.checkout-key");
       navigate("/order/" + r.token);
-      setToast("Đã nhận đơn hàng của bạn");
+      setToast(tx("Đã nhận đơn hàng của bạn"));
     } catch (e: any) {
       setError(e.message);
       api("quote", {
@@ -661,15 +686,15 @@ export function Checkout() {
   return (
     <div className="container page">
       <div className="breadcrumbs">
-        <Link to="/cart">Giỏ hàng</Link>
+        <Link to="/cart">{tx("Giỏ hàng")}</Link>
         <ChevronRight size={13} />
-        <span>Đặt hàng</span>
+        <span>{tx("Đặt hàng")}</span>
       </div>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">ĐẶT HÀNG</p>
-          <h1>Giao đến đúng chỗ.</h1>
-          <p>Đặt hàng nhanh, không cần tài khoản.</p>
+          <p className="eyebrow">{tx("ĐẶT HÀNG")}</p>
+          <h1>{tx("Giao đến đúng chỗ.")}</h1>
+          <p>{tx("Đặt hàng nhanh, không cần tài khoản.")}</p>
         </div>
         <Lock size={24} strokeWidth={1.3} />
       </div>
@@ -677,20 +702,21 @@ export function Checkout() {
         <div>
           <section className="panel">
             <h2>
-              <span className="step-number">01</span> Thông tin nhận hàng
+              <span className="step-number">01</span>
+              {tx(" Thông tin nhận hàng")}
             </h2>
             <div className="form-grid">
-              <Field label="Họ và tên *">
+              <Field label={tx("Họ và tên *")}>
                 <input
                   required
                   autoComplete="name"
                   value={form.name}
                   onChange={(e) => change("name", e.target.value)}
-                  placeholder="Nguyễn Minh Anh"
+                  placeholder={tx("Nguyễn Minh Anh")}
                   maxLength={120}
                 />
               </Field>
-              <Field label="Số điện thoại *">
+              <Field label={tx("Số điện thoại *")}>
                 <input
                   type="tel"
                   required
@@ -701,7 +727,7 @@ export function Checkout() {
                 />
               </Field>
             </div>
-            <Field label="Địa chỉ nhận hàng *">
+            <Field label={tx("Địa chỉ nhận hàng *")}>
               <AddressSearch
                 value={form.address}
                 region={form.region}
@@ -727,10 +753,13 @@ export function Checkout() {
                 loading={locating}
                 onClick={useLocation}
               >
-                <Navigation size={17} /> Sử dụng vị trí hiện tại
+                <Navigation size={17} />
+                {tx(" Sử dụng vị trí hiện tại")}
               </Button>
               <small>
-                Địa chỉ chưa đúng? Chạm bản đồ hoặc kéo ghim tới cửa nhà.
+                {tx(
+                  "Địa chỉ chưa đúng? Chạm bản đồ hoặc kéo ghim tới cửa nhà.",
+                )}
               </small>
             </div>
             <details
@@ -738,7 +767,8 @@ export function Checkout() {
               open={form.latitude !== "" || undefined}
             >
               <summary>
-                <MapPin size={16} /> Xem và chỉnh điểm nhận trên bản đồ
+                <MapPin size={16} />
+                {tx(" Xem và chỉnh điểm nhận trên bản đồ")}
               </summary>
               <FreeMapPicker
                 lat={form.latitude}
@@ -753,9 +783,10 @@ export function Checkout() {
                   <Truck size={19} />
                   <div>
                     <strong>
-                      {quote.distance_km} km <span>quãng đường giao</span>
+                      {quote.distance_km} km{" "}
+                      <span>{tx("quãng đường giao")}</span>
                     </strong>
-                    <small>Phí tính theo quy tắc cửa hàng.</small>
+                    <small>{tx("Phí tính theo quy tắc cửa hàng.")}</small>
                   </div>
                   <b>{money(quote.shipping_fee)}</b>
                 </>
@@ -765,27 +796,31 @@ export function Checkout() {
                   <div>
                     <strong>
                       {form.latitude !== ""
-                        ? "Cửa hàng cần xác nhận phí giao"
-                        : "Chọn địa chỉ trên bản đồ"}
+                        ? tx("Cửa hàng cần xác nhận phí giao")
+                        : tx("Chọn địa chỉ trên bản đồ")}
                     </strong>
                     <small>
                       {form.latitude !== ""
                         ? quote?.shipping_reason ||
-                          "Đang lấy quãng đường và phí giao…"
-                        : "Chọn gợi ý địa chỉ để tự tính quãng đường và phí giao."}
+                          tx("Đang lấy quãng đường và phí giao…")
+                        : tx(
+                            "Chọn gợi ý địa chỉ để tự tính quãng đường và phí giao.",
+                          )}
                     </small>
                   </div>
                 </>
               )}
             </div>
             <details className="checkout-extra">
-              <summary>Thêm ghi chú (không bắt buộc)</summary>
-              <Field label="Ghi chú cho cửa hàng">
+              <summary>{tx("Thêm ghi chú (không bắt buộc)")}</summary>
+              <Field label={tx("Ghi chú cho cửa hàng")}>
                 <textarea
                   rows={2}
                   value={form.note}
                   onChange={(e) => change("note", e.target.value)}
-                  placeholder="Thời gian nhận hàng, hướng dẫn tìm địa chỉ…"
+                  placeholder={tx(
+                    "Thời gian nhận hàng, hướng dẫn tìm địa chỉ…",
+                  )}
                   maxLength={1000}
                 />
               </Field>
@@ -793,18 +828,19 @@ export function Checkout() {
           </section>
           <section className="panel">
             <h2>
-              <span className="step-number">02</span> Phương thức thanh toán
+              <span className="step-number">02</span>
+              {tx(" Phương thức thanh toán")}
             </h2>
             {[
               [
                 "cod",
-                "Tiền mặt khi nhận hàng",
-                "Thanh toán cho người giao hàng.",
+                tx("Tiền mặt khi nhận hàng"),
+                tx("Thanh toán cho người giao hàng."),
               ],
               [
                 "bank",
-                "Chuyển khoản ngân hàng",
-                "Cửa hàng kiểm tra và xác nhận nhận tiền.",
+                tx("Chuyển khoản ngân hàng"),
+                tx("Cửa hàng kiểm tra và xác nhận nhận tiền."),
               ],
             ]
               .filter(([key]) => data?.payment[key])
@@ -830,7 +866,8 @@ export function Checkout() {
         </div>
         <aside className="panel checkout-summary">
           <h2>
-            Đơn hàng của bạn <Badge>{cart.length}</Badge>
+            {tx("Đơn hàng của bạn ")}
+            <Badge>{cart.length}</Badge>
           </h2>
           {quote?.items.map((i: Obj) => (
             <div className="mini-item" key={i.variant_id}>
@@ -846,34 +883,42 @@ export function Checkout() {
           ))}
           <div className="totals">
             <p>
-              <span>Tiền hàng</span>
+              <span>{tx("Tiền hàng")}</span>
               <strong>{money(quote?.subtotal)}</strong>
             </p>
             <p>
-              <span>Giảm giá {coupon}</span>
+              <span>
+                {tx("Giảm giá ")}
+                {coupon}
+              </span>
               <strong>−{money(quote?.discount || 0)}</strong>
             </p>
             <p>
-              <span>Phí giao</span>
+              <span>{tx("Phí giao")}</span>
               <strong>{money(quote?.shipping_fee)}</strong>
             </p>
             <p className="grand-total">
-              <span>Tổng thanh toán</span>
+              <span>{tx("Tổng thanh toán")}</span>
               <strong>{money(quote?.total)}</strong>
             </p>
           </div>
           {quote?.total === null && (
             <p className="muted small">
-              Tiền hàng {money(quote.subtotal - quote.discount)} + phí giao đang
-              chờ báo. Đơn chỉ được xử lý sau khi bạn xác nhận tổng.
+              {tx("Tiền hàng ")}
+              {money(quote.subtotal - quote.discount)}
+              {tx(
+                " + phí giao đang chờ báo. Đơn chỉ được xử lý sau khi bạn xác nhận tổng.",
+              )}
             </p>
           )}
           <ErrorBox>{error}</ErrorBox>
           <Button variant="dark full" loading={busy} disabled={!quote}>
-            Xác nhận đặt hàng <ArrowRight size={17} />
+            {tx("Xác nhận đặt hàng ")}
+            <ArrowRight size={17} />
           </Button>
           <p className="secure-note">
-            <Lock size={13} /> Thông tin chỉ dùng để xử lý đơn hàng.
+            <Lock size={13} />
+            {tx(" Thông tin chỉ dùng để xử lý đơn hàng.")}
           </p>
         </aside>
       </form>
@@ -905,7 +950,7 @@ export function Order() {
     setBusy(true);
     try {
       setO(await api("order/" + token + "/" + a, {}));
-      setToast("Đã gửi xác nhận");
+      setToast(tx("Đã gửi xác nhận"));
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -938,31 +983,33 @@ export function Order() {
         <span className="order-success">
           <CheckCircle2 size={30} strokeWidth={1.4} />
         </span>
-        <p className="eyebrow">CẢM ƠN BẠN ĐÃ CHỌN OD.</p>
+        <p className="eyebrow">{tx("CẢM ƠN BẠN ĐÃ CHỌN OD.")}</p>
         <h1>
           {o.status === "cancelled"
-            ? "Đơn hàng đã huỷ."
-            : "Đã nhận đơn của bạn."}
+            ? tx("Đơn hàng đã huỷ.")
+            : tx("Đã nhận đơn của bạn.")}
         </h1>
         <p>
-          Mã đơn <strong>{o.code}</strong> · {date(o.created_at)}
+          {tx("Mã đơn ")}
+          <strong>{o.code}</strong> · {date(o.created_at)}
         </p>
         <p className="muted small">
-          Mã tra cứu riêng: <strong>{o.lookup_code}</strong>. Giữ link này để
-          theo dõi; không chia sẻ công khai.
+          {tx("Mã tra cứu riêng: ")}
+          <strong>{o.lookup_code}</strong>
+          {tx(". Giữ link này để theo dõi; không chia sẻ công khai.")}
         </p>
         <Button
           variant="outline"
           onClick={async () => {
             try {
               await navigator.clipboard.writeText(location.href);
-              setToast("Đã sao chép link theo dõi");
+              setToast(tx("Đã sao chép link theo dõi"));
             } catch {
-              setToast("Hãy sao chép địa chỉ trang từ trình duyệt");
+              setToast(tx("Hãy sao chép địa chỉ trang từ trình duyệt"));
             }
           }}
         >
-          Sao chép link theo dõi
+          {tx("Sao chép link theo dõi")}
         </Button>
       </div>
       <ErrorBox>{error}</ErrorBox>
@@ -970,14 +1017,16 @@ export function Order() {
         <div>
           <section className="panel">
             <div className="panel-title">
-              <h2>Tiến trình đơn hàng</h2>
+              <h2>{tx("Tiến trình đơn hàng")}</h2>
               <Badge tone={o.status === "cancelled" ? "red" : "lime"}>
                 {status[o.status]}
               </Badge>
             </div>
             {o.status === "cancelled" ? (
               <p className="error">
-                Lý do: {o.cancel_reason}. Thanh toán/hoàn tiền được xử lý riêng.
+                {tx("Lý do: ")}
+                {o.cancel_reason}
+                {tx(". Thanh toán/hoàn tiền được xử lý riêng.")}
               </p>
             ) : (
               <div className="timeline">
@@ -1024,50 +1073,57 @@ export function Order() {
           </section>
           {o.shipping_status === "awaiting_customer" && (
             <section className="panel">
-              <h2>Xác nhận phí giao hàng</h2>
+              <h2>{tx("Xác nhận phí giao hàng")}</h2>
               <p>
-                Phí cửa hàng báo: <strong>{money(o.shipping_fee)}</strong>. Tổng
-                đơn: <strong>{money(o.total)}</strong>.
+                {tx("Phí cửa hàng báo: ")}
+                <strong>{money(o.shipping_fee)}</strong>
+                {tx(". Tổng đơn: ")}
+                <strong>{money(o.total)}</strong>.
               </p>
               <Button
                 loading={busy}
                 variant="lime"
                 onClick={() => action("accept-shipping")}
               >
-                Tôi đồng ý với tổng tiền này
+                {tx("Tôi đồng ý với tổng tiền này")}
               </Button>
             </section>
           )}
           <section className="panel">
-            <h2>Thông tin nhận hàng</h2>
+            <h2>{tx("Thông tin nhận hàng")}</h2>
             <p>
               <strong>{o.customer_name}</strong> · {o.phone}
             </p>
             <p>
               {o.address}, {o.region}
             </p>
-            {o.note && <p className="muted">Ghi chú: {o.note}</p>}
+            {o.note && (
+              <p className="muted">
+                {tx("Ghi chú: ")}
+                {o.note}
+              </p>
+            )}
             <p className="muted">
               {o.distance_km
-                ? `Quãng đường ${o.distance_km} km`
-                : "Quãng đường chưa được xác định"}{" "}
+                ? tx("Quãng đường {0} km", [o.distance_km])
+                : tx("Quãng đường chưa được xác định")}{" "}
               ·{" "}
               {o.shipping_status === "pending"
-                ? "Cửa hàng đang xác nhận phí giao"
-                : "Phí giao " + money(o.shipping_fee)}
+                ? tx("Cửa hàng đang xác nhận phí giao")
+                : tx("Phí giao ") + money(o.shipping_fee)}
             </p>
           </section>
           <section className="panel">
             <div className="panel-title">
-              <h2>Thanh toán</h2>
+              <h2>{tx("Thanh toán")}</h2>
               <Badge tone={o.payment_status === "paid" ? "lime" : ""}>
                 {status[o.payment_status]}
               </Badge>
             </div>
             <p>
               {o.payment_method === "cod"
-                ? "Tiền mặt khi nhận hàng"
-                : "Chuyển khoản ngân hàng"}
+                ? tx("Tiền mặt khi nhận hàng")
+                : tx("Chuyển khoản ngân hàng")}
             </p>
             {o.payment_method === "bank" &&
               o.shipping_status === "confirmed" &&
@@ -1075,8 +1131,9 @@ export function Order() {
                 <>
                   {pay.demo && (
                     <ErrorBox>
-                      DỮ LIỆU DEMO · QR minh hoạ. Không chuyển tiền. Chưa kết
-                      nối ngân hàng.
+                      {tx(
+                        "DỮ LIỆU DEMO · QR minh hoạ. Không chuyển tiền. Chưa kết nối ngân hàng.",
+                      )}
                     </ErrorBox>
                   )}
                   <div className="bank-details">
@@ -1084,21 +1141,26 @@ export function Order() {
                       src={qr}
                       alt={
                         pay.demo
-                          ? "QR minh hoạ, không chuyển tiền"
-                          : "Mã QR chuyển khoản"
+                          ? tx("QR minh hoạ, không chuyển tiền")
+                          : tx("Mã QR chuyển khoản")
                       }
                     />
                     <div>
-                      <p>Ngân hàng (BIN): {pay.bank_bin}</p>
+                      <p>
+                        {tx("Ngân hàng (BIN): ")}
+                        {pay.bank_bin}
+                      </p>
                       <p>
                         STK: <strong>{pay.bank_account}</strong>
                       </p>
                       <p>{pay.bank_owner}</p>
                       <p>
-                        Nội dung: <strong>{content}</strong>
+                        {tx("Nội dung: ")}
+                        <strong>{content}</strong>
                       </p>
                       <p>
-                        Số tiền: <strong>{money(o.total)}</strong>
+                        {tx("Số tiền: ")}
+                        <strong>{money(o.total)}</strong>
                       </p>
                     </div>
                   </div>
@@ -1109,12 +1171,13 @@ export function Order() {
                       variant="dark"
                       onClick={() => action("review")}
                     >
-                      Tôi đã chuyển khoản
+                      {tx("Tôi đã chuyển khoản")}
                     </Button>
                   )}
                   <p className="muted small">
-                    Nút này chỉ gửi yêu cầu kiểm tra. Cửa hàng xác nhận sau khi
-                    thực nhận tiền.
+                    {tx(
+                      "Nút này chỉ gửi yêu cầu kiểm tra. Cửa hàng xác nhận sau khi thực nhận tiền.",
+                    )}
                   </p>
                 </>
               )}
@@ -1123,25 +1186,25 @@ export function Order() {
         <div>
           <Receipt o={o} />
           <section className="panel">
-            <h2>Lịch sử cập nhật</h2>
+            <h2>{tx("Lịch sử cập nhật")}</h2>
             {o.history.map((h: Obj, i: number) => (
               <div className="history-line" key={i}>
                 <span>
                   {(
                     {
-                      received: "Đã nhận đơn",
-                      confirm: "Xác nhận đơn",
-                      prepare: "Chuẩn bị hàng",
-                      ship: "Bàn giao vận chuyển",
-                      deliver: "Giao thành công",
-                      paid: "Xác nhận nhận tiền",
-                      cancel: "Huỷ đơn",
-                      refund: "Xử lý hoàn/trả",
-                      shipping_quote: "Cửa hàng báo phí giao",
-                      shipping_accepted: "Đã chấp nhận phí giao",
-                      payment_review: "Yêu cầu kiểm tra chuyển khoản",
+                      received: tx("Đã nhận đơn"),
+                      confirm: tx("Xác nhận đơn"),
+                      prepare: tx("Chuẩn bị hàng"),
+                      ship: tx("Bàn giao vận chuyển"),
+                      deliver: tx("Giao thành công"),
+                      paid: tx("Xác nhận nhận tiền"),
+                      cancel: tx("Huỷ đơn"),
+                      refund: tx("Xử lý hoàn/trả"),
+                      shipping_quote: tx("Cửa hàng báo phí giao"),
+                      shipping_accepted: tx("Đã chấp nhận phí giao"),
+                      payment_review: tx("Yêu cầu kiểm tra chuyển khoản"),
                     } as Obj
-                  )[h.action] || "Cập nhật đơn"}
+                  )[h.action] || tx("Cập nhật đơn")}
                 </span>
                 <small>{date(h.created_at)}</small>
               </div>
@@ -1160,7 +1223,7 @@ export function Receipt({ o }: { o: Obj }) {
       <div className="panel-title">
         <div>
           <p className="eyebrow">{o.store_snapshot.name}</p>
-          <h2>Phiếu bán hàng</h2>
+          <h2>{tx("Phiếu bán hàng")}</h2>
         </div>
         <Package size={22} strokeWidth={1.3} />
       </div>
@@ -1178,7 +1241,9 @@ export function Receipt({ o }: { o: Obj }) {
           <div>
             <strong>{i.product_name}</strong>
             <small>
-              {i.variant_name} · {i.quantity} × {money(i.unit_price)}
+              {i.variant_name} · {i.quantity}
+              {tx(" × ")}
+              {money(i.unit_price)}
             </small>
           </div>
           <span>{money(i.unit_price * i.quantity)}</span>
@@ -1186,40 +1251,41 @@ export function Receipt({ o }: { o: Obj }) {
       ))}
       <div className="totals">
         <p>
-          <span>Tiền hàng</span>
+          <span>{tx("Tiền hàng")}</span>
           <strong>{money(o.subtotal)}</strong>
         </p>
         <p>
-          <span>Giảm giá</span>
+          <span>{tx("Giảm giá")}</span>
           <strong>−{money(o.discount)}</strong>
         </p>
         <p>
-          <span>Phí giao</span>
+          <span>{tx("Phí giao")}</span>
           <strong>{money(o.shipping_fee)}</strong>
         </p>
         <p className="grand-total">
-          <span>Tổng thanh toán</span>
+          <span>{tx("Tổng thanh toán")}</span>
           <strong>{money(o.total)}</strong>
         </p>
         <p>
-          <span>Thanh toán</span>
+          <span>{tx("Thanh toán")}</span>
           <Badge>{status[o.payment_status]}</Badge>
         </p>
         {Number(o.refunded_amount) > 0 && (
           <p>
-            <span>Đã hoàn tiền</span>
+            <span>{tx("Đã hoàn tiền")}</span>
             <span>{money(o.refunded_amount)}</span>
           </p>
         )}
       </div>
       <p className="muted small">
-        Phiếu bán hàng, không phải hoá đơn điện tử.
+        {tx("Phiếu bán hàng, không phải hoá đơn điện tử.")}
         <br />
-        Thông tin và giá được lưu tại thời điểm đặt đơn.
+        {tx("Thông tin và giá được lưu tại thời điểm đặt đơn.")}
       </p>
       <div className="receipt-actions no-print">
         <Button variant="outline" onClick={() => window.print()}>
-          <Printer size={16} /> In phiếu
+          <Printer size={16} />
+          {tx(" In phiếu")}
         </Button>
         <Button
           variant="outline"
@@ -1230,14 +1296,15 @@ export function Receipt({ o }: { o: Obj }) {
               await (await import("./pdf")).receiptPDF(o);
             } catch {
               setError(
-                "Không tạo được PDF. Bạn có thể dùng In phiếu → Lưu PDF.",
+                tx("Không tạo được PDF. Bạn có thể dùng In phiếu → Lưu PDF."),
               );
             } finally {
               setBusy(false);
             }
           }}
         >
-          <Download size={16} /> Tải PDF
+          <Download size={16} />
+          {tx(" Tải PDF")}
         </Button>
       </div>
       <ErrorBox>{error}</ErrorBox>

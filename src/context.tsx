@@ -1,3 +1,4 @@
+import { Check, X } from "lucide-react";
 import {
   createContext,
   useContext,
@@ -6,7 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { api, type Obj } from "./api";
-import { Check, X } from "lucide-react";
+import { localized, tx } from "./i18n";
 type CartItem = { variant_id: number; quantity: number };
 const Context = createContext<any>(null);
 export const useStore = () => useContext(Context);
@@ -32,7 +33,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const refresh = () =>
     api("catalog")
       .then((d) => {
-        setData(d);
+        const categories = d.categories.map((c: Obj) => localized(c));
+        setData({
+          ...d,
+          store: localized(d.store),
+          products: d.products.map((p: Obj) => ({
+            ...localized(p),
+            category:
+              categories.find((c: Obj) => c.id === p.category_id)?.name ||
+              tx(p.category),
+          })),
+          categories,
+        });
         setError("");
       })
       .catch((e) => setError(e.message));
@@ -81,7 +93,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           )
         : [...c, { variant_id, quantity }];
     });
-    setToast("Đã thêm vào giỏ hàng");
+    setToast(tx("Đã thêm vào giỏ hàng"));
   };
   const update = (id: number, qty: number) =>
     setCart((c) =>
@@ -118,7 +130,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         <div className="toast" role="status">
           <Check size={17} />
           {toast}
-          <button aria-label="Đóng thông báo" onClick={() => setToast("")}>
+          <button
+            aria-label={tx("Đóng thông báo")}
+            onClick={() => setToast("")}
+          >
             <X size={16} />
           </button>
         </div>

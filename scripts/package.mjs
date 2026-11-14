@@ -48,7 +48,7 @@ await permissions(root);
 const updateRoot = "build/update";
 await rm(updateRoot, { recursive: true, force: true });
 await mkdir(updateRoot, { recursive: true });
-for (const entry of ["index.html", "assets", "images", "fonts"])
+for (const entry of ["index.html", "index.php", "assets", "images", "fonts"])
   await cp(root + "/" + entry, updateRoot + "/" + entry, { recursive: true });
 await mkdir(updateRoot + "/api/bin", { recursive: true });
 await cp(root + "/api/src", updateRoot + "/api/src", {

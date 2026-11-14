@@ -1,32 +1,34 @@
-import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import {
   ArrowRight,
   ArrowUpRight,
+  Cable,
   ChevronLeft,
   ChevronRight,
   Headphones,
   Keyboard,
   Mouse,
-  Speaker,
-  Cable,
-  ShoppingBag,
-  Truck,
   Package,
+  ShoppingBag,
+  Speaker,
+  Truck,
   Zap,
-  Image as ImageIcon,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { asset, date, type Obj } from "./api";
+import { ProductCard } from "./catalogue-product";
 import { useStore } from "./context";
-import { asset, money, date, type Obj } from "./api";
+import { BannerCarousel } from "./features/home/BannerCarousel";
+import { BrandMarquee } from "./features/home/BrandMarquee";
+import { tx } from "./i18n";
 import {
-  useNow,
   displayProduct,
-  saleState,
   remaining,
+  saleState,
   timestamp,
+  useNow,
 } from "./promotions";
 import { Loading } from "./ui";
-import { ProductCard } from "./catalogue-product";
 const categoryIcons: Obj = {
   headphones: Headphones,
   keyboard: Keyboard,
@@ -37,10 +39,10 @@ const categoryIcons: Obj = {
 export function SaleClock({ end, label }: { end: string; label: string }) {
   const time = remaining(end, useNow());
   const cells = [
-    ...(time.days > 0 ? [[time.days, "ngày"]] : []),
-    [time.hours, "giờ"],
-    [time.minutes, "phút"],
-    [time.seconds, "giây"],
+    ...(time.days > 0 ? [[time.days, tx("ngày")]] : []),
+    [time.hours, tx("giờ")],
+    [time.minutes, tx("phút")],
+    [time.seconds, tx("giây")],
   ];
   return (
     <div
@@ -112,13 +114,14 @@ export function CatalogueSale({
           <div>
             <p>
               {active.length
-                ? "Ưu đãi đang diễn ra"
+                ? tx("Ưu đãi đang diễn ra")
                 : upcoming.length
-                  ? "Ưu đãi sắp mở"
-                  : "Ưu đãi có hẹn"}
+                  ? tx("Ưu đãi sắp mở")
+                  : tx("Ưu đãi có hẹn")}
             </p>
             <h2 id="cx-sale-title">
-              Flash sale<span>.</span>
+              {tx("Flash sale")}
+              <span>.</span>
             </h2>
           </div>
         </div>
@@ -127,13 +130,13 @@ export function CatalogueSale({
             end={nextEnd}
             label={
               active.length
-                ? "Ưu đãi gần nhất kết thúc sau"
-                : "Phiên tiếp theo bắt đầu sau"
+                ? tx("Ưu đãi gần nhất kết thúc sau")
+                : tx("Phiên tiếp theo bắt đầu sau")
             }
           />
         )}
         <Link className="cx-sale-link" to="/flash-sale">
-          Xem tất cả
+          {tx("Xem tất cả")}
           <ArrowUpRight size={17} />
         </Link>
       </div>
@@ -142,8 +145,8 @@ export function CatalogueSale({
           <div className="cx-sale-toolbar">
             <span>
               {active.length
-                ? `${active.length} sản phẩm đang ưu đãi`
-                : `Mở lúc ${date(upcoming[0].flash_start)}`}
+                ? tx("{0} sản phẩm đang ưu đãi", [active.length])
+                : tx("Mở lúc {0}", [date(upcoming[0].flash_start)])}
             </span>
             {shown.length > 1 && (
               <div className="cx-rail-buttons">
@@ -151,14 +154,14 @@ export function CatalogueSale({
                   type="button"
                   disabled={scroll.left}
                   onClick={() => move(-1)}
-                  aria-label="Sản phẩm flash sale trước"
+                  aria-label={tx("Sản phẩm flash sale trước")}
                 >
                   <ChevronLeft size={19} />
                 </button>
                 <button
                   type="button"
                   onClick={() => move(1)}
-                  aria-label="Sản phẩm flash sale tiếp"
+                  aria-label={tx("Sản phẩm flash sale tiếp")}
                   disabled={!scroll.right}
                 >
                   <ChevronRight size={19} />
@@ -172,28 +175,29 @@ export function CatalogueSale({
             onScroll={measure}
             tabIndex={0}
             role="region"
-            aria-label="Danh sách flash sale, vuốt ngang để xem thêm"
+            aria-label={tx("Danh sách flash sale, vuốt ngang để xem thêm")}
           >
             {shown.map((p) => (
               <ProductCard key={p.id} p={p} />
             ))}
           </div>
           <span className="cx-swipe-hint">
-            Vuốt hoặc dùng mũi tên để xem thêm sản phẩm
+            {tx("Vuốt hoặc dùng mũi tên để xem thêm sản phẩm")}
           </span>
         </div>
       ) : (
         <div className="cx-sale-empty">
           <Zap size={28} />
           <div>
-            <h3>Phiên mới sẽ xuất hiện tại đây</h3>
+            <h3>{tx("Phiên mới sẽ xuất hiện tại đây")}</h3>
             <p>
-              Cửa hàng chưa có flash sale đang mở. Bạn vẫn có thể xem toàn bộ
-              sản phẩm.
+              {tx(
+                "Cửa hàng chưa có flash sale đang mở. Bạn vẫn có thể xem toàn bộ sản phẩm.",
+              )}
             </p>
           </div>
           <Link to="/products">
-            Xem sản phẩm
+            {tx("Xem sản phẩm")}
             <ArrowRight size={17} />
           </Link>
         </div>
@@ -204,16 +208,8 @@ export function CatalogueSale({
 export function CatalogueHome() {
   const { data } = useStore();
   const now = useNow();
-  const [heroIndex, setHeroIndex] = useState(0);
   if (!data) return <Loading />;
   const products = data.products.map((p: Obj) => displayProduct(p, now));
-  const candidates = ["tai-nghe", "ban-phim", "loa"]
-    .map((slug) =>
-      products.find((p: Obj) => p.category_slug === slug && p.images[0]),
-    )
-    .filter(Boolean);
-  const heroes = candidates.length ? candidates : products.slice(0, 3);
-  const hero = heroes[heroIndex % Math.max(1, heroes.length)];
   const active = products.filter((p: Obj) => saleState(p, now) === "active");
   const upcoming = products
     .filter((p: Obj) => saleState(p, now) === "scheduled")
@@ -232,116 +228,32 @@ export function CatalogueHome() {
   );
   return (
     <div className="container cx-home">
-      <section className="cx-hero" aria-labelledby="cx-home-title">
-        <div className="cx-hero-copy">
-          <span className="cx-eyebrow">
-            <span />
-            THIẾT BỊ CHO MỖI NGÀY
-          </span>
-          <h1 id="cx-home-title">
-            Phụ kiện công nghệ.
-            <br />
-            <span>Chọn đúng thứ cần.</span>
-          </h1>
-          <p>
-            Từ một bản nhạc đến một ngày làm việc.
-            <br />
-            Tai nghe, bàn phím và những món phụ kiện phù hợp với bạn.
-          </p>
-          <div className="cx-hero-actions">
-            <Link className="cx-button" to="/products">
-              Khám phá sản phẩm
-              <ArrowRight size={18} />
-            </Link>
-            <Link className="cx-hero-sale-link" to="/flash-sale">
-              <Zap size={16} />
-              Xem flash sale
-            </Link>
-          </div>
-          <div
-            className="cx-hero-picker"
-            role="group"
-            aria-label="Chọn sản phẩm giới thiệu"
-          >
-            {heroes.map((p: Obj, i: number) => {
-              const Icon =
-                categoryIcons[
-                  data.categories.find((c: Obj) => c.id === p.category_id)?.icon
-                ] || Cable;
-              return (
-                <button
-                  key={p.id}
-                  aria-pressed={heroIndex % heroes.length === i}
-                  onClick={() => setHeroIndex(i)}
-                >
-                  <Icon size={18} />
-                  {p.category}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        <div className="cx-hero-feature">
-          {hero ? (
-            <>
-              <Link className="cx-hero-image" to={"/product/" + hero.slug}>
-                <img
-                  src={asset(hero.images[0])}
-                  alt={hero.name}
-                  fetchPriority="high"
-                />
-                <span className="cx-image-index">
-                  OD. SELECTED /{" "}
-                  {String((heroIndex % heroes.length) + 1).padStart(2, "0")}
-                </span>
-              </Link>
-              <div className="cx-hero-caption">
-                <div>
-                  <span>{hero.brand}</span>
-                  <Link to={"/product/" + hero.slug}>{hero.name}</Link>
-                </div>
-                <strong>{money(hero.price)}</strong>
-                <Link
-                  className="cx-round-link"
-                  to={"/product/" + hero.slug}
-                  aria-label={"Xem " + hero.name}
-                >
-                  <ArrowUpRight size={21} />
-                </Link>
-              </div>
-            </>
-          ) : (
-            <div className="cx-empty-hero">
-              <ImageIcon size={40} />
-              <span>Sản phẩm đang được cập nhật</span>
-            </div>
-          )}
-        </div>
-      </section>
+      <BannerCarousel />
       <CatalogueSale active={active} upcoming={upcoming} />
+      <BrandMarquee />
       <div className="cx-services">
         <span>
           <ShoppingBag size={18} />
-          Mua không cần tài khoản
+          {tx("Mua không cần tài khoản")}
         </span>
         <span>
           <Truck size={19} />
-          Phí giao theo vị trí nhận
+          {tx("Phí giao theo vị trí nhận")}
         </span>
         <Link to="/lookup">
           <Package size={18} />
-          Tra đơn bằng số điện thoại
+          {tx("Tra đơn bằng số điện thoại")}
           <ArrowUpRight size={16} />
         </Link>
       </div>
       <section className="cx-categories">
         <div className="cx-section-heading">
           <div>
-            <span className="cx-eyebrow">TÌM THEO NHU CẦU</span>
-            <h2>Bạn đang tìm gì?</h2>
+            <span className="cx-eyebrow">{tx("TÌM THEO NHU CẦU")}</span>
+            <h2>{tx("Bạn đang tìm gì?")}</h2>
           </div>
           <Link className="cx-text-link" to="/products">
-            Tất cả danh mục
+            {tx("Tất cả danh mục")}
             <ArrowRight size={17} />
           </Link>
         </div>
@@ -357,7 +269,7 @@ export function CatalogueHome() {
                   <h3>{c.name}</h3>
                   <span>
                     {products.filter((p: Obj) => p.category_id === c.id).length}{" "}
-                    sản phẩm
+                    {tx("sản phẩm")}
                   </span>
                 </div>
                 <ArrowUpRight size={19} />
@@ -370,13 +282,15 @@ export function CatalogueHome() {
         <section className="cx-featured">
           <div className="cx-section-heading">
             <div>
-              <span className="cx-eyebrow">TRÊN KỆ OD.</span>
+              <span className="cx-eyebrow">{tx("TRÊN KỆ OD.")}</span>
               <h2>
-                {featured.length ? "Sản phẩm nổi bật" : "Khám phá sản phẩm"}
+                {featured.length
+                  ? tx("Sản phẩm nổi bật")
+                  : tx("Khám phá sản phẩm")}
               </h2>
             </div>
             <Link className="cx-text-link" to="/products">
-              Xem tất cả
+              {tx("Xem tất cả")}
               <ArrowRight size={17} />
             </Link>
           </div>
@@ -391,27 +305,28 @@ export function CatalogueHome() {
         <div className="cx-workspace-photo">
           <img
             src={asset("images/desk.jpg")}
-            alt="Góc làm việc cùng bàn phím và phụ kiện"
+            alt={tx("Góc làm việc cùng bàn phím và phụ kiện")}
             loading="lazy"
           />
         </div>
         <div className="cx-workspace-copy">
-          <span className="cx-eyebrow">CHO GÓC LÀM VIỆC</span>
+          <span className="cx-eyebrow">{tx("CHO GÓC LÀM VIỆC")}</span>
           <h2>
-            Gọn bàn làm việc.
+            {tx("Gọn bàn làm việc.")}
             <br />
-            Rõ điều cần làm.
+            {tx("Rõ điều cần làm.")}
           </h2>
           <p>
-            Chọn bàn phím và chuột theo cách bạn sử dụng. Từ một góc làm việc
-            tại nhà đến bàn máy mỗi ngày.
+            {tx(
+              "Chọn bàn phím và chuột theo cách bạn sử dụng. Từ một góc làm việc tại nhà đến bàn máy mỗi ngày.",
+            )}
           </p>
           <Link className="cx-button" to="/products?category=ban-phim">
-            Khám phá bàn phím
+            {tx("Khám phá bàn phím")}
             <ArrowUpRight size={18} />
           </Link>
           <Link className="cx-text-link" to="/products?category=chuot">
-            Xem chuột & phụ kiện
+            {tx("Xem chuột & phụ kiện")}
             <ArrowRight size={17} />
           </Link>
         </div>
@@ -420,11 +335,11 @@ export function CatalogueHome() {
         <section className="cx-extra">
           <div className="cx-section-heading">
             <div>
-              <span className="cx-eyebrow">THÊM LỰA CHỌN</span>
-              <h2>Khám phá thêm</h2>
+              <span className="cx-eyebrow">{tx("THÊM LỰA CHỌN")}</span>
+              <h2>{tx("Khám phá thêm")}</h2>
             </div>
             <Link className="cx-text-link" to="/products">
-              Vào cửa hàng
+              {tx("Vào cửa hàng")}
               <ArrowRight size={17} />
             </Link>
           </div>

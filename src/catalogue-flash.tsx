@@ -1,12 +1,13 @@
+import { ArrowRight, CalendarDays, ChevronRight, Zap } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ChevronRight, CalendarDays, Zap } from "lucide-react";
-import { useStore } from "./context";
-import { useNow, displayProduct, saleState, timestamp } from "./promotions";
 import { date, money, type Obj } from "./api";
-import { Loading, Empty } from "./ui";
-import { ProductCard } from "./catalogue-product";
 import { SaleClock } from "./catalogue-home";
+import { ProductCard } from "./catalogue-product";
+import { useStore } from "./context";
+import { tx } from "./i18n";
+import { displayProduct, saleState, timestamp, useNow } from "./promotions";
+import { Empty, Loading } from "./ui";
 export function CatalogueFlashPage() {
   const { data } = useStore();
   const now = useNow();
@@ -28,22 +29,24 @@ export function CatalogueFlashPage() {
   return (
     <div className="container page cx-flash-page">
       <div className="breadcrumbs">
-        <Link to="/">Trang chủ</Link>
+        <Link to="/">{tx("Trang chủ")}</Link>
         <ChevronRight size={14} />
-        <span>Flash sale</span>
+        <span>{tx("Flash sale")}</span>
       </div>
       <section className="cx-flash-intro">
         <div>
           <span className="cx-flash-eyebrow">
-            <Zap size={16} /> ƯU ĐÃI THEO PHIÊN
+            <Zap size={16} />
+            {tx(" ƯU ĐÃI THEO PHIÊN")}
           </span>
           <h1>
-            Flash sale<span>.</span>
+            {tx("Flash sale")}
+            <span>.</span>
           </h1>
           <p>
-            Giá ưu đãi có thời gian rõ ràng.
+            {tx("Giá ưu đãi có thời gian rõ ràng.")}
             <br />
-            Chọn món bạn cần khi phiên đang mở.
+            {tx("Chọn món bạn cần khi phiên đang mở.")}
           </p>
         </div>
         {nextEnd && (
@@ -51,8 +54,8 @@ export function CatalogueFlashPage() {
             end={nextEnd}
             label={
               active.length
-                ? "Ưu đãi gần nhất kết thúc sau"
-                : "Phiên tiếp theo bắt đầu sau"
+                ? tx("Ưu đãi gần nhất kết thúc sau")
+                : tx("Phiên tiếp theo bắt đầu sau")
             }
           />
         )}
@@ -60,22 +63,24 @@ export function CatalogueFlashPage() {
       <div
         className="cx-flash-tabs"
         role="group"
-        aria-label="Chọn thời gian flash sale"
+        aria-label={tx("Chọn thời gian flash sale")}
       >
         <button
           aria-pressed={tab === "active"}
           onClick={() => setTab("active")}
         >
-          Đang diễn ra <span>{active.length}</span>
+          {tx("Đang diễn ra ")}
+          <span>{active.length}</span>
         </button>
         <button
           aria-pressed={tab === "upcoming"}
           onClick={() => setTab("upcoming")}
         >
-          Sắp mở <span>{upcoming.length}</span>
+          {tx("Sắp mở ")}
+          <span>{upcoming.length}</span>
         </button>
         <Link to="/products">
-          Tất cả sản phẩm
+          {tx("Tất cả sản phẩm")}
           <ArrowRight size={16} />
         </Link>
       </div>
@@ -88,10 +93,11 @@ export function CatalogueFlashPage() {
                 <div className="cx-upcoming-date">
                   <span>
                     <CalendarDays size={15} />
-                    Mở {date(p.flash_start)}
+                    {tx("Mở ")}
+                    {date(p.flash_start)}
                   </span>
                   <span>
-                    Giá khi mở:{" "}
+                    {tx("Giá khi mở:")}{" "}
                     <strong>
                       {money(Math.min(Number(p.flash_price), Number(p.price)))}
                     </strong>
@@ -105,18 +111,18 @@ export function CatalogueFlashPage() {
         <Empty
           title={
             tab === "active"
-              ? "Chưa có phiên đang diễn ra"
-              : "Chưa có phiên sắp mở"
+              ? tx("Chưa có phiên đang diễn ra")
+              : tx("Chưa có phiên sắp mở")
           }
         >
           {tab === "active" && upcoming.length > 0 ? (
             <button className="cx-button" onClick={() => setTab("upcoming")}>
-              Xem phiên sắp mở
+              {tx("Xem phiên sắp mở")}
               <ArrowRight size={16} />
             </button>
           ) : (
             <Link className="cx-text-link" to="/products">
-              Khám phá sản phẩm
+              {tx("Khám phá sản phẩm")}
               <ArrowRight size={16} />
             </Link>
           )}

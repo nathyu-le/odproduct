@@ -90,13 +90,22 @@ if ($path === "session" && $method === "GET") {
 } elseif ($path === "catalog" && $method === "GET") {
     $result = [
         "products" => catalog(),
-        "categories" => all("SELECT * FROM categories ORDER BY sort_order,id"),
+        "categories" => content_categories(),
         "store" => setting("store"),
+        "appearance" => content_defaults(),
+        "seo" => setting("seo"),
         "payment" => setting("payment"),
         "shipping" => setting("shipping"),
         "server_time" => date(DATE_ATOM),
         "maps" => ["provider" => "openstreetmap"],
     ];
+} elseif ($path === "blog" && $method === "GET") {
+    $result = blog_list(content_locale($_GET["locale"] ?? "en"));
+} elseif (str_starts_with($path, "blog/") && $method === "GET") {
+    $result = blog_get(
+        rawurldecode(substr($path, 5)),
+        content_locale($_GET["locale"] ?? "en"),
+    );
 } elseif ($path === "geocoding/search" && $method === "POST") {
     $result = geocode_search($body);
 } elseif ($path === "geocoding/reverse" && $method === "POST") {
@@ -211,7 +220,37 @@ if ($path === "session" && $method === "GET") {
     if (!str_starts_with($path, "admin/orders")) {
         user(true);
     }
-    if ($path === "admin/maps") {
+    if ($path === "admin/blog") {
+        $result =
+            $method === "GET"
+                ? blog_list(content_locale($_GET["locale"] ?? "en"), true)
+                : blog_save($body, $u);
+    } elseif (preg_match('~^admin/blog/(\d+)$~', $path, $m)) {
+        if ($method === "GET") {
+            $result = blog_get($m[1], "en", true);
+        } else {
+            $id = integer($m[1], 1);
+            $action = $body["action"] ?? "";
+            if ($action !== "archive") {
+                fail(422, "Thao tác không hợp lệ.");
+            }
+            content_schema();
+            query(
+                "UPDATE blog_posts SET status='archived',version=version+1,updated_at=? WHERE id=?",
+                [now(), $id],
+            );
+            audit(null, $actor, "admin", "blog_archived", ["id" => $id]);
+            $result = ["ok" => true];
+        }
+    } elseif ($path === "admin/appearance") {
+        $result =
+            $method === "GET"
+                ? content_defaults()
+                : content_save_appearance($body, $u);
+    } elseif ($path === "admin/seo") {
+        $result =
+            $method === "GET" ? setting("seo") : content_save_seo($body, $u);
+    } elseif ($path === "admin/maps") {
         $result = [
             "provider" => "OpenStreetMap / Photon",
             "routing" => "OSRM",
@@ -251,14 +290,12 @@ if ($path === "session" && $method === "GET") {
             $method === "GET"
                 ? [
                     "products" => catalog(true),
-                    "categories" => all(
-                        "SELECT * FROM categories ORDER BY sort_order,id",
-                    ),
+                    "categories" => content_categories(),
                 ]
                 : save_product($body, user(true));
     } elseif ($path === "admin/categories") {
         if ($method === "GET") {
-            $result = all("SELECT * FROM categories ORDER BY sort_order,id");
+            $result = content_categories();
         } else {
             user(true);
             $name = required($body, "name", 100);
@@ -280,6 +317,19 @@ if ($path === "session" && $method === "GET") {
                 query(
                     "INSERT INTO categories(name,slug,sort_order) VALUES(?,?,?)",
                     [$name, $slug, integer($body["sort_order"] ?? 0)],
+                );
+            }
+            $categoryId = !empty($body["id"])
+                ? (int) $body["id"]
+                : (int) db()->lastInsertId();
+            if (
+                isset($body["translations"]) &&
+                is_array($body["translations"])
+            ) {
+                content_save_translations(
+                    "category",
+                    $categoryId,
+                    $body["translations"],
                 );
             }
             $result = ["ok" => true];

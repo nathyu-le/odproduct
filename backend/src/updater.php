@@ -411,6 +411,16 @@ function deployment_append_guard(
 function deployment_prepare_access(): void
 {
     $root = deployment_paths()["root"];
+    deployment_append_guard(
+        $root . "/.htaccess",
+        "OD CLEAN URLS V1",
+        "<IfModule mod_rewrite.c>\nRewriteEngine On\nRewriteRule ^index\\.html$ index.php [QSA,L]\nRewriteRule ^(?:sitemap\\.xml|robots\\.txt)$ index.php [QSA,L]\nRewriteCond %{REQUEST_FILENAME} -f [OR]\nRewriteCond %{REQUEST_FILENAME} -d\nRewriteRule ^ - [L]\nRewriteRule ^ index.php [QSA,L]\n</IfModule>",
+    );
+    deployment_append_guard(
+        $root . "/.htaccess",
+        "OD EDITABLE ASSET CACHE V1",
+        "<IfModule mod_headers.c>\n<FilesMatch \"\\.(js|css)$\">\nHeader always set Cache-Control \"no-cache, must-revalidate\"\n</FilesMatch>\n</IfModule>",
+    );
     $deny =
         "<IfModule mod_authz_core.c>\nRequire all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\nDeny from all\n</IfModule>";
     foreach (["src", "storage", "migrations", "demo", "bin"] as $private) {

@@ -1,31 +1,31 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import {
-  ArrowUpRight,
   ArrowRight,
-  ShoppingBag,
-  Wallet,
-  TrendingUp,
-  Package,
-  RefreshCw,
+  ArrowUpRight,
+  CheckCircle2,
   ChevronRight,
   Clock,
-  AlertTriangle,
-  CheckCircle2,
+  Package,
+  RefreshCw,
+  ShoppingBag,
+  TrendingUp,
+  Wallet,
 } from "lucide-react";
-import { api, asset, money, date, status, type Obj } from "./api";
-import { Button, Badge, ErrorBox, Loading } from "./ui";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { api, asset, date, money, status, type Obj } from "./api";
+import { tx } from "./i18n";
+import { Badge, ErrorBox, Loading } from "./ui";
 const day = () =>
   new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }).format(
     new Date(),
   );
 const labels: Obj = {
-  received: "Chờ xác nhận",
-  confirmed: "Đã xác nhận",
-  preparing: "Chuẩn bị hàng",
-  shipping: "Đang giao",
-  delivered: "Đã giao",
-  cancelled: "Đã huỷ",
+  received: tx("Chờ xác nhận"),
+  confirmed: tx("Đã xác nhận"),
+  preparing: tx("Chuẩn bị hàng"),
+  shipping: tx("Đang giao"),
+  delivered: tx("Đã giao"),
+  cancelled: tx("Đã huỷ"),
 };
 const colors: Obj = {
   received: "#c6d4b4",
@@ -100,22 +100,26 @@ export function AdminDashboard() {
     <div className="dashboard-v2">
       <div className="dash-heading">
         <div>
-          <span className="admin-overline">OD. / TỔNG QUAN CỬA HÀNG</span>
+          <span className="admin-overline">
+            {tx("OD. / TỔNG QUAN CỬA HÀNG")}
+          </span>
           <h1>
-            Cửa hàng hôm nay<span>.</span>
+            {tx("Cửa hàng hôm nay")}
+            <span>.</span>
           </h1>
-          <p>Theo dõi đơn, dòng tiền và những việc cần xử lý.</p>
+          <p>{tx("Theo dõi đơn, dòng tiền và những việc cần xử lý.")}</p>
         </div>
         <Link to="/" className="button outline">
-          Mở cửa hàng <ArrowUpRight size={15} />
+          {tx("Mở cửa hàng ")}
+          <ArrowUpRight size={15} />
         </Link>
       </div>
       <div className="dash-datebar">
         <div className="range-switch">
           {[
-            ["week", "7 ngày"],
-            ["month", "Tháng này"],
-            ["30days", "30 ngày"],
+            ["week", tx("7 ngày")],
+            ["month", tx("Tháng này")],
+            ["30days", tx("30 ngày")],
           ].map(([k, l]) => (
             <button
               key={k}
@@ -132,7 +136,7 @@ export function AdminDashboard() {
         </span>
         <button
           className="icon-button"
-          aria-label="Làm mới số liệu"
+          aria-label={tx("Làm mới số liệu")}
           onClick={() => setRevision((r) => r + 1)}
         >
           <RefreshCw size={15} />
@@ -145,28 +149,28 @@ export function AdminDashboard() {
         <>
           <div className="dash-stats">
             <Metric
-              label="Doanh thu thuần"
+              label={tx("Doanh thu thuần")}
               value={money(totals.revenue)}
-              note="Ghi nhận từ đơn đã giao"
+              note={tx("Ghi nhận từ đơn đã giao")}
               icon={Wallet}
               primary
             />
             <Metric
-              label="Đơn hàng"
+              label={tx("Đơn hàng")}
               value={rows.length}
-              note={`${pending.length} đơn chờ xác nhận`}
+              note={tx("{0} đơn chờ xác nhận", [pending.length])}
               icon={ShoppingBag}
             />
             <Metric
-              label="Lãi sau chi phí"
+              label={tx("Lãi sau chi phí")}
               value={money(totals.profit)}
-              note="Đã tính giá vốn và chi phí"
+              note={tx("Đã tính giá vốn và chi phí")}
               icon={TrendingUp}
             />
             <Metric
-              label="Thực thu ròng"
+              label={tx("Thực thu ròng")}
               value={money(totals.cash)}
-              note={`Công nợ ${money(totals.receivable)}`}
+              note={tx("Công nợ {0}", [money(totals.receivable)])}
               icon={Wallet}
             />
           </div>
@@ -174,21 +178,27 @@ export function AdminDashboard() {
             <section className="panel revenue-panel">
               <div className="dash-panel-heading">
                 <div>
-                  <span className="admin-overline">HIỆU QUẢ BÁN HÀNG</span>
-                  <h2>Doanh thu & lợi nhuận</h2>
+                  <span className="admin-overline">
+                    {tx("HIỆU QUẢ BÁN HÀNG")}
+                  </span>
+                  <h2>{tx("Doanh thu & lợi nhuận")}</h2>
                 </div>
                 <Badge>VND</Badge>
               </div>
               <RevenueChart points={points} />
               <p className="chart-note">
-                Doanh thu theo ngày đặt của đơn đã giao, múi giờ Việt Nam.
+                {tx(
+                  "Doanh thu theo ngày đặt của đơn đã giao, múi giờ Việt Nam.",
+                )}
               </p>
             </section>
             <section className="panel donut-panel">
               <div className="dash-panel-heading">
                 <div>
-                  <span className="admin-overline">HÀNH TRÌNH ĐƠN HÀNG</span>
-                  <h2>Trạng thái đơn</h2>
+                  <span className="admin-overline">
+                    {tx("HÀNH TRÌNH ĐƠN HÀNG")}
+                  </span>
+                  <h2>{tx("Trạng thái đơn")}</h2>
                 </div>
                 <ShoppingBag size={17} strokeWidth={1.3} />
               </div>
@@ -199,8 +209,8 @@ export function AdminDashboard() {
             <section className="panel action-panel">
               <div className="dash-panel-heading">
                 <div>
-                  <span className="admin-overline">ƯU TIÊN XỬ LÝ</span>
-                  <h2>Việc cần chú ý</h2>
+                  <span className="admin-overline">{tx("ƯU TIÊN XỬ LÝ")}</span>
+                  <h2>{tx("Việc cần chú ý")}</h2>
                 </div>
                 <Clock size={17} strokeWidth={1.3} />
               </div>
@@ -212,8 +222,8 @@ export function AdminDashboard() {
                   <ShoppingBag size={17} />
                 </span>
                 <div>
-                  <strong>Đơn chờ xác nhận</strong>
-                  <small>Đơn mới trong khoảng ngày đang xem</small>
+                  <strong>{tx("Đơn chờ xác nhận")}</strong>
+                  <small>{tx("Đơn mới trong khoảng ngày đang xem")}</small>
                 </div>
                 <b>{pending.length}</b>
                 <ChevronRight size={15} />
@@ -226,8 +236,10 @@ export function AdminDashboard() {
                   <Wallet size={17} />
                 </span>
                 <div>
-                  <strong>Chuyển khoản chờ kiểm tra</strong>
-                  <small>Cần đối chiếu thực nhận trước khi xác nhận</small>
+                  <strong>{tx("Chuyển khoản chờ kiểm tra")}</strong>
+                  <small>
+                    {tx("Cần đối chiếu thực nhận trước khi xác nhận")}
+                  </small>
                 </div>
                 <b>{review.length}</b>
                 <ChevronRight size={15} />
@@ -237,8 +249,8 @@ export function AdminDashboard() {
                   <TrendingUp size={17} />
                 </span>
                 <div>
-                  <strong>Lên lịch Flash sale</strong>
-                  <small>Giá ưu đãi, giờ bắt đầu và kết thúc</small>
+                  <strong>{tx("Lên lịch Flash sale")}</strong>
+                  <small>{tx("Giá ưu đãi, giờ bắt đầu và kết thúc")}</small>
                 </div>
                 <ArrowUpRight size={18} />
               </Link>
@@ -246,9 +258,10 @@ export function AdminDashboard() {
             <section className="panel inventory-panel">
               <div className="dash-panel-heading">
                 <div>
-                  <span className="admin-overline">TỒN KHO</span>
+                  <span className="admin-overline">{tx("TỒN KHO")}</span>
                   <h2>
-                    Sản phẩm cần bổ sung <Badge>{data.low_stock_count}</Badge>
+                    {tx("Sản phẩm cần bổ sung ")}
+                    <Badge>{data.low_stock_count}</Badge>
                   </h2>
                 </div>
                 <Link to="/admin/products" className="text-link">
@@ -268,14 +281,16 @@ export function AdminDashboard() {
                       <small>{p.sku}</small>
                     </div>
                     <Badge tone={Number(p.stock) === 0 ? "red" : ""}>
-                      {Number(p.stock) === 0 ? "Hết hàng" : "Còn " + p.stock}
+                      {Number(p.stock) === 0
+                        ? tx("Hết hàng")
+                        : tx("Còn ") + p.stock}
                     </Badge>
                   </Link>
                 ))
               ) : (
                 <div className="dash-empty">
                   <CheckCircle2 size={28} strokeWidth={1.3} />
-                  <p>Kho hiện chưa có sản phẩm dưới mức 6.</p>
+                  <p>{tx("Kho hiện chưa có sản phẩm dưới mức 6.")}</p>
                 </div>
               )}
             </section>
@@ -283,37 +298,40 @@ export function AdminDashboard() {
           <section className="panel recent-panel">
             <div className="dash-panel-heading">
               <div>
-                <span className="admin-overline">CẬP NHẬT GẦN NHẤT</span>
-                <h2>Đơn trong kỳ</h2>
+                <span className="admin-overline">
+                  {tx("CẬP NHẬT GẦN NHẤT")}
+                </span>
+                <h2>{tx("Đơn trong kỳ")}</h2>
               </div>
               <Link to="/admin/orders" className="text-link">
-                Tất cả đơn <ArrowRight size={15} />
+                {tx("Tất cả đơn ")}
+                <ArrowRight size={15} />
               </Link>
             </div>
             <table className="responsive-table">
               <thead>
                 <tr>
-                  <th>Đơn hàng</th>
-                  <th>Khách hàng</th>
-                  <th>Ngày đặt</th>
-                  <th>Doanh thu thuần</th>
-                  <th>Xử lý</th>
-                  <th>Thanh toán</th>
+                  <th>{tx("Đơn hàng")}</th>
+                  <th>{tx("Khách hàng")}</th>
+                  <th>{tx("Ngày đặt")}</th>
+                  <th>{tx("Doanh thu thuần")}</th>
+                  <th>{tx("Xử lý")}</th>
+                  <th>{tx("Thanh toán")}</th>
                   <th />
                 </tr>
               </thead>
               <tbody>
                 {rows.slice(0, 6).map((o: Obj) => (
                   <tr key={o.id}>
-                    <td data-label="Mã đơn">
+                    <td data-label={tx("Mã đơn")}>
                       <Link to={"/admin/orders/" + o.id}>
                         <strong>{o.code}</strong>
                       </Link>
                     </td>
-                    <td data-label="Khách hàng">{o.customer_name}</td>
-                    <td data-label="Ngày đặt">{date(o.created_at)}</td>
+                    <td data-label={tx("Khách hàng")}>{o.customer_name}</td>
+                    <td data-label={tx("Ngày đặt")}>{date(o.created_at)}</td>
                     <td data-label="Doanh thu">{money(o.revenue)}</td>
-                    <td data-label="Xử lý">
+                    <td data-label={tx("Xử lý")}>
                       <Badge
                         tone={
                           o.status === "delivered"
@@ -326,7 +344,7 @@ export function AdminDashboard() {
                         {status[o.status]}
                       </Badge>
                     </td>
-                    <td data-label="Thanh toán">
+                    <td data-label={tx("Thanh toán")}>
                       <Badge>{status[o.payment_status]}</Badge>
                     </td>
                     <td>
@@ -345,7 +363,7 @@ export function AdminDashboard() {
             {!rows.length && (
               <div className="dash-empty">
                 <Package size={25} strokeWidth={1.2} />
-                <p>Chưa có đơn trong khoảng ngày này.</p>
+                <p>{tx("Chưa có đơn trong khoảng ngày này.")}</p>
               </div>
             )}
           </section>
@@ -400,9 +418,9 @@ export function RevenueChart({ points }: { points: Obj[] }) {
     <div className="revenue-chart">
       <div className="chart-switch">
         {[
-          ["both", "Cả hai"],
+          ["both", tx("Cả hai")],
           ["revenue", "Doanh thu"],
-          ["profit", "Lợi nhuận"],
+          ["profit", tx("Lợi nhuận")],
         ].map(([k, l]) => (
           <button
             className={series === k ? "active" : ""}
@@ -417,7 +435,7 @@ export function RevenueChart({ points }: { points: Obj[] }) {
         <svg
           viewBox={`0 0 ${width} ${height}`}
           role="group"
-          aria-label="Biểu đồ doanh thu và lợi nhuận theo ngày"
+          aria-label={tx("Biểu đồ doanh thu và lợi nhuận theo ngày")}
         >
           {Array.from({ length: 4 }, (_, i) => {
             const n = min + ((max - min) * i) / 3;
@@ -502,7 +520,11 @@ export function RevenueChart({ points }: { points: Obj[] }) {
                 fill="transparent"
                 tabIndex={0}
                 role="button"
-                aria-label={`${p.label}: doanh thu ${money(p.revenue)}, lợi nhuận ${money(p.profit)}`}
+                aria-label={tx("{0}: doanh thu {1}, lợi nhuận {2}", [
+                  p.label,
+                  money(p.revenue),
+                  money(p.profit),
+                ])}
                 onMouseEnter={() => setSelected(i)}
                 onFocus={() => setSelected(i)}
                 onMouseLeave={() => setSelected(null)}
@@ -545,7 +567,7 @@ export function RevenueChart({ points }: { points: Obj[] }) {
         </svg>
         {!nonzero && (
           <span className="chart-zero">
-            Chưa có doanh thu được ghi nhận trong kỳ
+            {tx("Chưa có doanh thu được ghi nhận trong kỳ")}
           </span>
         )}
         {highlighted && (
@@ -555,7 +577,8 @@ export function RevenueChart({ points }: { points: Obj[] }) {
               Doanh thu <b>{money(highlighted.revenue)}</b>
             </span>
             <span>
-              Lợi nhuận <b>{money(highlighted.profit)}</b>
+              {tx("Lợi nhuận ")}
+              <b>{money(highlighted.profit)}</b>
             </span>
           </div>
         )}
@@ -563,11 +586,11 @@ export function RevenueChart({ points }: { points: Obj[] }) {
       <div className="chart-legend">
         <span>
           <i style={{ background: "#44563a" }} />
-          Doanh thu thuần
+          {tx("Doanh thu thuần")}
         </span>
         <span>
           <i style={{ background: "#a3c466" }} />
-          Lãi sau chi phí
+          {tx("Lãi sau chi phí")}
         </span>
       </div>
     </div>
@@ -587,7 +610,7 @@ function OrderDonut({ values }: { values: Obj }) {
         <svg
           viewBox="0 0 180 180"
           role="img"
-          aria-label={`Tổng ${total} đơn theo trạng thái`}
+          aria-label={tx("Tổng {0} đơn theo trạng thái", [total])}
         >
           <circle
             cx="90"
@@ -624,7 +647,7 @@ function OrderDonut({ values }: { values: Obj }) {
         </svg>
         <div className="donut-center">
           <strong>{hover ? values[hover] || 0 : total}</strong>
-          <span>{hover ? labels[hover] : "tổng đơn hàng"}</span>
+          <span>{hover ? labels[hover] : tx("tổng đơn hàng")}</span>
         </div>
       </div>
       <div className="donut-legend">
