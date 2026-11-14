@@ -2,7 +2,7 @@ import { syncServerClock } from "./promotions";
 export type Obj = Record<string, any>;
 let csrf = "";
 export const asset = (p: string) => `${import.meta.env.BASE_URL}${p}`;
-export async function api(
+async function requestApi(
   route: string,
   body?: Obj,
   extra: Record<string, string> = {},
@@ -34,7 +34,24 @@ export async function api(
   if (data?.server_time) syncServerClock(data.server_time);
   return data;
 }
+let sessionRequest: Promise<any> | null = null;
+export async function api(
+  route: string,
+  body?: Obj,
+  extra: Record<string, string> = {},
+) {
+  if (route === "session" && !body) {
+    if (!sessionRequest)
+      sessionRequest = requestApi(route).finally(() => {
+        sessionRequest = null;
+      });
+    return sessionRequest;
+  }
+  if (body && !csrf) await api("session");
+  return requestApi(route, body, extra);
+}
 export async function upload(file: File) {
+  if (!csrf) await api("session");
   const form = new FormData();
   form.append("image", file);
   const r = await fetch(

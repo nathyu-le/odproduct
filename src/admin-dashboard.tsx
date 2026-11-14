@@ -28,12 +28,12 @@ const labels: Obj = {
   cancelled: "Đã huỷ",
 };
 const colors: Obj = {
-  received: "#f59e0b",
-  confirmed: "#3b82f6",
-  preparing: "#8b5cf6",
-  shipping: "#06b6d4",
-  delivered: "#10b981",
-  cancelled: "#f43f5e",
+  received: "#c6d4b4",
+  confirmed: "#91ad6e",
+  preparing: "#5f7850",
+  shipping: "#b5ca7b",
+  delivered: "#2b3826",
+  cancelled: "#d9c4ae",
 };
 const compact = (n: number) =>
   new Intl.NumberFormat("vi-VN", {
@@ -428,7 +428,7 @@ export function RevenueChart({ points }: { points: Obj[] }) {
                   x2={width - right}
                   y1={y(n)}
                   y2={y(n)}
-                  stroke="#edf0f5"
+                  stroke="#e6ebdf"
                   strokeDasharray="3 5"
                 />
                 <text
@@ -447,12 +447,12 @@ export function RevenueChart({ points }: { points: Obj[] }) {
             <>
               <polygon
                 points={`${x(0)},${y(0)} ${path("revenue")} ${x(points.length - 1)},${y(0)}`}
-                fill="#edf3ff"
+                fill="#ebf2df"
               />
               <polyline
                 points={path("revenue")}
                 fill="none"
-                stroke="#3878e9"
+                stroke="#44563a"
                 strokeWidth="2.5"
                 strokeLinejoin="round"
                 strokeLinecap="round"
@@ -463,7 +463,7 @@ export function RevenueChart({ points }: { points: Obj[] }) {
             <polyline
               points={path("profit")}
               fill="none"
-              stroke="#f58a43"
+              stroke="#a3c466"
               strokeWidth="2.5"
               strokeLinejoin="round"
               strokeLinecap="round"
@@ -525,7 +525,7 @@ export function RevenueChart({ points }: { points: Obj[] }) {
                   cx={x(selected)}
                   cy={y(highlighted.revenue)}
                   r="4"
-                  fill="#3878e9"
+                  fill="#44563a"
                   stroke="white"
                   strokeWidth="2"
                 />
@@ -535,7 +535,7 @@ export function RevenueChart({ points }: { points: Obj[] }) {
                   cx={x(selected)}
                   cy={y(highlighted.profit)}
                   r="4"
-                  fill="#f58a43"
+                  fill="#a3c466"
                   stroke="white"
                   strokeWidth="2"
                 />
@@ -562,11 +562,11 @@ export function RevenueChart({ points }: { points: Obj[] }) {
       </div>
       <div className="chart-legend">
         <span>
-          <i style={{ background: "#3878e9" }} />
+          <i style={{ background: "#44563a" }} />
           Doanh thu thuần
         </span>
         <span>
-          <i style={{ background: "#f58a43" }} />
+          <i style={{ background: "#a3c466" }} />
           Lãi sau chi phí
         </span>
       </div>
@@ -594,7 +594,7 @@ function OrderDonut({ values }: { values: Obj }) {
             cy="90"
             r="70"
             fill="none"
-            stroke="#edf0f6"
+            stroke="#edf1e7"
             strokeWidth="19"
           />
           {Object.entries(labels).map(([key]) => {

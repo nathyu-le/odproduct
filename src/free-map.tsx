@@ -44,6 +44,9 @@ export function FreeMapPicker({
       errors++;
       if (errors >= 3 && !fallback) {
         fallback = true;
+        m.attributionControl.addAttribution(
+          '<a href="https://carto.com/attributions" target="_blank" rel="noreferrer">© CARTO</a>',
+        );
         tiles.setUrl(
           "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
         );

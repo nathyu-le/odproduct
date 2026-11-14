@@ -321,7 +321,7 @@ function ProductCard({ p: source, number }: { p: Obj; number?: number }) {
           ) : active && percent > 0 ? (
             <Badge tone="lime">
               <Zap size={11} />
-              &nbsp;−{percent}%
+              &nbsp;FLASH SALE · −{percent}%
             </Badge>
           ) : isNew ? (
             <Badge>Mới về</Badge>
@@ -397,9 +397,9 @@ export function Home() {
   const products = data.products.map((p: Obj) => displayProduct(p, now));
   const categories = data.categories;
   const candidates = [
-    ["tai-nghe", "Dành một khoảng\nriêng để nghe.", "Âm thanh"],
-    ["ban-phim", "Bắt đầu từ\nmột phím chạm.", "Góc làm việc"],
-    ["loa", "Mở playlist.\nĐổi không khí.", "Loa & âm nhạc"],
+    ["tai-nghe", "Âm thanh.\nKhông dây.", "Âm thanh"],
+    ["ban-phim", "Gõ chính xác.\nLàm tập trung.", "Góc làm việc"],
+    ["loa", "Bật nhạc.\nĐổi nhịp.", "Loa & âm nhạc"],
   ]
     .map(([slug, title, label]) => ({
       product: products.find((p: Obj) => p.category_slug === slug),
@@ -676,7 +676,7 @@ function FlashSaleBlock({
       <div className="flash-heading">
         <span className="flash-kicker">
           <Zap size={15} />
-          {products.length ? "ĐANG DIỄN RA" : "LỊCH ƯU ĐÃI"}
+          {products.length ? "FLASH SALE · ĐANG MỞ" : "LỊCH ƯU ĐÃI"}
         </span>
         <h2>
           Flash <span>sale.</span>
