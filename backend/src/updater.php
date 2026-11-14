@@ -408,14 +408,40 @@ function deployment_append_guard(
         unlink($tmp);
     }
 }
+function deployment_clean_urls(string $root): void
+{
+    $file = $root . "/.htaccess";
+    if (
+        (is_file($file) && !is_writable($file)) ||
+        (!is_file($file) && !is_writable($root))
+    ) {
+        return;
+    }
+    $old = is_file($file) ? file_get_contents($file) : "";
+    $rules =
+        "# OD CLEAN URLS V2\n<IfModule mod_rewrite.c>\nRewriteEngine On\nRewriteRule ^$ index.php [QSA,L]\nRewriteRule ^index\\.html$ index.php [QSA,L]\nRewriteRule ^(?:sitemap\\.xml|robots\\.txt)$ index.php [QSA,L]\nRewriteCond %{REQUEST_FILENAME} -f [OR]\nRewriteCond %{REQUEST_FILENAME} -d\nRewriteRule ^ - [L]\nRewriteRule ^ index.php [QSA,L]\n</IfModule>";
+    $pattern =
+        "~# OD CLEAN URLS V[12]\R<IfModule mod_rewrite\.c>.*?</IfModule>~s";
+    $new = preg_match($pattern, $old)
+        ? preg_replace_callback($pattern, fn() => $rules, $old)
+        : $old . "\n" . $rules . "\n";
+    if ($new === $old) {
+        return;
+    }
+    $temporary = $root . "/.od-routing-" . bin2hex(random_bytes(8));
+    if (file_put_contents($temporary, $new, LOCK_EX) === strlen($new)) {
+        chmod($temporary, 0644);
+        if (!rename($temporary, $file)) {
+            unlink($temporary);
+        }
+    } elseif (is_file($temporary)) {
+        unlink($temporary);
+    }
+}
 function deployment_prepare_access(): void
 {
     $root = deployment_paths()["root"];
-    deployment_append_guard(
-        $root . "/.htaccess",
-        "OD CLEAN URLS V1",
-        "<IfModule mod_rewrite.c>\nRewriteEngine On\nRewriteRule ^index\\.html$ index.php [QSA,L]\nRewriteRule ^(?:sitemap\\.xml|robots\\.txt)$ index.php [QSA,L]\nRewriteCond %{REQUEST_FILENAME} -f [OR]\nRewriteCond %{REQUEST_FILENAME} -d\nRewriteRule ^ - [L]\nRewriteRule ^ index.php [QSA,L]\n</IfModule>",
-    );
+    deployment_clean_urls($root);
     deployment_append_guard(
         $root . "/.htaccess",
         "OD EDITABLE ASSET CACHE V1",
