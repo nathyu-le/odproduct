@@ -197,11 +197,12 @@ try {
         $html,
     );
     $html = str_replace("</head>", $head . "</head>", $html);
+    // JavaScript renders the real UI; keep the plain HTML fallback for no-JS clients.
     $html = str_replace(
         '<div id="root"></div>',
-        '<div id="root"><main class="seo-initial">' .
+        '<div id="root"></div><noscript><main class="seo-initial">' .
             $page["body"] .
-            "</main></div>",
+            "</main></noscript>",
         $html,
     );
     $html = preg_replace_callback(

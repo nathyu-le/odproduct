@@ -58,3 +58,12 @@ Trong vòng chỉnh sửa, vị trí bắt đầu flash sale trên màn hình 36
 ## 5. Bàn giao
 
 Source và gói build được lưu cùng commit. `odproduct-update.zip` phục vụ cập nhật tự động; `odproduct-cpanel.zip` là bản đã build để upload/Extract thủ công nếu cần. Gói cập nhật không chứa config thật, database, token, dữ liệu storage hoặc ảnh khách đã upload. Lần thay đổi này không có migration database hay thay đổi quy tắc tính tiền ở backend.
+
+## Cập nhật 15/11/2026 — Flash sale gọn hơn, bỏ nháy chữ khi F5
+
+- Thu gọn header, countdown, padding, nhãn và khoảng cách trong card flash sale. Giữ nguyên màu; bỏ dòng “giá flash sale” lặp lại trong riêng khu sale. Các card ở danh mục vẫn giữ bố cục cũ.
+- Mobile 360/390px thấy hai sản phẩm trọn vẹn và một phần sản phẩm tiếp theo; vuốt ngang để xem hết. Desktop 1440px thấy đủ bốn sản phẩm; nhiều hơn vẫn cuộn bằng mũi tên. Không phóng to một sản phẩm thành cả khung.
+- Giữ vùng chạm 44px cho yêu thích/thêm giỏ; làm vòng tròn yêu thích nhỏ hơn về mặt hiển thị. Mobile dùng vuốt nên bỏ hàng nút mũi tên và lời nhắc thừa.
+- Đưa HTML dự phòng vào `noscript`: trình duyệt có JavaScript không còn nháy trang chữ trước khi React tải. Không thêm màn hình loading. Metadata, canonical, schema và nội dung dự phòng khi tắt JavaScript vẫn được giữ.
+- Đo với cùng dữ liệu bốn sale và countdown có ngày: khung 390px giảm từ 712 xuống 419px; khung desktop giảm từ 759 xuống 555px. Chiều cao thực tế có thể thay đổi theo nội dung/ngôn ngữ.
+- Kiểm tra Chromium tại 360/390/768/1440px, bốn ngôn ngữ, giá dài, sale trống/một/nhiều/sắp mở, countdown bốn ô, cuộn hết hàng, thao tác vuốt bằng sự kiện chạm, yêu thích/thêm giỏ cục bộ; không tràn ngang hay lỗi JavaScript. Kiểm tra điều hướng/F5 khi trì hoãn JS và chế độ tắt JS đạt. axe WCAG A/AA không ghi nhận lỗi trong vùng flash sale đã kiểm tra. Build và các kiểm tra PHP routing/sanitizer đạt.

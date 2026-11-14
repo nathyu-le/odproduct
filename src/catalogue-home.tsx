@@ -181,9 +181,11 @@ export function CatalogueSale({
               <ProductCard key={p.id} p={p} />
             ))}
           </div>
-          <span className="cx-swipe-hint">
-            {tx("Vuốt hoặc dùng mũi tên để xem thêm sản phẩm")}
-          </span>
+          {(!scroll.left || scroll.right) && (
+            <span className="cx-swipe-hint">
+              {tx("Vuốt hoặc dùng mũi tên để xem thêm sản phẩm")}
+            </span>
+          )}
         </div>
       ) : (
         <div className="cx-sale-empty">
